@@ -29,7 +29,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#8B5CF6] via-[#7C3AED] to-[#6D28D9]"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#7C3AED]"
         >
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
