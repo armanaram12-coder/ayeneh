@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import SplashScreen from '@/components/SplashScreen';
 
 export default function Home() {
@@ -13,9 +14,7 @@ export default function Home() {
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100">
           <div className="container mx-auto px-4 py-16">
             <div className="text-center">
-              <h1 className="text-5xl font-bold text-purple-700 mb-4">
-                آینه
-              </h1>
+              <Image src="/logo.png" alt="Ayeneh Logo" width={150} height={150} priority className="mx-auto mb-6" />
               <p className="text-xl text-gray-600 mb-8">
                 فروشگاه آنلاین محصولات آرایشی و بهداشتی
               </p>
