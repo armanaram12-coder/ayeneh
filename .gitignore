@@ -1,5 +1,48 @@
 ```
-# Compressed files
+# Dependencies
+node_modules/
+
+# Compiled and build artifacts
+*.node
+*.so
+*.a
+*.obj
+*.o
+*.out
+dist/
+build/
+target/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Compression files
 *.zip
 *.gz
 *.tar
