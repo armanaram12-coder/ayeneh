@@ -35,9 +35,9 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-center"
+            className="text-center w-full max-w-[350px] px-4"
           >
-            <Image src="/logo.png" alt="Ayeneh Logo" width={180} height={180} priority className="animate-pulse" />
+            <Image src="/logo.png" alt="Ayeneh Logo" width={300} height={300} priority className="animate-pulse mx-auto" />
           </motion.div>
         </motion.div>
       )}
