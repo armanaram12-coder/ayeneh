@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/AuthContext';
+import { supabase } from '@/lib/supabase';
 import RegisterModal from './RegisterModal';
 
 interface AuthModalProps {
@@ -10,31 +10,59 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { login } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
-  // If showing register modal, don't show auth modal
   if (showRegisterModal) {
     return (
       <RegisterModal
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
         onSuccess={() => {
-          // Optionally auto-login after registration
-          login();
           onClose();
         }}
       />
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    login();
-    onClose();
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        if (error.message.includes('Invalid') || error.message.includes('credentials')) {
+          setError('ایمیل یا رمز عبور اشتباه است');
+        } else {
+          setError(error.message);
+        }
+        return;
+      }
+
+      if (data.user) {
+        console.log('Login successful:', data.user);
+        // Force reload to update Header
+        window.location.href = '/';
+      }
+    } catch (err) {
+      console.error('Login exception:', err);
+      setError('خطایی رخ داد. لطفاً دوباره تلاش کنید.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,7 +71,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 z-10"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -55,12 +83,21 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           ورود به حساب
         </h2>
 
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-gray-700 mb-2">شماره موبایل یا ایمیل</label>
+            <label className="block text-gray-700 mb-2 text-sm">شماره موبایل یا ایمیل</label>
             <input
               type="text"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 placeholder-gray-400 bg-white"
               placeholder="مثال: 09123456789 یا email@example.com"
               required
@@ -68,9 +105,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">رمز عبور</label>
+            <label className="block text-gray-700 mb-2 text-sm">رمز عبور</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 placeholder-gray-400 bg-white"
               placeholder="••••••••"
               required
@@ -79,9 +118,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300 disabled:opacity-50"
           >
-            ورود
+            {loading ? 'در حال ورود...' : 'ورود'}
           </button>
         </form>
 
