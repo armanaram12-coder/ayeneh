@@ -20,31 +20,25 @@ function formatPrice(price: number): string {
   return price.toLocaleString('fa-IR');
 }
 
-// Extract first 5 products from the data
-function getSampleProducts(): Product[] {
-  const allProducts: Product[] = [];
-  
+// Get first product only
+function getFirstProduct(): Product | null {
   for (const category of productsData.categories) {
     for (const subcategory of category.subcategories) {
       for (const product of subcategory.products) {
-        allProducts.push({
+        return {
           id: product.id,
           name: product.name,
           price_toman: product.price_toman,
-        });
-        if (allProducts.length >= 5) return allProducts;
+        };
       }
-      if (allProducts.length >= 5) return allProducts;
     }
-    if (allProducts.length >= 5) return allProducts;
   }
-  
-  return allProducts;
+  return null;
 }
 
 export default function FlashSale() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [products, setProducts] = useState<Product[]>([]);
+  const [product, setProduct] = useState<Product | null>(null);
 
   // Calculate time until midnight
   useEffect(() => {
@@ -69,12 +63,17 @@ export default function FlashSale() {
     return () => clearInterval(timer);
   }, []);
 
-  // Load sample products
+  // Load first product
   useEffect(() => {
-    setProducts(getSampleProducts());
+    setProduct(getFirstProduct());
   }, []);
 
-  const discountPercent = 30;
+  const discountPercent = 10;
+
+  if (!product) return null;
+
+  const originalPrice = product.price_toman;
+  const discountedPrice = Math.floor(originalPrice * 0.9);
 
   return (
     <section 
@@ -106,45 +105,38 @@ export default function FlashSale() {
           </div>
         </div>
 
-        {/* Products Scroll Container */}
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-4 min-w-max md:grid md:grid-cols-5 md:min-w-0">
-            {products.map((product) => {
-              const originalPrice = product.price_toman;
-              const discountedPrice = Math.floor(originalPrice * 0.7);
-              
-              return (
-                <div
-                  key={product.id}
-                  className="bg-white rounded-xl shadow-lg p-4 flex-shrink-0 w-64 md:w-full hover:shadow-xl transition-shadow duration-300 relative"
-                >
-                  {/* Discount Badge */}
-                  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-bold z-10">
-                    ٪{toPersianDigits(discountPercent)} تخفیف
-                  </div>
+        {/* Single Product Card */}
+        <div className="max-w-md mx-auto">
+          <div
+            className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 relative"
+          >
+            {/* Discount Badge */}
+            <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-md text-sm font-bold z-10">
+              ٪{toPersianDigits(discountPercent)} تخفیف
+            </div>
 
-                  {/* Product Name */}
-                  <h3 className="text-gray-800 font-semibold mb-3 line-clamp-2 h-12">
-                    {product.name}
-                  </h3>
+            {/* Product Name */}
+            <h3 className="text-gray-800 font-semibold mb-4 text-center line-clamp-2 h-14">
+              {product.name}
+            </h3>
 
-                  {/* Prices */}
-                  <div className="mb-4">
-                    <p className="text-gray-400 text-sm line-through">
-                      {formatPrice(originalPrice)} تومان
-                    </p>
-                    <p className="text-[#7C3AED] text-xl font-bold">
-                      {formatPrice(discountedPrice)} تومان
-                    </p>
-                  </div>
+            {/* Prices */}
+            <div className="mb-6 text-center">
+              <p className="text-gray-400 text-sm line-through">
+                {formatPrice(originalPrice)} تومان
+              </p>
+              <p className="text-[#7C3AED] text-2xl font-bold mt-1">
+                {formatPrice(discountedPrice)} تومان
+              </p>
+            </div>
 
-                  {/* Add to Cart Button */}
-                  <button className="w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300">
-                    افزودن به سبد
-                  </button>
-                </div>
-              );
-            })}
+            {/* Add to Cart Button */}
+            <button 
+              onClick={() => alert('به سبد اضافه شد')}
+              className="w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300"
+            >
+              افزودن به سبد
+            </button>
           </div>
         </div>
       </div>
