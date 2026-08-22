@@ -1,0 +1,81 @@
+import json
+import os
+
+# Create directory if not exists
+os.makedirs('src/data', exist_ok=True)
+
+products_data = {
+  "project": "محصولات تراست - آینه",
+  "date": "2026-08-20",
+  "total_products": 190,
+  "total_categories": 11,
+  "categories": []
+}
+
+# We'll add categories one by one to avoid token limits
+# For now, create the structure with first category as example
+# You can expand this later
+
+perfume_category = {
+    "id": 1,
+    "name": "عطر و خوشبوکننده",
+    "subcategories": [
+        {
+            "id": 11,
+            "name": "عطر",
+            "products": [
+                {"id": 1, "name": "پرفیوم مردانه Eliot تراست", "brand": "تراست", "gender": "مردانه", "type": "پرفیوم", "volume_ml": 100, "price_toman": 5570000, "stock": 10, "sku": "TRUST-PERFUME-ELIOT-100ML"},
+                {"id": 2, "name": "پرفیوم مردانه Gilbert تراست", "brand": "تراست", "gender": "مردانه", "type": "پرفیوم", "volume_ml": 100, "price_toman": 5470000, "stock": 10, "sku": "TRUST-PERFUME-GILBERT-100ML"},
+                {"id": 3, "name": "پرفیوم زنانه Fiore تراست", "brand": "تراست", "gender": "زنانه", "type": "پرفیوم", "volume_ml": 100, "price_toman": 5970000, "stock": 10, "sku": "TRUST-PERFUME-FIORE-100ML"},
+                {"id": 4, "name": "ادوپرفیوم مردانه Patron تراست", "brand": "تراست", "gender": "مردانه", "type": "ادوپرفیوم", "volume_ml": 100, "price_toman": 4970000, "stock": 10, "sku": "TRUST-PERFUME-PATRON-100ML"}
+            ]
+        },
+        {
+            "id": 12,
+            "name": "بادی میست",
+            "products": [
+                {"id": 5, "name": "بادی میست زنانه TRUST aura مدل Lady GaGa", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-LADYGAGA-100ML"},
+                {"id": 6, "name": "بادی میست مردانه TRUST aura مدل Elvis Presley", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-ELVISPRESLEY-100ML"},
+                {"id": 7, "name": "بادی میست مردانه TRUST aura مدل George Clooney", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-CLOONEY-100ML"},
+                {"id": 8, "name": "بادی میست مردانه TRUST aura مدل Cillian Murphy", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-CILLIANMURPHY-100ML"},
+                {"id": 9, "name": "بادی میست مردانه TRUST aura مدل Humphrey Bogart", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-BOGART-100ML"},
+                {"id": 10, "name": "بادی میست زنانه TRUST aura مدل Taylor Swift", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-TAYLORSWIFT-100ML"},
+                {"id": 11, "name": "بادی میست زنانه TRUST aura مدل Elizabeth Taylor", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-ELIZABETHTAYLOR-100ML"},
+                {"id": 12, "name": "بادی میست مردانه تراست مدل Golden Sand", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-GOLDENSAND-100ML"},
+                {"id": 13, "name": "بادی میست مردانه تراست مدل Garden Party", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-GARDENPARTY-100ML"},
+                {"id": 14, "name": "بادی میست مردانه تراست مدل Aquamist", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-AQUAMIST-100ML"},
+                {"id": 15, "name": "بادی میست مردانه TRUST aura مدل Alain Delon", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-ALAINDELON-100ML"},
+                {"id": 16, "name": "بادی میست مردانه TRUST aura مدل God Father", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-GODFATHER-100ML"},
+                {"id": 17, "name": "بادی میست مردانه TRUST aura مدل Al Pacino", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-ALPACINO-100ML"},
+                {"id": 18, "name": "بادی میست زنانه TRUST aura مدل Madonna", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-MADONNA-100ML"},
+                {"id": 19, "name": "بادی میست زنانه TRUST aura مدل Marilyn Monroe", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-MARILYN-100ML"},
+                {"id": 20, "name": "بادی میست مردانه تراست مدل Power", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-POWER-100ML"},
+                {"id": 21, "name": "بادی میست زنانه تراست مدل Bimbo", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-BIMBO-100ML"},
+                {"id": 22, "name": "بادی میست زنانه تراست مدل Cute", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-CUTE-100ML"},
+                {"id": 23, "name": "بادی میست زنانه تراست مدل Queen", "brand": "تراست", "gender": "زنانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-QUEEN-100ML"},
+                {"id": 24, "name": "بادی میست مردانه تراست مدل Bon Motif", "brand": "تراست", "gender": "مردانه", "type": "بادی میست", "volume_ml": 100, "price_toman": 577000, "stock": 10, "sku": "TRUST-BM-BONMOTIF-100ML"}
+            ]
+        },
+        {
+            "id": 13,
+            "name": "مام رول",
+            "products": [
+                {"id": 25, "name": "لوسیون خوشبوکننده (مام رول) مردانه، مدل آمستردام", "brand": "تراست", "gender": "مردانه", "type": "مام رول", "volume_ml": 60, "price_toman": 397000, "stock": 10, "sku": "TRUST-ROLL-AMSTERDAM-60ML"},
+                {"id": 26, "name": "لوسیون خوشبوکننده (مام رول) مردانه، مدل نیویورک", "brand": "تراست", "gender": "مردانه", "type": "مام رول", "volume_ml": 60, "price_toman": 397000, "stock": 10, "sku": "TRUST-ROLL-NEWYORK-60ML"},
+                {"id": 27, "name": "لوسیون خوشبوکننده (مام رول) مردانه، مدل لندن", "brand": "تراست", "gender": "مردانه", "type": "مام رول", "volume_ml": 60, "price_toman": 397000, "stock": 10, "sku": "TRUST-ROLL-LONDON-60ML"},
+                {"id": 28, "name": "لوسیون خوشبوکننده (مام رول) زنانه، مدل آتن", "brand": "تراست", "gender": "زنانه", "type": "مام رول", "volume_ml": 60, "price_toman": 397000, "stock": 10, "sku": "TRUST-ROLL-ATHENS-60ML"},
+                {"id": 29, "name": "لوسیون خوشبوکننده (مام رول) زنانه، مدل سیدنی", "brand": "تراست", "gender": "زنانه", "type": "مام رول", "volume_ml": 60, "price_toman": 397000, "stock": 10, "sku": "TRUST-ROLL-SYDNEY-60ML"},
+                {"id": 30, "name": "لوسیون خوشبوکننده (مام رول) زنانه، مدل پاریس", "brand": "تراست", "gender": "زنانه", "type": "مام رول", "volume_ml": 60, "price_toman": 397000, "stock": 10, "sku": "TRUST-ROLL-PARIS-60ML"}
+            ]
+        }
+    ]
+}
+
+products_data["categories"].append(perfume_category)
+
+# Write to file
+with open('src/data/products.json', 'w', encoding='utf-8') as f:
+    json.dump(products_data, f, ensure_ascii=False, indent=2)
+
+print("✅ products.json created successfully with first category!")
+print(f"Total categories so far: {len(products_data['categories'])}")

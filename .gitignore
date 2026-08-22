@@ -1,105 +1,40 @@
-```gitignore
-# Dependencies
-node_modules/
-
-# Build outputs
-dist/
-build/
-.next/
-.nuxt/
-out/
-
-# Logs
-*.log
-
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
+```
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-env/
 venv/
 .venv/
-pip-log.txt
-pip-selfcheck.json
-*.so
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
+.env
+.env.local
+.env.*
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Logs
 *.log
-.gitattributes
-.project
-.pydevproject
-.vscode
-.mypy_cache/
-.pytest_cache/
-.hypothesis/
-.tox/
-.coverage/
-htmlcov/
-.recommenders
 
-# Node.js
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-node_modules/
-jspm_packages/
-web_modules/
-*.tsbuildinfo
-.nyc_output
-coverage/
-lib-cov
-*.lcov
-.nyc_output/
-
-# TypeScript
-*.tsbuildinfo
-*.bak
-
-# General
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Icon?
-.directory
-.fuse_hidden*
-.Trashes
-._*
-.Spotlight-V100
-.TemporaryItems
-.com.apple.timemachine.donotpresent
-.AppleDouble
-.LSOverride
-.DocumentRevisions-V100
-.fseventsd
-.SnapshotRepository
-.pkdebug
+# Editors
+.vscode/
+.idea/
 *.swp
 *.swo
-*~
-.project
-.idea
-.vscode
-*.tmp
-*.temp
-*.log
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Testing
+.pytest_cache/
+.mypy_cache/
 ```
