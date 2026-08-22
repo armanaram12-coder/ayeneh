@@ -1,12 +1,35 @@
 ```
+# Next.js build outputs
+.next/
+
 # Dependencies
 node_modules/
 
-# Environment
+# Environment variables
 .env
 .env.local
 .env.*
 
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
 # Logs
 *.log
+
+# Temporary files
+*.tmp
+
+# Python cache (if present in project)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Build outputs
+dist/
+build/
+target/
 ```

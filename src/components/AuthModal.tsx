@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
+import RegisterModal from './RegisterModal';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,8 +12,24 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { login } = useAuth();
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   if (!isOpen) return null;
+
+  // If showing register modal, don't show auth modal
+  if (showRegisterModal) {
+    return (
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSuccess={() => {
+          // Optionally auto-login after registration
+          login();
+          onClose();
+        }}
+      />
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,28 +52,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         {/* Title */}
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          {isLoginMode ? 'ورود به حساب' : 'ثبت‌نام'}
+          ورود به حساب
         </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLoginMode && (
-            <div>
-              <label className="block text-gray-700 mb-2">نام و نام خانوادگی</label>
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
-                placeholder="مثال: علی محمدی"
-              />
-            </div>
-          )}
-          
           <div>
-            <label className="block text-gray-700 mb-2">شماره موبایل</label>
+            <label className="block text-gray-700 mb-2">شماره موبایل یا ایمیل</label>
             <input
-              type="tel"
+              type="text"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
-              placeholder="مثال: 09123456789"
+              placeholder="مثال: 09123456789 یا email@example.com"
               required
             />
           </div>
@@ -75,18 +81,18 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             type="submit"
             className="w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300"
           >
-            {isLoginMode ? 'ورود' : 'ثبت‌نام'}
+            ورود
           </button>
         </form>
 
-        {/* Toggle Mode */}
+        {/* Toggle to Register */}
         <p className="text-center mt-6 text-gray-600">
-          {isLoginMode ? 'حساب ندارید؟' : 'قبلاً ثبت‌نام کرده‌اید؟'}
+          حساب ندارید؟
           <button
-            onClick={() => setIsLoginMode(!isLoginMode)}
+            onClick={() => setShowRegisterModal(true)}
             className="text-[#7C3AED] font-semibold mr-1 hover:underline"
           >
-            {isLoginMode ? 'ثبت‌نام کنید' : 'وارد شوید'}
+            ثبت‌نام کنید
           </button>
         </p>
       </div>
