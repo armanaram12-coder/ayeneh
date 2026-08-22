@@ -1,15 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/lib/AuthContext';
+import { supabase } from '@/lib/supabase';
 import AuthModal from './AuthModal';
+import CartModal from './CartModal';
 
 export default function Header({ cartCount = 0 }: { cartCount?: number }) {
-  const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [wishlistActive, setWishlistActive] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        setIsAuthenticated(true);
+        // Fetch username from profiles table
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profile?.username) {
+          setUsername(profile.username);
+        }
+      }
+    };
+    
+    checkAuth();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsAuthenticated(false);
+    setUsername(null);
+    setShowDropdown(false);
+  };
 
   return (
     <>
@@ -86,7 +120,10 @@ export default function Header({ cartCount = 0 }: { cartCount?: number }) {
               </button>
 
               {/* Cart Icon with Badge */}
-              <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600">
+              <button 
+                onClick={() => setIsCartModalOpen(true)}
+                className="relative p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 110 4 2 2 0 010-4z" />
                 </svg>
@@ -97,13 +134,53 @@ export default function Header({ cartCount = 0 }: { cartCount?: number }) {
                 )}
               </button>
 
-              {/* Auth Button */}
-              <button
-                onClick={() => setIsAuthModalOpen(true)}
-                className="bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity duration-300"
-              >
-                {isAuthenticated ? 'حساب کاربری' : 'ورود / ثبت‌نام'}
-              </button>
+              {/* Auth Button / User Dropdown */}
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity duration-300"
+                  >
+                    <span>سلام، {username || 'کاربر'}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Dropdown Menu */}
+                  {showDropdown && (
+                    <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-100">
+                      <Link
+                        href="/dashboard"
+                        className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-[#7C3AED] transition-colors"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        داشبورد
+                      </Link>
+                      <Link
+                        href="/"
+                        className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-[#7C3AED] transition-colors"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        صفحه اصلی
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-right px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-[#7C3AED] transition-colors"
+                      >
+                        خروج
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className="bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity duration-300"
+                >
+                  ورود / ثبت‌نام
+                </button>
+              )}
             </div>
           </div>
 
@@ -160,6 +237,9 @@ export default function Header({ cartCount = 0 }: { cartCount?: number }) {
 
       {/* Auth Modal */}
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      
+      {/* Cart Modal */}
+      <CartModal isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} />
     </>
   );
 }
