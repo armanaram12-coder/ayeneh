@@ -262,7 +262,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               onBlur={() => handleBlur('username')}
-              className={`w-full border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors`}
+              className={`w-full px-4 py-3 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors`}
               placeholder="حداقل ۳ کاراکتر"
             />
             {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
@@ -278,7 +278,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               onBlur={() => handleBlur('email')}
-              className={`w-full border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors`}
+              className={`w-full px-4 py-3 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors`}
               placeholder="example@email.com"
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -294,7 +294,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               value={formData.phone}
               onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9]/g, ''))}
               onBlur={() => handleBlur('phone')}
-              className={`w-full border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors`}
+              className={`w-full px-4 py-3 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors`}
               placeholder="09123456789"
               maxLength={11}
             />
@@ -311,7 +311,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               onChange={(e) => handleInputChange('address', e.target.value)}
               onBlur={() => handleBlur('address')}
               rows={3}
-              className={`w-full border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors resize-none`}
+              className={`w-full px-4 py-3 border ${errors.address ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors resize-none`}
               placeholder="آدرس کامل خود را وارد کنید"
             />
             {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
@@ -327,7 +327,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               value={formData.postal_code}
               onChange={(e) => handleInputChange('postal_code', e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
               onBlur={() => handleBlur('postal_code')}
-              className={`w-full border ${errors.postal_code ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors`}
+              className={`w-full px-4 py-3 border ${errors.postal_code ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors`}
               placeholder="0000000000"
               maxLength={10}
             />
@@ -344,7 +344,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               onBlur={() => handleBlur('password')}
-              className={`w-full border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors`}
+              className={`w-full px-4 py-3 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors`}
               placeholder="••••••••"
             />
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
@@ -360,7 +360,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
               value={formData.confirm_password}
               onChange={(e) => handleInputChange('confirm_password', e.target.value)}
               onBlur={() => handleBlur('confirm_password')}
-              className={`w-full border ${errors.confirm_password ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] transition-colors`}
+              className={`w-full px-4 py-3 border ${errors.confirm_password ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-purple-500 text-gray-900 placeholder-gray-400 bg-white focus:outline-none focus:border-[#7C3AED] transition-colors`}
               placeholder="••••••••"
             />
             {errors.confirm_password && <p className="text-red-500 text-xs mt-1">{errors.confirm_password}</p>}
