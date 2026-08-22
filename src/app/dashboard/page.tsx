@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
-type TabType = 'profile' | 'security';
+type TabType = 'profile' | 'security' | 'orders' | 'favorites' | 'reviews';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('profile');
+  const [username, setUsername] = useState<string>('');
   
   // Profile form state
   const [profileData, setProfileData] = useState({
@@ -46,10 +48,21 @@ export default function DashboardPage() {
       
       setUser(session.user);
       
-      // Load profile data from user metadata
+      // Load profile data from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profile?.username) {
+        setUsername(profile.username);
+      }
+      
+      // Also load profile data from user metadata for form
       const userMetadata = session.user.user_metadata;
       setProfileData({
-        username: userMetadata?.username || '',
+        username: userMetadata?.username || profile?.username || '',
         phone: userMetadata?.phone || '',
         address: userMetadata?.address || '',
         postal_code: userMetadata?.postal_code || '',
@@ -167,7 +180,16 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-white shadow-md">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-800">داشبورد کاربری</h1>
+          <Link 
+            href="/"
+            className="text-sm text-gray-600 hover:text-[#7C3AED] transition-colors flex items-center gap-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            بازگشت به صفحه اصلی
+          </Link>
+          <h1 className="text-xl font-bold text-gray-900">داشبورد کاربری</h1>
           <button
             onClick={handleLogout}
             className="bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity"
@@ -203,17 +225,32 @@ export default function DashboardPage() {
                 🔒 امنیت
               </button>
               <button
-                className="w-full text-right px-4 py-3 rounded-lg font-semibold text-gray-600 hover:bg-purple-50 transition-all"
+                onClick={() => setActiveTab('orders')}
+                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
+                  activeTab === 'orders'
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
+                    : 'text-gray-600 hover:bg-purple-50'
+                }`}
               >
                 📦 سفارشات
               </button>
               <button
-                className="w-full text-right px-4 py-3 rounded-lg font-semibold text-gray-600 hover:bg-purple-50 transition-all"
+                onClick={() => setActiveTab('favorites')}
+                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
+                  activeTab === 'favorites'
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
+                    : 'text-gray-600 hover:bg-purple-50'
+                }`}
               >
                 ❤️ علاقه‌مندی‌ها
               </button>
               <button
-                className="w-full text-right px-4 py-3 rounded-lg font-semibold text-gray-600 hover:bg-purple-50 transition-all"
+                onClick={() => setActiveTab('reviews')}
+                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
+                  activeTab === 'reviews'
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
+                    : 'text-gray-600 hover:bg-purple-50'
+                }`}
               >
                 💬 نظرات
               </button>
@@ -226,7 +263,16 @@ export default function DashboardPage() {
           {/* Profile Tab */}
           {activeTab === 'profile' && (
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">اطلاعات پروفایل</h2>
+              {/* Avatar Section */}
+              <div className="flex justify-center mb-6">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              </div>
+              
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">اطلاعات پروفایل</h2>
               
               {profileSuccess && (
                 <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
@@ -247,7 +293,7 @@ export default function DashboardPage() {
                     type="text"
                     value={profileData.username}
                     onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
                   />
                 </div>
 
@@ -257,7 +303,7 @@ export default function DashboardPage() {
                     type="tel"
                     value={profileData.phone}
                     onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
                   />
                 </div>
 
@@ -267,7 +313,7 @@ export default function DashboardPage() {
                     value={profileData.address}
                     onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
                     rows={3}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] resize-none"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white resize-none"
                   />
                 </div>
 
@@ -278,7 +324,7 @@ export default function DashboardPage() {
                     value={profileData.postal_code}
                     onChange={(e) => setProfileData(prev => ({ ...prev, postal_code: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))}
                     maxLength={10}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
                   />
                 </div>
 
@@ -298,7 +344,7 @@ export default function DashboardPage() {
           {/* Security Tab */}
           {activeTab === 'security' && (
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">تغییر رمز عبور</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">تغییر رمز عبور</h2>
               
               {passwordSuccess && (
                 <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
@@ -319,7 +365,7 @@ export default function DashboardPage() {
                     type="password"
                     value={passwordData.current_password}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
                   />
                 </div>
 
@@ -329,7 +375,7 @@ export default function DashboardPage() {
                     type="password"
                     value={passwordData.new_password}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
                     placeholder="حداقل ۸ کاراکتر، یک حرف بزرگ، یک عدد، یک کاراکتر خاص"
                   />
                 </div>
@@ -340,7 +386,7 @@ export default function DashboardPage() {
                     type="password"
                     value={passwordData.confirm_password}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
                   />
                 </div>
 
@@ -354,6 +400,39 @@ export default function DashboardPage() {
                   {passwordLoading ? 'در حال تغییر...' : 'تغییر رمز عبور'}
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* Orders Tab */}
+          {activeTab === 'orders' && (
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">سفارشات</h2>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📦</div>
+                <p className="text-gray-700 text-lg">هنوز سفارشی ثبت نکرده‌اید</p>
+              </div>
+            </div>
+          )}
+
+          {/* Favorites Tab */}
+          {activeTab === 'favorites' && (
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">علاقه‌مندی‌ها</h2>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">❤️</div>
+                <p className="text-gray-700 text-lg">لیست علاقه‌مندی‌ها خالی است</p>
+              </div>
+            </div>
+          )}
+
+          {/* Reviews Tab */}
+          {activeTab === 'reviews' && (
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">نظرات</h2>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">💬</div>
+                <p className="text-gray-700 text-lg">هنوز نظری ثبت نکرده‌اید</p>
+              </div>
             </div>
           )}
         </main>
