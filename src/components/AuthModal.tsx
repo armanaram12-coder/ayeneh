@@ -38,7 +38,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md relative" dir="rtl">
         {/* Close Button */}
         <button
@@ -61,7 +61,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <label className="block text-gray-700 mb-2">شماره موبایل یا ایمیل</label>
             <input
               type="text"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 placeholder-gray-400 bg-white"
               placeholder="مثال: 09123456789 یا email@example.com"
               required
             />
@@ -71,7 +71,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <label className="block text-gray-700 mb-2">رمز عبور</label>
             <input
               type="password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED]"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 placeholder-gray-400 bg-white"
               placeholder="••••••••"
               required
             />

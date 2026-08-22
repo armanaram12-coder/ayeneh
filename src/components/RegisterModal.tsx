@@ -70,10 +70,13 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
 
   const validatePassword = (value: string): string | undefined => {
     if (!value) return 'رمز عبور الزامی است';
-    if (value.length < 8) return 'رمز عبور باید حداقل ۸ کاراکتر باشد';
-    if (!/[A-Z]/.test(value)) return 'رمز عبور باید حداقل یک حرف بزرگ داشته باشد';
-    if (!/\d/.test(value)) return 'رمز عبور باید حداقل یک عدد داشته باشد';
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return 'رمز عبور باید حداقل یک کاراکتر خاص داشته باشد';
+    if (value.length < 6) return 'رمز عبور باید حداقل ۶ کاراکتر و شامل حروف/اعداد انگلیسی باشد';
+    // Check for Persian characters
+    const persianRegex = /[\u0600-\u06FF]/;
+    if (persianRegex.test(value)) return 'رمز عبور باید حداقل ۶ کاراکتر و شامل حروف/اعداد انگلیسی باشد';
+    // Check that it contains at least some English letters or numbers
+    const englishRegex = /[A-Za-z0-9]/;
+    if (!englishRegex.test(value)) return 'رمز عبور باید حداقل ۶ کاراکتر و شامل حروف/اعداد انگلیسی باشد';
     return undefined;
   };
 
@@ -175,13 +178,20 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
       });
 
       if (error) {
-        if (error.message.includes('User already registered')) {
-          setSubmitError('این ایمیل قبلاً ثبت شده است');
+        let errorMessage = error.message || 'خطایی رخ داده است';
+        
+        // Handle common Supabase errors with user-friendly messages
+        if (error.message.includes('User already registered') || error.message.includes('duplicate key')) {
+          errorMessage = 'این ایمیل قبلاً ثبت شده است';
         } else if (error.message.includes('Invalid email')) {
-          setSubmitError('فرمت ایمیل نامعتبر است');
-        } else {
-          setSubmitError(error.message || 'خطایی رخ داده است');
+          errorMessage = 'فرمت ایمیل نامعتبر است';
+        } else if (error.message.includes('Weak password')) {
+          errorMessage = 'رمز عبور باید حداقل ۶ کاراکتر و شامل حروف/اعداد انگلیسی باشد';
+        } else if (error.message.includes('phone') || error.message.includes('Phone')) {
+          errorMessage = 'شماره تلفن وارد شده معتبر نیست';
         }
+        
+        setSubmitError(errorMessage);
         return;
       }
 
@@ -210,14 +220,11 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
       <div 
-        className="bg-white/10 backdrop-blur-xl rounded-xl p-6 w-full max-w-md relative border-2 border-purple-500/30 shadow-2xl"
+        className="bg-white rounded-xl p-6 w-full max-w-md relative shadow-2xl max-h-[90vh] overflow-y-auto"
         dir="rtl"
       >
-        {/* Glassmorphism gradient border effect */}
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-600/20 via-pink-500/20 to-purple-600/20 -z-10"></div>
-        
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -244,9 +251,9 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Username */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               نام کاربری <span className="text-red-500">*</span>
             </label>
@@ -262,7 +269,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
           </div>
 
           {/* Email */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               ایمیل <span className="text-red-500">*</span>
             </label>
@@ -278,7 +285,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
           </div>
 
           {/* Phone */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               شماره تلفن <span className="text-red-500">*</span>
             </label>
@@ -295,7 +302,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
           </div>
 
           {/* Address */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               آدرس منزل <span className="text-red-500">*</span>
             </label>
@@ -311,7 +318,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
           </div>
 
           {/* Postal Code */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               کد پستی <span className="text-red-500">*</span>
             </label>
@@ -328,7 +335,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
           </div>
 
           {/* Password */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               رمز عبور <span className="text-red-500">*</span>
             </label>
@@ -344,7 +351,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
           </div>
 
           {/* Confirm Password */}
-          <div>
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm">
               تکرار رمز عبور <span className="text-red-500">*</span>
             </label>
