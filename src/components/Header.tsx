@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 import AuthModal from './AuthModal';
 
-export default function Header() {
+export default function Header({ cartCount = 0 }: { cartCount?: number }) {
   const { isAuthenticated } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const [wishlistActive, setWishlistActive] = useState(false);
 
   return (

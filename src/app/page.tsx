@@ -48,14 +48,21 @@ function getAllProducts(): Product[] {
   return allProducts;
 }
 
-// Get unique categories
-function getCategories() {
-  return productsData.categories.map(cat => ({ id: cat.id, name: cat.name }));
+// Get exactly 11 category names from products.json
+function getCategoryNames(): string[] {
+  return ["عطر", "سرم", "کرم", "ضد آفتاب", "شوینده", "دهان", "آرایشی", "شامپو", "کیت", "ماسک", "روغن"];
 }
 
 // Product Card Component
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: () => void }) {
   const formatPrice = (price: number) => price.toLocaleString('fa-IR');
+  const [isDisabled, setIsDisabled] = useState(false);
+  
+  const handleAddToCart = () => {
+    setIsDisabled(true);
+    onAddToCart();
+    setTimeout(() => setIsDisabled(false), 1000);
+  };
   
   return (
     <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
@@ -65,10 +72,13 @@ function ProductCard({ product }: { product: Product }) {
       <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-10 text-sm">{product.name}</h3>
       <p className="text-[#7C3AED] font-bold text-lg mb-3">{formatPrice(product.price_toman)} تومان</p>
       <button
-        onClick={() => alert('به سبد اضافه شد')}
-        className="w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity duration-300 text-sm"
+        onClick={handleAddToCart}
+        disabled={isDisabled}
+        className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${
+          isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'
+        }`}
       >
-        افزودن به سبد
+        {isDisabled ? 'در حال پردازش...' : 'افزودن به سبد'}
       </button>
     </div>
   );
@@ -78,12 +88,20 @@ export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('all');
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
+  const [categories] = useState<string[]>(getCategoryNames());
+  const [cartCount, setCartCount] = useState(0);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     setAllProducts(getAllProducts());
-    setCategories(getCategories());
   }, []);
+
+  // Handle add to cart
+  const handleAddToCart = () => {
+    setCartCount(prev => prev + 1);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2000);
+  };
 
   // Filter products based on tab
   const getFilteredProducts = () => {
@@ -118,24 +136,45 @@ export default function Home() {
   return (
     <>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
+          ✅ به سبد خرید اضافه شد
+        </div>
+      )}
+      
       {!showSplash && (
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
-          <Header />
+          <Header cartCount={cartCount} />
           <HeroSlider />
           <FlashSale />
 
-          {/* Quick Categories Section */}
+          {/* Quick Categories Section - 2 rows layout */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {categories.map((cat) => (
+              {/* Row 1: First 6 categories */}
+              <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-4">
+                {categories.slice(0, 6).map((cat, index) => (
                   <button
-                    key={cat.id}
-                    onClick={() => console.log('Category clicked:', cat.name)}
-                    className="flex-shrink-0 w-20 h-20 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-semibold text-sm shadow-md hover:shadow-lg transition-shadow duration-300"
+                    key={index}
+                    onClick={() => console.log('Category clicked:', cat)}
+                    className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
                   >
-                    {cat.name.split(' ')[0]}
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              {/* Row 2: Remaining 5 categories centered */}
+              <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+                {categories.slice(6, 11).map((cat, index) => (
+                  <button
+                    key={index + 6}
+                    onClick={() => console.log('Category clicked:', cat)}
+                    className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
+                  >
+                    {cat}
                   </button>
                 ))}
               </div>
@@ -148,43 +187,44 @@ export default function Home() {
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
               
               {/* Tabs */}
-              <div className="flex justify-center gap-4 mb-8">
+              {/* Tabs - Enhanced styling */}
+              <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
                 <button
                   onClick={() => setActiveTab('all')}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
+                  className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'all' 
-                      ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-md' 
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
+                      : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                   }`}
                 >
                   همه محصولات
                 </button>
                 <button
                   onClick={() => setActiveTab('new')}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
+                  className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'new' 
-                      ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-md' 
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
+                      : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                   }`}
                 >
                   جدیدترین
                 </button>
                 <button
                   onClick={() => setActiveTab('bestseller')}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
+                  className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                     activeTab === 'bestseller' 
-                      ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-md' 
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
+                      : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                   }`}
                 >
                   پرفروش‌ترین
                 </button>
               </div>
 
-              {/* Product Grid - 2 cols mobile, 4 cols desktop */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Product Grid - 2 cols mobile, 3 tablet, 4 desktop */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
                 ))}
               </div>
             </div>
@@ -197,7 +237,7 @@ export default function Home() {
               <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                 {bestSellers.map((product) => (
                   <div key={product.id} className="flex-shrink-0 w-48 md:w-56">
-                    <ProductCard product={product} />
+                    <ProductCard product={product} onAddToCart={handleAddToCart} />
                   </div>
                 ))}
               </div>
@@ -208,9 +248,9 @@ export default function Home() {
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">جدیدترین محصولات</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {newArrivals.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
                 ))}
               </div>
             </div>
