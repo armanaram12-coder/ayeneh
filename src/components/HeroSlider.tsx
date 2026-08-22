@@ -47,29 +47,64 @@ export default function HeroSlider() {
     return () => clearInterval(timer);
   }, []);
 
+  const goToPrevious = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
   return (
     <section className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden" dir="rtl">
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0'
-          }`}
+      {/* Slides Container with horizontal slide transition */}
+      <div className="relative w-full h-full">
+        <div 
+          className="flex h-full transition-transform duration-500 ease-in-out"
+          style={{ transform: `translateX(${currentSlide * 100}%)` }}
         >
-          {/* Background Gradient */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
-          
-          {/* Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-lg">
-              {slide.title}
-            </h1>
-            <button className="bg-white text-[#7C3AED] hover:bg-[#E879F9] hover:text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-              {slide.buttonText}
-            </button>
-          </div>
+          {slides.map((slide) => (
+            <div
+              key={slide.id}
+              className="min-w-full h-full relative"
+            >
+              {/* Background Gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
+              
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-lg">
+                  {slide.title}
+                </h1>
+                <button className="bg-white text-[#7C3AED] hover:bg-[#E879F9] hover:text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                  {slide.buttonText}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* Left/Right Navigation Arrows */}
+      <button
+        onClick={goToPrevious}
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full z-10 transition-all duration-300"
+        aria-label="اسلاید قبلی"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      
+      <button
+        onClick={goToNext}
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full z-10 transition-all duration-300"
+        aria-label="اسلاید بعدی"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
 
       {/* Navigation Dots */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-10">
