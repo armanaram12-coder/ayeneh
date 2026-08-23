@@ -53,12 +53,13 @@ export default function DashboardPage() {
       setProfile(profileData || {});
       
       const cart = await getCart(session.user.id);
-      setCartItems(cart);
+      setCartItems(cart || []);
 
+      // Load favorites
       const favIds = await getFavorites(session.user.id);
       setFavoriteIds(favIds);
       const allProds = getAllProducts();
-      const favProds = allProds.filter(p => favIds.includes(p.id));
+      const favProds = allProds.filter((p: any) => favIds.includes(p.id));
       setFavoriteProducts(favProds);
       
       setLoading(false);
@@ -120,6 +121,7 @@ export default function DashboardPage() {
   };
 
   const handleCartCheckout = () => alert('سیستم پرداخت به زودی فعال می‌شود!');
+  
   const handleClearCart = async () => {
     if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟') && user) {
       await supabase.from('cart').delete().eq('user_id', user.id);
@@ -141,15 +143,25 @@ export default function DashboardPage() {
     if (!user) return;
     await toggleFavorite(user.id, productId);
     setFavoriteIds(favoriteIds.filter(id => id !== productId));
-    setFavoriteProducts(favoriteProducts.filter(p => p.id !== productId));
+    setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="text-purple-600 text-xl">در حال بارگذاری...</div></div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-purple-600 text-xl">در حال بارگذاری...</div>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) return null;
+
+  // محاسبه امن تعداد آیتم‌های سبد خرید
+  const cartCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
 
   const sidebarItems = [
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
-    { id: 'cart' as TabType, label: `سبد خرید (${cartItems.reduce((s, i) => s + i.quantity, 0)})`, icon: '' },
+    { id: 'cart' as TabType, label: `سبد خرید (${cartCount})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
     { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
@@ -173,7 +185,15 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-64 bg-white rounded-xl shadow-lg p-4 h-fit">
           {sidebarItems.map((item) => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full text-right px-4 py-3 rounded-lg mb-2 flex items-center gap-3 transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' : 'text-gray-700 hover:bg-purple-50'}`}>
+            <button 
+              key={item.id} 
+              onClick={() => setActiveTab(item.id)} 
+              className={`w-full text-right px-4 py-3 rounded-lg mb-2 flex items-center gap-3 transition-all ${
+                activeTab === item.id 
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' 
+                  : 'text-gray-700 hover:bg-purple-50'
+              }`}
+            >
               <span>{item.icon}</span><span>{item.label}</span>
             </button>
           ))}
@@ -243,7 +263,7 @@ export default function DashboardPage() {
                   <div className="border-t pt-4 mt-4">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-lg font-bold text-gray-900">مجموع:</span>
-                      <span className="text-xl font-bold text-purple-600">{cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()} تومان</span>
+                      <span className="text-xl font-bold text-purple-600">{cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0).toLocaleString()} تومان</span>
                     </div>
                     <div className="flex gap-3">
                       <button onClick={handleCartCheckout} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90">ادامه فرآیند خرید</button>
@@ -301,7 +321,12 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {activeTab === 'reviews' && <div className="text-center py-12"><div className="text-6xl mb-4">💬</div><p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p></div>}
+          {activeTab === 'reviews' && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">💬</div>
+              <p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p>
+            </div>
+          )}
           
           {activeTab === 'support' && (
             <div>
