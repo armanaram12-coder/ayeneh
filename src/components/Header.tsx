@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { getCartCount } from '@/lib/cart';
 import AuthModal from './AuthModal';
 import CartModal from './CartModal';
 
-export default function Header({ cartCount = 0 }: { cartCount?: number }) {
+export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,6 +15,7 @@ export default function Header({ cartCount = 0 }: { cartCount?: number }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   // Check authentication status on mount
   useEffect(() => {
@@ -36,6 +38,26 @@ export default function Header({ cartCount = 0 }: { cartCount?: number }) {
     };
     
     checkAuth();
+  }, []);
+
+  // Update cart count when cart changes
+  useEffect(() => {
+    const updateCartCount = () => {
+      setCartCount(getCartCount());
+    };
+    
+    updateCartCount();
+    
+    // Listen for storage events (cart updates in other tabs)
+    window.addEventListener('storage', updateCartCount);
+    
+    // Also update on focus
+    window.addEventListener('focus', updateCartCount);
+    
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('focus', updateCartCount);
+    };
   }, []);
 
   const handleLogout = async () => {

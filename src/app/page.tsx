@@ -5,6 +5,7 @@ import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
+import { addToCart, getCartCount } from '@/lib/cart';
 import productsData from '@/data/products.json';
 
 // Helper function to convert English digits to Persian
@@ -23,6 +24,7 @@ interface Product {
   volume_ml?: number;
   volume_gram?: number;
   stock?: number;
+  image?: string;
 }
 
 // Extract all products from JSON
@@ -54,20 +56,24 @@ function getCategoryNames(): string[] {
 }
 
 // Product Card Component
-function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: () => void }) {
+function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: (product: Product) => void }) {
   const formatPrice = (price: number) => price.toLocaleString('fa-IR');
   const [isDisabled, setIsDisabled] = useState(false);
   
   const handleAddToCart = () => {
     setIsDisabled(true);
-    onAddToCart();
+    onAddToCart(product);
     setTimeout(() => setIsDisabled(false), 1000);
   };
   
   return (
     <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
-      <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center">
-        <span className="text-4xl">🧴</span>
+      <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
+        {product.image ? (
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-4xl">🧴</span>
+        )}
       </div>
       <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-10 text-sm">{product.name}</h3>
       <p className="text-[#7C3AED] font-bold text-lg mb-3">{formatPrice(product.price_toman)} تومان</p>
@@ -94,11 +100,19 @@ export default function Home() {
 
   useEffect(() => {
     setAllProducts(getAllProducts());
+    // Initialize cart count from localStorage
+    setCartCount(getCartCount());
   }, []);
 
   // Handle add to cart
-  const handleAddToCart = () => {
-    setCartCount(prev => prev + 1);
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price_toman,
+      image: product.image,
+    });
+    setCartCount(getCartCount());
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
   };
@@ -146,7 +160,7 @@ export default function Home() {
       
       {!showSplash && (
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
-          <Header cartCount={cartCount} />
+          <Header />
           <HeroSlider />
           <FlashSale />
 
