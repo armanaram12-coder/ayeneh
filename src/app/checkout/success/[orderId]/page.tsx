@@ -18,7 +18,7 @@ export default function CheckoutSuccessPage() {
 
   useEffect(() => {
     if (!orderId) {
-      router.push('/');
+      onClick={() => router.replace('/')}
       return;
     }
     
