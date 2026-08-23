@@ -11,9 +11,11 @@ type TabType = 'profile' | 'cart' | 'favorites' | 'reviews' | 'support' | 'secur
 
 function getAllProducts(): any[] {
   const allProducts: any[] = [];
-  for (const category of productsData.categories) {
-    for (const subcategory of category.subcategories) {
-      for (const product of subcategory.products) {
+  const data = productsData as any;
+  
+  for (const category of data.categories || []) {
+    for (const subcategory of category.subcategories || []) {
+      for (const product of subcategory.products || []) {
         allProducts.push({
           id: product.id,
           name: product.name,
@@ -55,7 +57,6 @@ export default function DashboardPage() {
       const cart = await getCart(session.user.id);
       setCartItems(cart || []);
 
-      // Load favorites
       const favIds = await getFavorites(session.user.id);
       setFavoriteIds(favIds);
       const allProds = getAllProducts();
@@ -156,14 +157,13 @@ export default function DashboardPage() {
 
   if (!isLoggedIn) return null;
 
-  // محاسبه امن تعداد آیتم‌های سبد خرید
   const cartCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
 
   const sidebarItems = [
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
     { id: 'cart' as TabType, label: `سبد خرید (${cartCount})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
-    { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
+    { id: 'reviews' as TabType, label: 'نظرات', icon: '' },
     { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
   ];
@@ -333,7 +333,7 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">پشتیبانی و پیگیری خرید</h2>
               <div className="space-y-4">
                 <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📧 ایمیل پشتیبانی:</p><p className="text-purple-600 font-semibold">support@ayeneh.com</p></div>
-                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📱 شماره تماس:</p><p className="text-purple-600 font-semibold">021-12345678</p></div>
+                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2"> شماره تماس:</p><p className="text-purple-600 font-semibold">021-12345678</p></div>
                 <div className="mt-6">
                   <label className="block text-gray-700 mb-2 font-medium">پیام شما:</label>
                   <textarea className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900" rows={4} placeholder="پیام خود را بنویسید..." />
