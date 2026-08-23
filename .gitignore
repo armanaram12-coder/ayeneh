@@ -1,17 +1,13 @@
 ```
-# Next.js build output
+# Next.js build outputs
 .next/
 
 # Dependencies
 node_modules/
 
 # Environment variables
-.env.local
-.env.*
-
-# IDE files
-.vscode/
-.idea/
+.env*
+!.env.example
 
 # Logs
 *.log
@@ -23,4 +19,23 @@ node_modules/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+.venv/
+
+# Build outputs
+dist/
+build/
+target/
 ```
