@@ -383,7 +383,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => router.push(`/checkout/success?orderId=${order.id}`)}
+                       onClick={() => router.push(`/checkout/success/${order.id}`)}
                         className="mt-3 text-purple-600 hover:text-purple-800 text-sm font-semibold"
                       >
                         مشاهده جزئیات ←
