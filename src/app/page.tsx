@@ -41,9 +41,10 @@ const categoryLabels: Record<string, string> = {
 
 function getAllProducts(): Product[] {
   const allProducts: Product[] = [];
-  for (const category of productsData.categories) {
-    for (const subcategory of category.subcategories) {
-      for (const product of subcategory.products) {
+  const data = productsData as any;
+  for (const category of data.categories || []) {
+    for (const subcategory of category.subcategories || []) {
+      for (const product of subcategory.products || []) {
         allProducts.push({
           id: product.id,
           name: product.name,
@@ -51,10 +52,10 @@ function getAllProducts(): Product[] {
           brand: product.brand,
           gender: product.gender,
           type: product.type,
-          volume_ml: 'volume_ml' in product ? product.volume_ml : undefined,
-          volume_gram: 'volume_gram' in product ? product.volume_gram : undefined,
+          volume_ml: product.volume_ml,
+          volume_gram: product.volume_gram,
           stock: product.stock,
-          category: category.name
+          category: category.name,
         });
       }
     }
@@ -102,7 +103,7 @@ function ProductCard({
           {product.image ? (
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-4xl"></span>
+            <span className="text-4xl">🧴</span>
           )}
         </div>
       </Link>
@@ -123,14 +124,20 @@ function ProductCard({
 }
 
 export default function Home() {
-  const [showSplash, setShowSplash] = useState(true);
+  // استفاده از sessionStorage برای جلوگیری از نمایش مجدد اسپلش اسکرین هنگام ناوبری داخلی
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('hasSeenSplash');
+    }
+    return true;
+  });
+  
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [cartCount, setCartCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const products = getAllProducts();
@@ -139,7 +146,6 @@ export default function Home() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setUserId(session.user.id);
         const count = await getCartCount(session.user.id);
         setCartCount(count);
         const favs = await getFavorites(session.user.id);
@@ -148,6 +154,11 @@ export default function Home() {
     };
     checkUser();
   }, []);
+
+  const handleSplashFinish = () => {
+    sessionStorage.setItem('hasSeenSplash', 'true');
+    setShowSplash(false);
+  };
 
   const handleAddToCart = async (product: Product) => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -196,7 +207,7 @@ export default function Home() {
 
   return (
     <>
-      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
       
       {showToast && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
@@ -210,12 +221,10 @@ export default function Home() {
           <HeroSlider />
           <FlashSale />
 
-          {/* دسته‌بندی‌ها با عنوان زیر دایره */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
               
-              {/* ردیف اول */}
               <div className="flex flex-wrap justify-center gap-6 md:gap-8 mb-6">
                 {categories.slice(0, 6).map((cat) => (
                   <button
@@ -227,7 +236,7 @@ export default function Home() {
                   >
                     <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow`}>
                       <span className="text-2xl md:text-3xl">
-                        {cat === 'عطر' ? '' : cat === 'سرم' ? '💧' : cat === 'کرم' ? '🧴' : cat === 'ضد آفتاب' ? '☀️' : cat === 'شوینده' ? '🧼' : '📦'}
+                        {cat === 'عطر' ? '🌸' : cat === 'سرم' ? '💧' : cat === 'کرم' ? '🧴' : cat === 'ضد آفتاب' ? '☀️' : cat === 'شوینده' ? '🧼' : '📦'}
                       </span>
                     </div>
                     <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">
@@ -237,7 +246,6 @@ export default function Home() {
                 ))}
               </div>
               
-              {/* ردیف دوم */}
               <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                 {categories.slice(6, 11).map((cat) => (
                   <button
@@ -249,7 +257,7 @@ export default function Home() {
                   >
                     <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow`}>
                       <span className="text-2xl md:text-3xl">
-                        {cat === 'آرایشی' ? '💄' : cat === 'شامپو' ? '' : cat === 'ماسک' ? '🎭' : cat === 'کیت' ? '🧰' : ''}
+                        {cat === 'آرایشی' ? '💄' : cat === 'شامپو' ? '🧴' : cat === 'ماسک' ? '🎭' : cat === 'کیت' ? '🧰' : '🧴'}
                       </span>
                     </div>
                     <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">
@@ -272,7 +280,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* محصولات با تب‌ها */}
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
