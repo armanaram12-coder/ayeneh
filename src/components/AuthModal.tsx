@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import RegisterModal from './RegisterModal';
+import ResetPasswordModal from './ResetPasswordModal';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface AuthModalProps {
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,6 +35,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         }}
       />
     );
+  }
+
+  if (showResetModal) {
+    return <ResetPasswordModal isOpen={showResetModal} onClose={() => setShowResetModal(false)} />;
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -58,7 +64,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       if (data.user) {
         console.log('Login successful:', data.user);
-        // هدایت مستقیم به داشبورد بعد از لاگین موفق
         window.location.href = '/dashboard';
       }
     } catch (err) {
@@ -120,6 +125,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               placeholder="••••••••"
               required
             />
+            <div className="text-left mt-1">
+              <button
+                type="button"
+                onClick={() => setShowResetModal(true)}
+                className="text-sm text-purple-600 hover:text-purple-800 hover:underline"
+              >
+                رمز عبور را فراموش کرده‌ام؟
+              </button>
+            </div>
           </div>
 
           <button
