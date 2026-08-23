@@ -78,8 +78,8 @@ export default function CheckoutSuccessPage() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">{error || 'سفارش یافت نشد'}</h1>
-          <button 
-            onClick={() => router.push('/')}
+          <button
+  onClick={() => router.replace('/')}
             className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-lg hover:opacity-90"
           >
             بازگشت به صفحه اصلی
