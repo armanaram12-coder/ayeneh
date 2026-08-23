@@ -2,36 +2,34 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { getCart, removeFromCart, clearCart } from '@/lib/cart';
 
 interface CartItem {
-  id?: number;
+  id?: string;
   product_id: number;
   product_name: string;
   price: number;
   quantity: number;
 }
 
-export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function CartModal({ isOpen, onClose, userId }: { isOpen: boolean; onClose: () => void; userId: string | null }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCart = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data } = await supabase
-          .from('cart')
-          .select('*')
-          .eq('user_id', session.user.id);
-        setCartItems(data || []);
+      if (userId) {
+        const items = await getCart(userId);
+        setCartItems(items);
       }
       setLoading(false);
     };
     
     if (isOpen) {
+      setLoading(true);
       loadCart();
     }
-  }, [isOpen]);
+  }, [isOpen, userId]);
 
   if (!isOpen) return null;
 
@@ -40,12 +38,16 @@ export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClos
   };
 
   const handleClearCart = async () => {
-    if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟')) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await supabase.from('cart').delete().eq('user_id', session.user.id);
-        setCartItems([]);
-      }
+    if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟') && userId) {
+      await clearCart(userId);
+      setCartItems([]);
+    }
+  };
+
+  const handleRemoveItem = async (productId: number) => {
+    if (userId) {
+      const updatedCart = await removeFromCart(userId, productId);
+      setCartItems(updatedCart);
     }
   };
 
@@ -54,9 +56,7 @@ export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClos
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" dir="rtl">
-        <button onClick={onClose} className="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
-          ✕
-        </button>
+        <button onClick={onClose} className="absolute top-4 left-4 text-gray-400 hover:text-gray-600">✕</button>
         
         <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">سبد خرید</h2>
         
@@ -64,7 +64,7 @@ export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClos
           <div className="text-center py-8">در حال بارگذاری...</div>
         ) : cartItems.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-6xl mb-4"></div>
+            <div className="text-6xl mb-4">🛒</div>
             <p className="text-gray-600">سبد خرید شما خالی است</p>
           </div>
         ) : (
@@ -75,7 +75,10 @@ export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClos
                   <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
                   <p className="text-purple-600">{item.price.toLocaleString()} تومان</p>
                 </div>
-                <div className="text-gray-700">تعداد: {item.quantity}</div>
+                <div className="flex items-center gap-4">
+                  <span className="text-gray-700">تعداد: {item.quantity}</span>
+                  <button onClick={() => handleRemoveItem(item.product_id)} className="text-red-500 hover:text-red-700 text-sm">حذف</button>
+                </div>
               </div>
             ))}
             
@@ -85,12 +88,8 @@ export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClos
                 <span className="text-xl font-bold text-purple-600">{total.toLocaleString()} تومان</span>
               </div>
               <div className="flex gap-3">
-                <button onClick={handleCheckout} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold">
-                  ادامه فرآیند خرید
-                </button>
-                <button onClick={handleClearCart} className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                  خالی کردن سبد
-                </button>
+                <button onClick={handleCheckout} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90">ادامه فرآیند خرید</button>
+                <button onClick={handleClearCart} className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">خالی کردن سبد</button>
               </div>
             </div>
           </div>
