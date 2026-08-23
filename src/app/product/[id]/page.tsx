@@ -25,7 +25,6 @@ interface Product {
 
 function getAllProducts(): Product[] {
   const allProducts: Product[] = [];
-  // استفاده از any برای جلوگیری از ارورهای سخت‌گیرانه تایپ‌اسکریپت روی ساختار فایل JSON
   const data = productsData as any;
   
   for (const category of data.categories || []) {
@@ -54,12 +53,14 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
   
-  // دریافت امن شناسه محصول برای جلوگیری از ارورهای تایپ‌اسکریپت
   const productId = typeof params?.id === 'string' ? parseInt(params.id, 10) : 0;
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
+  
+  // تغییر نام متغیر state برای جلوگیری از تداخل با تابع isFavorite ایمپورت شده
+  const [isFavoriteState, setIsFavoriteState] = useState(false);
+  
   const [userId, setUserId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState('');
 
@@ -76,7 +77,7 @@ export default function ProductDetailPage() {
       if (session) {
         setUserId(session.user.id);
         const fav = await isFavorite(session.user.id, productId);
-        setIsFavorite(fav);
+        setIsFavoriteState(fav); // استفاده از نام جدید
       }
     };
     checkUser();
@@ -111,7 +112,7 @@ export default function ProductDetailPage() {
     }
 
     const result = await toggleFavorite(session.user.id, product!.id);
-    setIsFavorite(result);
+    setIsFavoriteState(result); // استفاده از نام جدید
     setShowToast(result ? '❤️ به علاقه‌مندی‌ها اضافه شد' : '💔 از علاقه‌مندی‌ها حذف شد');
     setTimeout(() => setShowToast(''), 2000);
   };
@@ -176,9 +177,9 @@ export default function ProductDetailPage() {
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
-                    className={`h-6 w-6 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`}
+                    className={`h-6 w-6 ${isFavoriteState ? 'text-red-500 fill-current' : 'text-gray-400'}`}
                     viewBox="0 0 24 24"
-                    fill={isFavorite ? 'currentColor' : 'none'}
+                    fill={isFavoriteState ? 'currentColor' : 'none'}
                     stroke="currentColor"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
