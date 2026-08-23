@@ -24,7 +24,6 @@ export default function CheckoutSuccessPage() {
     
     const loadOrder = async () => {
       try {
-        // 1. دریافت اطلاعات سفارش مستقیماً از سوپابیس
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
           .select('*')
@@ -40,7 +39,6 @@ export default function CheckoutSuccessPage() {
 
         setOrder(orderData);
 
-        // 2. دریافت آیتم‌های سفارش
         const { data: itemsData, error: itemsError } = await supabase
           .from('order_items')
           .select('*')
@@ -109,7 +107,7 @@ export default function CheckoutSuccessPage() {
             </div>
 
             <div className="bg-yellow-50 rounded-lg p-4 mb-6 text-right border border-yellow-200">
-              <h3 className="font-bold text-gray-900 mb-2"> اطلاعات ارسال:</h3>
+              <h3 className="font-bold text-gray-900 mb-2">📍 اطلاعات ارسال:</h3>
               <p className="text-sm text-gray-700 mb-1"><strong>تلفن:</strong> {order.phone}</p>
               <p className="text-sm text-gray-700 mb-1"><strong>کد پستی:</strong> {order.postal_code}</p>
               <p className="text-sm text-gray-700"><strong>آدرس:</strong> {order.shipping_address}</p>
@@ -141,13 +139,18 @@ export default function CheckoutSuccessPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => router.push('/dashboard')}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
               >
                 مشاهده در داشبورد
               </button>
               <button
-                onClick={() => router.push('/')}
-                className="flex-1 border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50"
+                onClick={() => {
+                  router.push('/');
+                  if (window.opener) {
+                    window.close();
+                  }
+                }}
+                className="flex-1 border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
               >
                 ادامه خرید
               </button>
