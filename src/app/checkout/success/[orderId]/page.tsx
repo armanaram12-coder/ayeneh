@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
 import { getOrderStatusText, getOrderStatusColor } from '@/lib/orders';
@@ -75,14 +76,14 @@ export default function CheckoutSuccessPage() {
       <>
         <Header />
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
-          <div className="text-red-500 text-6xl mb-4">️</div>
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-4">{error || 'سفارش یافت نشد'}</h1>
-          <button 
-            onClick={() => window.location.href = '/'}
+          <Link 
+            href="/"
             className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-lg hover:opacity-90"
           >
             بازگشت به صفحه اصلی
-          </button>
+          </Link>
         </div>
       </>
     );
@@ -136,20 +137,18 @@ export default function CheckoutSuccessPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={() => window.location.href = '/dashboard'}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+              <Link
+                href="/dashboard"
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity text-center"
               >
                 مشاهده در داشبورد
-              </button>
-              <button
-                onClick={() => {
-                  window.location.href = '/';
-                }}
-                className="flex-1 border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors"
+              </Link>
+              <Link
+                href="/"
+                className="flex-1 border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors text-center"
               >
                 ادامه خرید
-              </button>
+              </Link>
             </div>
           </div>
         </div>
