@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { getCart, removeFromCart, clearCart } from '@/lib/cart';
 
@@ -13,6 +14,7 @@ interface CartItem {
 }
 
 export default function CartModal({ isOpen, onClose, userId }: { isOpen: boolean; onClose: () => void; userId: string | null }) {
+  const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,8 +35,18 @@ export default function CartModal({ isOpen, onClose, userId }: { isOpen: boolean
 
   if (!isOpen) return null;
 
-  const handleCheckout = () => {
-    alert('سیستم پرداخت به زودی فعال می‌شود!');
+  const handleCheckout = async () => {
+    // 1. چک کردن اینکه کاربر لاگین هست یا نه
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('برای تکمیل خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+      window.dispatchEvent(new Event('openAuthModal')); // باز کردن مودال لاگین
+      onClose(); // بستن مودال سبد خرید
+      return;
+    }
+
+    // 2. هدایت به صفحه تسویه حساب
+    router.push('/checkout');
   };
 
   const handleClearCart = async () => {
@@ -88,8 +100,18 @@ export default function CartModal({ isOpen, onClose, userId }: { isOpen: boolean
                 <span className="text-xl font-bold text-purple-600">{total.toLocaleString()} تومان</span>
               </div>
               <div className="flex gap-3">
-                <button onClick={handleCheckout} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90">ادامه فرآیند خرید</button>
-                <button onClick={handleClearCart} className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">خالی کردن سبد</button>
+                <button 
+                  onClick={handleCheckout} 
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                >
+                  ادامه فرآیند خرید
+                </button>
+                <button 
+                  onClick={handleClearCart} 
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  خالی کردن سبد
+                </button>
               </div>
             </div>
           </div>
