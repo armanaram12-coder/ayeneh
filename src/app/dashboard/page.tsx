@@ -3,9 +3,29 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { getCart, getCartCount } from '@/lib/cart';
+import { getCart, getCartCount, addToCart } from '@/lib/cart';
+import { getFavorites, toggleFavorite } from '@/lib/favorites';
+import productsData from '@/data/products.json';
 
 type TabType = 'profile' | 'cart' | 'favorites' | 'reviews' | 'support' | 'security';
+
+function getAllProducts(): any[] {
+  const allProducts: any[] = [];
+  for (const category of productsData.categories) {
+    for (const subcategory of category.subcategories) {
+      for (const product of subcategory.products) {
+        allProducts.push({
+          id: product.id,
+          name: product.name,
+          price_toman: product.price_toman,
+          brand: product.brand,
+          category: category.name,
+        });
+      }
+    }
+  }
+  return allProducts;
+}
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>('profile');
@@ -14,6 +34,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
@@ -32,6 +54,13 @@ export default function DashboardPage() {
       
       const cart = await getCart(session.user.id);
       setCartItems(cart);
+
+      // Load favorites
+      const favIds = await getFavorites(session.user.id);
+      setFavoriteIds(favIds);
+      const allProds = getAllProducts();
+      const favProds = allProds.filter(p => favIds.includes(p.id));
+      setFavoriteProducts(favProds);
       
       setLoading(false);
     };
@@ -99,13 +128,30 @@ export default function DashboardPage() {
     }
   };
 
+  const handleAddFavoriteToCart = async (product: any) => {
+    if (!user) return;
+    await addToCart(user.id, {
+      id: product.id,
+      name: product.name,
+      price: product.price_toman
+    });
+    alert('✅ به سبد خرید اضافه شد');
+  };
+
+  const handleRemoveFavorite = async (productId: number) => {
+    if (!user) return;
+    await toggleFavorite(user.id, productId);
+    setFavoriteIds(favoriteIds.filter(id => id !== productId));
+    setFavoriteProducts(favoriteProducts.filter(p => p.id !== productId));
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="text-purple-600 text-xl">در حال بارگذاری...</div></div>;
   if (!isLoggedIn) return null;
 
   const sidebarItems = [
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
     { id: 'cart' as TabType, label: `سبد خرید (${cartItems.reduce((s, i) => s + i.quantity, 0)})`, icon: '🛒' },
-    { id: 'favorites' as TabType, label: 'علاقه‌مندی‌ها', icon: '❤️' },
+    { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
     { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
@@ -210,7 +256,52 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {activeTab === 'favorites' && <div className="text-center py-12"><div className="text-6xl mb-4">❤️</div><p className="text-gray-600 text-lg">لیست علاقه‌مندی‌ها خالی است</p></div>}
+          {activeTab === 'favorites' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">علاقه‌مندی‌های شما</h2>
+              {favoriteProducts.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">❤️</div>
+                  <p className="text-gray-600 text-lg">لیست علاقه‌مندی‌ها خالی است</p>
+                  <button 
+                    onClick={() => router.push('/')}
+                    className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
+                  >
+                    مشاهده محصولات
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {favoriteProducts.map((product) => (
+                    <div key={product.id} className="bg-white border border-gray-200 rounded-lg p-4 flex gap-4">
+                      <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-3xl">🧴</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{product.name}</h3>
+                        <p className="text-purple-600 font-bold mb-2">{product.price_toman.toLocaleString()} تومان</p>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleAddFavoriteToCart(product)}
+                            className="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700"
+                          >
+                            افزودن به سبد
+                          </button>
+                          <button 
+                            onClick={() => handleRemoveFavorite(product.id)}
+                            className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'reviews' && <div className="text-center py-12"><div className="text-6xl mb-4">💬</div><p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p></div>}
           
           {activeTab === 'support' && (
