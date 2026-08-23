@@ -5,10 +5,10 @@ import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
+import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import productsData from '@/data/products.json';
 
-// Helper function to convert English digits to Persian
 function toPersianDigits(num: number): string {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   return num.toString().replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
@@ -27,7 +27,6 @@ interface Product {
   image?: string;
 }
 
-// Extract all products from JSON
 function getAllProducts(): Product[] {
   const allProducts: Product[] = [];
   for (const category of productsData.categories) {
@@ -50,12 +49,10 @@ function getAllProducts(): Product[] {
   return allProducts;
 }
 
-// Get exactly 11 category names from products.json
 function getCategoryNames(): string[] {
   return ["عطر", "سرم", "کرم", "ضد آفتاب", "شوینده", "دهان", "آرایشی", "شامپو", "کیت", "ماسک", "روغن"];
 }
 
-// Product Card Component
 function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: (product: Product) => void }) {
   const formatPrice = (price: number) => price.toLocaleString('fa-IR');
   const [isDisabled, setIsDisabled] = useState(false);
@@ -100,24 +97,28 @@ export default function Home() {
 
   useEffect(() => {
     setAllProducts(getAllProducts());
-    // Initialize cart count from localStorage
-    setCartCount(getCartCount());
   }, []);
 
-  // Handle add to cart
-  const handleAddToCart = (product: Product) => {
-    addToCart({
+  const handleAddToCart = async (product: Product) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('برای افزودن محصول به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+      window.dispatchEvent(new Event('openAuthModal'));
+      return;
+    }
+
+    await addToCart(session.user.id, {
       id: product.id,
       name: product.name,
       price: product.price_toman,
-      image: product.image,
     });
-    setCartCount(getCartCount());
+    
+    const newCount = await getCartCount(session.user.id);
+    setCartCount(newCount);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
   };
 
-  // Filter products based on tab
   const getFilteredProducts = () => {
     switch (activeTab) {
       case 'new':
@@ -133,14 +134,12 @@ export default function Home() {
   const bestSellers = allProducts.slice(0, 8);
   const newArrivals = allProducts.slice(0, 4);
 
-  // Blog articles placeholder
   const blogArticles = [
-    { id: 1, title: 'راهنمای انتخاب عطر مناسب', image: '📝', excerpt: 'چگونه عطری مناسب با سلیقه و شخصیت خود انتخاب کنیم...' },
+    { id: 1, title: 'راهنمای انتخاب عطر مناسب', image: '', excerpt: 'چگونه عطری مناسب با سلیقه و شخصیت خود انتخاب کنیم...' },
     { id: 2, title: 'روتین مراقبت پوست روزانه', image: '✨', excerpt: 'مراحل کامل مراقبت از پوست برای داشتن پوستی شاداب...' },
     { id: 3, title: 'تفاوت سرم و کرم مرطوب کننده', image: '💧', excerpt: 'بررسی تفاوت‌های کلیدی بین سرم‌ها و کرم‌های پوست...' },
   ];
 
-  // Testimonials
   const testimonials = [
     { id: 1, name: 'مریم احمدی', text: 'محصولات تراست واقعاً عالی هستند. کیفیت فوق‌العاده!', rating: 5 },
     { id: 2, name: 'علی رضایی', text: 'عطر Eliot بهترین خرید من بود. رایحه‌ای بی‌نظیر!', rating: 5 },
@@ -151,7 +150,6 @@ export default function Home() {
     <>
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       
-      {/* Toast Notification */}
       {showToast && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
           ✅ به سبد خرید اضافه شد
@@ -164,11 +162,9 @@ export default function Home() {
           <HeroSlider />
           <FlashSale />
 
-          {/* Quick Categories Section - 2 rows layout */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
-              {/* Row 1: First 6 categories */}
               <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-4">
                 {categories.slice(0, 6).map((cat, index) => (
                   <button
@@ -180,7 +176,6 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              {/* Row 2: Remaining 5 categories centered */}
               <div className="flex flex-wrap justify-center gap-4 md:gap-6">
                 {categories.slice(6, 11).map((cat, index) => (
                   <button
@@ -195,13 +190,10 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Product Grid with Tabs */}
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
               
-              {/* Tabs */}
-              {/* Tabs - Enhanced styling */}
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
                 <button
                   onClick={() => setActiveTab('all')}
@@ -235,7 +227,6 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Product Grid - 2 cols mobile, 3 tablet, 4 desktop */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
@@ -244,7 +235,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Best Sellers Horizontal Slider */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">پرفروش‌ترین محصولات</h2>
@@ -258,7 +248,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* New Arrivals Grid */}
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">جدیدترین محصولات</h2>
@@ -270,7 +259,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Beauty Blog Section */}
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">مجله زیبایی</h2>
@@ -293,7 +281,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Testimonials Slider */}
           <section className="py-8 bg-white/50">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">نظرات مشتریان</h2>
