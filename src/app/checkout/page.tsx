@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
 import { getCart } from '@/lib/cart';
 import { createOrder } from '@/lib/orders';
+import { provinces, getCitiesByProvince } from '@/lib/cities';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -15,17 +16,16 @@ export default function CheckoutPage() {
   const [profile, setProfile] = useState<any>(null);
   
   const [formData, setFormData] = useState({
-    address: '',
-    postal_code: '',
+    fullName: '',
     phone: '',
+    province: '',
+    city: '',
+    postal_code: '',
+    address: '',
   });
 
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'card'>('online');
-  const [showCardInfo, setShowCardInfo] = useState(false);
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardHolderName, setCardHolderName] = useState('');
-  const [receiptImage, setReceiptImage] = useState<File | null>(null);
-  const [receiptPreview, setReceiptPreview] = useState('');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -36,7 +36,6 @@ export default function CheckoutPage() {
       }
       
       setUser(session.user);
-      
       const cart = await getCart(session.user.id);
       setCartItems(cart);
       
@@ -48,11 +47,12 @@ export default function CheckoutPage() {
       
       if (profileData) {
         setProfile(profileData);
-        setFormData({
-          address: profileData.address || '',
-          postal_code: profileData.postal_code || '',
+        setFormData(prev => ({
+          ...prev,
           phone: profileData.phone || '',
-        });
+          postal_code: profileData.postal_code || '',
+          address: profileData.address || '',
+        }));
       }
       
       if (cart.length === 0) {
@@ -63,13 +63,14 @@ export default function CheckoutPage() {
     loadData();
   }, [router]);
 
-  const handleReceiptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setReceiptImage(file);
-      setReceiptPreview(URL.createObjectURL(file));
+  useEffect(() => {
+    if (formData.province) {
+      setAvailableCities(getCitiesByProvince(formData.province));
+      setFormData(prev => ({ ...prev, city: '' }));
+    } else {
+      setAvailableCities([]);
     }
-  };
+  }, [formData.province]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,69 +86,26 @@ export default function CheckoutPage() {
         quantity: item.quantity,
       }));
       
-      const order = await createOrder(user.id, items, formData);
+      const fullAddress = `${formData.province} - ${formData.city} - ${formData.address}`;
       
-      // ذخیره روش پرداخت
+      const order = await createOrder(user.id, items, {
+        address: fullAddress,
+        postal_code: formData.postal_code,
+        phone: formData.phone,
+      });
+      
       await supabase
         .from('orders')
-        .update({
-          payment_method: paymentMethod,
-          card_number: paymentMethod === 'card' ? cardNumber : null,
-          card_holder_name: paymentMethod === 'card' ? cardHolderName : null,
-        })
+        .update({ payment_method: paymentMethod })
         .eq('id', order.id);
-
-      // اگر کارت به کارت بود، آپلود فیش
-      if (paymentMethod === 'card' && receiptImage) {
-        const fileExt = receiptImage.name.split('.').pop();
-        const fileName = `${order.id}.${fileExt}`;
-        const filePath = `receipts/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('receipts')
-          .upload(filePath, receiptImage);
-        
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('receipts')
-            .getPublicUrl(filePath);
-          
-          await supabase
-            .from('orders')
-            .update({ receipt_url: publicUrl })
-            .eq('id', order.id);
-        }
-      }
       
       await supabase.from('cart').delete().eq('user_id', user.id);
       
-      if (paymentMethod === 'online') {
-        // هدایت به درگاه زرین‌پال
-        const response = await fetch('/api/payment/request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            orderId: order.id, 
-            amount: order.total_amount 
-          }),
-        });
-        
-        const result = await response.json();
-        
-        if (result.redirectUrl) {
-          window.location.href = result.redirectUrl;
-        } else {
-          alert('خطا در اتصال به درگاه پرداخت');
-          router.push(`/checkout/success/${order.id}`);
-        }
-      } else {
-        // کارت به کارت - مستقیم به صفحه موفقیت
-        router.push(`/checkout/success/${order.id}`);
-      }
+      router.push(`/checkout/success/${order.id}`);
       
     } catch (error) {
       console.error('Checkout error:', error);
-      alert('خطا در ثبت سفارش: ' + (error as Error).message);
+      alert('خطا در ثبت سفارش');
     } finally {
       setLoading(false);
     }
@@ -163,10 +121,20 @@ export default function CheckoutPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">تسویه حساب</h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* فرم اطلاعات ارسال */}
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">اطلاعات ارسال</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">نام و نام خانوادگی</label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
+                    required
+                  />
+                </div>
+
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">شماره تلفن</label>
                   <input
@@ -178,6 +146,34 @@ export default function CheckoutPage() {
                   />
                 </div>
                 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-700 mb-2 font-medium">استان</label>
+                    <select
+                      value={formData.province}
+                      onChange={(e) => setFormData({...formData, province: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
+                      required
+                    >
+                      <option value="">انتخاب کنید</option>
+                      {provinces.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 mb-2 font-medium">شهر</label>
+                    <select
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
+                      disabled={!formData.province}
+                      required
+                    >
+                      <option value="">انتخاب کنید</option>
+                      {availableCities.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">کد پستی</label>
                   <input
@@ -194,21 +190,17 @@ export default function CheckoutPage() {
                   <textarea
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    rows={4}
+                    rows={3}
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                    placeholder="آدرس دقیق پستی"
                     required
                   />
                 </div>
 
-                {/* انتخاب روش پرداخت */}
                 <div className="border-t pt-4">
                   <h3 className="text-lg font-bold text-gray-900 mb-3">روش پرداخت</h3>
                   <div className="space-y-3">
                     <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      paymentMethod === 'online' 
-                        ? 'border-purple-600 bg-purple-50' 
-                        : 'border-gray-200 hover:border-purple-300'
+                      paymentMethod === 'online' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
                     }`}>
                       <input
                         type="radio"
@@ -225,9 +217,7 @@ export default function CheckoutPage() {
                     </label>
 
                     <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      paymentMethod === 'card' 
-                        ? 'border-purple-600 bg-purple-50' 
-                        : 'border-gray-200 hover:border-purple-300'
+                      paymentMethod === 'card' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
                     }`}>
                       <input
                         type="radio"
@@ -239,76 +229,22 @@ export default function CheckoutPage() {
                       />
                       <div>
                         <p className="font-bold text-gray-900">کارت به کارت</p>
-                        <p className="text-sm text-gray-600">واریز به حساب و ارسال فیش</p>
+                        <p className="text-sm text-gray-600">واریز به حساب و ارسال رسید</p>
                       </div>
                     </label>
                   </div>
                 </div>
-
-                {/* اطلاعات کارت به کارت */}
-                {paymentMethod === 'card' && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-4">
-                    <div className="bg-white rounded-lg p-3 text-center">
-                      <p className="text-sm text-gray-600 mb-1">شماره کارت:</p>
-                      <p className="text-xl font-bold text-purple-600 font-mono" dir="ltr">6037-9975-1234-5678</p>
-                      <p className="text-sm text-gray-600 mt-2">به نام: آینه فروشگاه</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 mb-2 font-medium">شماره کارت شما</label>
-                      <input
-                        type="text"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                        placeholder="16 رقم"
-                        maxLength={19}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 mb-2 font-medium">نام صاحب کارت</label>
-                      <input
-                        type="text"
-                        value={cardHolderName}
-                        onChange={(e) => setCardHolderName(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-gray-700 mb-2 font-medium">تصویر فیش واریزی</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleReceiptChange}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                        required
-                      />
-                      {receiptPreview && (
-                        <img 
-                          src={receiptPreview} 
-                          alt="فیش" 
-                          className="mt-2 max-h-48 rounded-lg border"
-                        />
-                      )}
-                    </div>
-                  </div>
-                )}
                 
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {loading ? 'در حال ثبت سفارش...' : 'پرداخت'}
+                  {loading ? 'در حال ثبت...' : 'پرداخت'}
                 </button>
               </form>
             </div>
             
-            {/* خلاصه سفارش */}
             <div className="bg-white rounded-xl shadow-lg p-6 h-fit">
               <h2 className="text-xl font-bold text-gray-900 mb-4">خلاصه سفارش</h2>
               <div className="space-y-3 mb-6">
@@ -326,13 +262,10 @@ export default function CheckoutPage() {
               </div>
               
               <div className="border-t pt-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-700">مجموع قابل پرداخت:</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-700 font-medium">مجموع قابل پرداخت:</span>
                   <span className="text-xl font-bold text-purple-600">{total.toLocaleString()} تومان</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  * هزینه ارسال پس از بررسی آدرس توسط پشتیبانی محاسبه و اطلاع‌رسانی خواهد شد.
-                </p>
               </div>
             </div>
           </div>
