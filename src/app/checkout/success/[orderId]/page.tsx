@@ -15,6 +15,7 @@ export default function CheckoutSuccessPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [paying, setPaying] = useState(false);
 
   useEffect(() => {
     if (!orderId) {
@@ -59,6 +60,36 @@ export default function CheckoutSuccessPage() {
     
     loadOrder();
   }, [orderId]);
+
+  const handlePayment = async () => {
+    if (!order) return;
+    
+    setPaying(true);
+    
+    try {
+      const response = await fetch('/api/payment/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderId: order.id, 
+          amount: order.total_amount 
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        alert('خطا در اتصال به درگاه پرداخت: ' + (result.error || 'نامشخص'));
+      }
+    } catch (err) {
+      console.error('Payment error:', err);
+      alert('خطا در درخواست پرداخت');
+    } finally {
+      setPaying(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -106,6 +137,14 @@ export default function CheckoutSuccessPage() {
               </span>
             </div>
 
+            {/* اگر کارت به کارت بود، پیام تأیید فیش */}
+            {order.payment_method === 'card' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-blue-700 font-bold">📋 سفارش شما پس از تأیید فیش واریزی پردازش خواهد شد</p>
+                <p className="text-sm text-blue-600 mt-2">پشتیبانی در اسرع وقت فیش شما را بررسی می‌کند</p>
+              </div>
+            )}
+
             <div className="bg-yellow-50 rounded-lg p-4 mb-6 text-right border border-yellow-200">
               <h3 className="font-bold text-gray-900 mb-2">📍 اطلاعات ارسال:</h3>
               <p className="text-sm text-gray-700 mb-1"><strong>تلفن:</strong> {order.phone}</p>
@@ -135,22 +174,35 @@ export default function CheckoutSuccessPage() {
                 <span className="text-purple-600">{order.total_amount.toLocaleString()} تومان</span>
               </div>
             </div>
+
+            {order.status === 'paid' && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p className="text-green-700 font-bold">✅ این سفارش قبلاً پرداخت شده است</p>
+              </div>
+            )}
             
-            {/* دکمه‌ها با استفاده از Link برای جلوگیری از باز شدن تب جدید یا رفرش */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4">
+              {order.status !== 'paid' && order.payment_method !== 'card' && (
+                <button
+                  onClick={handlePayment}
+                  disabled={paying}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 shadow-lg"
+                >
+                  {paying ? 'در حال اتصال به درگاه...' : 'پرداخت'}
+                </button>
+              )}
+              
               <Link
                 href="/dashboard"
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity text-center"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity text-center"
               >
-                مشاهده در داشبورد
-              </Link>
-              <Link
-                href="/"
-                className="flex-1 border-2 border-purple-600 text-purple-600 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors text-center"
-              >
-                ادامه خرید
+                مشاهده سفارش در داشبورد
               </Link>
             </div>
+
+            <p className="text-xs text-gray-500 mt-4">
+              در صورت بروز مشکل در پرداخت، با پشتیبانی تماس بگیرید.
+            </p>
           </div>
         </div>
       </div>
