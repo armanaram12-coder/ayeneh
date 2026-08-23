@@ -3,12 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function GET(
   request: Request,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+
+  // در Next.js 15 باید params رو await کنیم
+  const { orderId } = await params;
 
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -19,7 +22,7 @@ export async function GET(
   const { data, error } = await supabase
     .from('orders')
     .select('*')
-    .eq('id', params.orderId)
+    .eq('id', orderId)
     .eq('user_id', user.id)
     .single();
 
