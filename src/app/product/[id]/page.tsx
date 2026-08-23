@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
-import { addToCart, getCartCount } from '@/lib/cart';
+import { addToCart } from '@/lib/cart';
 import { toggleFavorite, isFavorite } from '@/lib/favorites';
 import productsData from '@/data/products.json';
 
@@ -25,9 +25,12 @@ interface Product {
 
 function getAllProducts(): Product[] {
   const allProducts: Product[] = [];
-  for (const category of productsData.categories) {
-    for (const subcategory of category.subcategories) {
-      for (const product of subcategory.products) {
+  // استفاده از any برای جلوگیری از ارورهای سخت‌گیرانه تایپ‌اسکریپت روی ساختار فایل JSON
+  const data = productsData as any;
+  
+  for (const category of data.categories || []) {
+    for (const subcategory of category.subcategories || []) {
+      for (const product of subcategory.products || []) {
         allProducts.push({
           id: product.id,
           name: product.name,
@@ -35,8 +38,8 @@ function getAllProducts(): Product[] {
           brand: product.brand,
           gender: product.gender,
           type: product.type,
-          volume_ml: 'volume_ml' in product ? product.volume_ml : undefined,
-          volume_gram: 'volume_gram' in product ? product.volume_gram : undefined,
+          volume_ml: product.volume_ml,
+          volume_gram: product.volume_gram,
           stock: product.stock,
           category: category.name,
           description: product.description || `${product.name} از برند ${product.brand || 'تراست'} با کیفیت عالی و قیمت مناسب.`
@@ -48,9 +51,11 @@ function getAllProducts(): Product[] {
 }
 
 export default function ProductDetailPage() {
-  const params = useParams();
   const router = useRouter();
-  const productId = parseInt(params.id as string);
+  const params = useParams();
+  
+  // دریافت امن شناسه محصول برای جلوگیری از ارورهای تایپ‌اسکریپت
+  const productId = typeof params?.id === 'string' ? parseInt(params.id, 10) : 0;
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +64,8 @@ export default function ProductDetailPage() {
   const [showToast, setShowToast] = useState('');
 
   useEffect(() => {
+    if (productId === 0) return;
+    
     const allProducts = getAllProducts();
     const found = allProducts.find(p => p.id === productId);
     setProduct(found || null);
@@ -105,7 +112,7 @@ export default function ProductDetailPage() {
 
     const result = await toggleFavorite(session.user.id, product!.id);
     setIsFavorite(result);
-    setShowToast(result ? '❤️ به علاقه‌مندی‌ها اضافه شد' : ' از علاقه‌مندی‌ها حذف شد');
+    setShowToast(result ? '❤️ به علاقه‌مندی‌ها اضافه شد' : '💔 از علاقه‌مندی‌ها حذف شد');
     setTimeout(() => setShowToast(''), 2000);
   };
 
@@ -120,11 +127,11 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
-        <div className="text-6xl mb-4"></div>
+        <div className="text-6xl mb-4">😕</div>
         <h1 className="text-2xl font-bold text-gray-800 mb-4">محصول یافت نشد</h1>
         <button 
           onClick={() => router.push('/')}
-          className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-lg"
+          className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-lg hover:opacity-90"
         >
           بازگشت به صفحه اصلی
         </button>
@@ -137,7 +144,7 @@ export default function ProductDetailPage() {
   return (
     <>
       {showToast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg">
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
           {showToast}
         </div>
       )}
@@ -146,7 +153,6 @@ export default function ProductDetailPage() {
         <Header />
         
         <div className="container mx-auto px-4 py-8">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
             <button onClick={() => router.push('/')} className="hover:text-purple-600">صفحه اصلی</button>
             <span>/</span>
@@ -155,17 +161,15 @@ export default function ProductDetailPage() {
 
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* تصویر محصول */}
               <div className="relative">
                 <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center overflow-hidden">
                   {product.image ? (
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-9xl"></span>
+                    <span className="text-9xl">🧴</span>
                   )}
                 </div>
                 
-                {/* دکمه علاقه‌مندی روی تصویر */}
                 <button
                   onClick={handleToggleFavorite}
                   className="absolute top-4 right-4 bg-white p-3 rounded-full shadow-lg hover:scale-110 transition-transform"
@@ -182,7 +186,6 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              {/* اطلاعات محصول */}
               <div className="flex flex-col">
                 {product.brand && (
                   <span className="text-sm text-purple-600 font-semibold mb-2">برند: {product.brand}</span>
@@ -199,7 +202,6 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                {/* مشخصات */}
                 <div className="bg-purple-50 rounded-xl p-4 mb-6 space-y-2">
                   <h3 className="font-bold text-gray-800 mb-3">مشخصات محصول</h3>
                   {product.category && (
@@ -234,13 +236,11 @@ export default function ProductDetailPage() {
                   )}
                 </div>
 
-                {/* توضیحات */}
                 <div className="mb-6">
                   <h3 className="font-bold text-gray-800 mb-2">توضیحات</h3>
                   <p className="text-gray-600 leading-relaxed">{product.description}</p>
                 </div>
 
-                {/* دکمه‌ها */}
                 <div className="flex gap-3 mt-auto">
                   <button
                     onClick={handleAddToCart}
@@ -256,10 +256,9 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
-                {/* ویژگی‌ها */}
                 <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
                   <div className="text-center">
-                    <div className="text-2xl mb-1"></div>
+                    <div className="text-2xl mb-1">🚚</div>
                     <p className="text-xs text-gray-600">ارسال سریع</p>
                   </div>
                   <div className="text-center">
@@ -267,7 +266,7 @@ export default function ProductDetailPage() {
                     <p className="text-xs text-gray-600">ضمانت اصالت</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl mb-1"></div>
+                    <div className="text-2xl mb-1">💰</div>
                     <p className="text-xs text-gray-600">بهترین قیمت</p>
                   </div>
                 </div>
@@ -275,7 +274,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* محصولات مرتبط (پیش‌نمایش) */}
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">محصولات مرتبط</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -289,7 +287,7 @@ export default function ProductDetailPage() {
                     className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
                   >
                     <div className="h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-4xl"></span>
+                      <span className="text-4xl">🧴</span>
                     </div>
                     <h3 className="font-semibold text-gray-800 text-sm mb-2 line-clamp-2">{p.name}</h3>
                     <p className="text-[#7C3AED] font-bold">{formatPrice(p.price_toman)} تومان</p>
