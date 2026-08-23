@@ -1,55 +1,77 @@
+import { supabase } from './supabase';
+
 export interface CartItem {
-  id: number;
-  name: string;
+  id?: number;
+  product_id: number;
+  product_name: string;
   price: number;
   quantity: number;
   image?: string;
 }
 
-export const getCart = (): CartItem[] => {
-  if (typeof window === 'undefined') return [];
-  const cart = localStorage.getItem('ayeneh_cart');
-  return cart ? JSON.parse(cart) : [];
+// Get cart items from Supabase (for logged-in users)
+export const getCartFromSupabase = async (userId: string): Promise<CartItem[]> => {
+  const { data, error } = await supabase
+    .from('cart')
+    .select('*')
+    .eq('user_id', userId);
+  
+  if (error) {
+    console.error('Error fetching cart:', error);
+    return [];
+  }
+  
+  return data || [];
 };
 
-export const addToCart = (item: Omit<CartItem, 'quantity'>) => {
-  const cart = getCart();
-  const existing = cart.find(i => i.id === item.id);
+// Add item to cart in Supabase
+export const addToCartSupabase = async (userId: string, item: Omit<CartItem, 'id'>) => {
+  // Check if item already exists
+  const { data: existing } = await supabase
+    .from('cart')
+    .select('id, quantity')
+    .eq('user_id', userId)
+    .eq('product_id', item.product_id)
+    .single();
+  
   if (existing) {
-    existing.quantity += 1;
+    // Update quantity
+    await supabase
+      .from('cart')
+      .update({ quantity: existing.quantity + 1, updated_at: new Date().toISOString() })
+      .eq('id', existing.id);
   } else {
-    cart.push({ ...item, quantity: 1 });
+    // Insert new item
+    await supabase
+      .from('cart')
+      .insert({ ...item, user_id: userId, quantity: 1 });
   }
-  localStorage.setItem('ayeneh_cart', JSON.stringify(cart));
-  return cart;
+  
+  return getCartFromSupabase(userId);
 };
 
-export const removeFromCart = (itemId: number) => {
-  const cart = getCart();
-  const updatedCart = cart.filter(i => i.id !== itemId);
-  localStorage.setItem('ayeneh_cart', JSON.stringify(updatedCart));
-  return updatedCart;
+// Remove item from cart
+export const removeFromCart = async (userId: string, productId: number) => {
+  await supabase
+    .from('cart')
+    .delete()
+    .eq('user_id', userId)
+    .eq('product_id', productId);
+  
+  return getCartFromSupabase(userId);
 };
 
-export const updateCartItemQuantity = (itemId: number, quantity: number) => {
-  const cart = getCart();
-  const item = cart.find(i => i.id === itemId);
-  if (item) {
-    item.quantity = Math.max(1, quantity);
-  }
-  localStorage.setItem('ayeneh_cart', JSON.stringify(cart));
-  return cart;
+// Clear cart
+export const clearCart = async (userId: string) => {
+  await supabase
+    .from('cart')
+    .delete()
+    .eq('user_id', userId);
 };
 
-export const clearCart = () => {
-  localStorage.removeItem('ayeneh_cart');
-  return [];
-};
-
-export const getCartCount = (): number => {
-  return getCart().reduce((sum, item) => sum + item.quantity, 0);
-};
-
-export const getCartTotal = (): number => {
-  return getCart().reduce((sum, item) => sum + item.price * item.quantity, 0);
+// Get cart count
+export const getCartCount = async (userId: string | null): Promise<number> => {
+  if (!userId) return 0;
+  const items = await getCartFromSupabase(userId);
+  return items.reduce((sum, item) => sum + item.quantity, 0);
 };
