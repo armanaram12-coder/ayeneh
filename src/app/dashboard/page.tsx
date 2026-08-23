@@ -5,9 +5,10 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { getCart, addToCart } from '@/lib/cart';
 import { getFavorites, toggleFavorite } from '@/lib/favorites';
+import { getUserOrders, getOrderStatusText, getOrderStatusColor } from '@/lib/orders';
 import productsData from '@/data/products.json';
 
-type TabType = 'profile' | 'cart' | 'favorites' | 'reviews' | 'support' | 'security';
+type TabType = 'profile' | 'cart' | 'favorites' | 'orders' | 'reviews' | 'support' | 'security';
 
 function getAllProducts(): any[] {
   const allProducts: any[] = [];
@@ -38,6 +39,7 @@ export default function DashboardPage() {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
+  const [userOrders, setUserOrders] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
@@ -62,6 +64,10 @@ export default function DashboardPage() {
       const allProds = getAllProducts();
       const favProds = allProds.filter((p: any) => favIds.includes(p.id));
       setFavoriteProducts(favProds);
+
+      // لود کردن سفارشات کاربر
+      const orders = await getUserOrders(session.user.id);
+      setUserOrders(orders);
       
       setLoading(false);
     };
@@ -121,7 +127,10 @@ export default function DashboardPage() {
     }
   };
 
-  const handleCartCheckout = () => alert('سیستم پرداخت به زودی فعال می‌شود!');
+  const handleCartCheckout = () => {
+    // هدایت به صفحه تسویه حساب
+    router.push('/checkout');
+  };
   
   const handleClearCart = async () => {
     if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟') && user) {
@@ -166,12 +175,13 @@ export default function DashboardPage() {
   const cartCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
 
   const sidebarItems = [
-    { id: 'profile' as TabType, label: 'پروفایل', icon: '' },
+    { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
     { id: 'cart' as TabType, label: `سبد خرید (${cartCount})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
-    { id: 'reviews' as TabType, label: 'نظرات', icon: '' },
-    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '' },
-    { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
+    { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '📦' },
+    { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
+    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
+    { id: 'security' as TabType, label: 'امنیت', icon: '' },
   ];
 
   return (
@@ -214,7 +224,7 @@ export default function DashboardPage() {
                   <img src={profile.avatar_url} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-purple-300" />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
-                    <span className="text-5xl text-white">👤</span>
+                    <span className="text-5xl text-white"></span>
                   </div>
                 )}
                 <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg">
@@ -327,9 +337,67 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {activeTab === 'orders' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">سفارشات من</h2>
+              {userOrders.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">📦</div>
+                  <p className="text-gray-600 text-lg">هنوز سفارشی ثبت نکرده‌اید</p>
+                  <button 
+                    onClick={() => router.push('/')}
+                    className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
+                  >
+                    مشاهده محصولات
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {userOrders.map((order: any) => (
+                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
+                        <div>
+                          <h3 className="font-bold text-gray-900">سفارش #{order.order_number}</h3>
+                          <p className="text-sm text-gray-600">
+                            {new Date(order.created_at).toLocaleDateString('fa-IR')}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getOrderStatusColor(order.status)}`}>
+                          {getOrderStatusText(order.status)}
+                        </span>
+                      </div>
+                      <div className="border-t pt-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-700">آدرس ارسال:</span>
+                          <span className="text-sm text-gray-600 text-left max-w-xs">{order.shipping_address}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-700">تلفن تماس:</span>
+                          <span className="text-sm text-gray-600">{order.phone}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700 font-semibold">مجموع:</span>
+                          <span className="text-lg font-bold text-purple-600">
+                            {order.total_amount.toLocaleString()} تومان
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => router.push(`/checkout/success?orderId=${order.id}`)}
+                        className="mt-3 text-purple-600 hover:text-purple-800 text-sm font-semibold"
+                      >
+                        مشاهده جزئیات ←
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {activeTab === 'reviews' && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4"></div>
+              <div className="text-6xl mb-4">💬</div>
               <p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p>
             </div>
           )}
@@ -339,7 +407,7 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">پشتیبانی و پیگیری خرید</h2>
               <div className="space-y-4">
                 <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📧 ایمیل پشتیبانی:</p><p className="text-purple-600 font-semibold">support@ayeneh.com</p></div>
-                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2"> شماره تماس:</p><p className="text-purple-600 font-semibold">021-12345678</p></div>
+                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📱 شماره تماس:</p><p className="text-purple-600 font-semibold">021-12345678</p></div>
                 <div className="mt-6">
                   <label className="block text-gray-700 mb-2 font-medium">پیام شما:</label>
                   <textarea className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900" rows={4} placeholder="پیام خود را بنویسید..." />
