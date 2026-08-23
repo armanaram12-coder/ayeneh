@@ -9,15 +9,25 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [isValidLink, setIsValidLink] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // چک کردن اینکه آیا کاربر در حالت reset password هست
-    supabase.auth.onAuthStateChange((event, session) => {
+    // ۱. بررسی وجود کلمه recovery در آدرس مرورگر (روش مطمئن)
+    if (window.location.hash.includes('type=recovery') || window.location.search.includes('type=recovery')) {
+      setIsValidLink(true);
+    }
+
+    // ۲. گوش دادن به رویداد تغییر وضعیت احراز هویت سوپابیس
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
-        // کاربر در حالت بازیابی رمز هست
+        setIsValidLink(true);
       }
     });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -34,12 +44,30 @@ export default function ResetPasswordPage() {
     } else {
       setSuccess(true);
       setTimeout(() => {
-        router.push('/');
+        router.push('/dashboard'); // بعد از تغییر موفق، به داشبورد برود
       }, 2000);
     }
     
     setLoading(false);
   };
+
+  if (!isValidLink && !success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
+        <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">لینک نامعتبر یا منقضی شده</h1>
+          <p className="text-gray-600 mb-6">این لینک فقط یک بار و برای مدت محدودی معتبر است. لطفاً دوباره درخواست بازیابی رمز دهید.</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-lg hover:opacity-90"
+          >
+            بازگشت به صفحه اصلی
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
@@ -49,8 +77,8 @@ export default function ResetPasswordPage() {
         {success ? (
           <div className="text-center">
             <div className="text-green-500 text-6xl mb-4">✅</div>
-            <p className="text-gray-700 mb-4">رمز عبور با موفقیت تغییر کرد!</p>
-            <p className="text-sm text-gray-600">در حال انتقال به صفحه اصلی...</p>
+            <p className="text-gray-700 mb-4 font-bold">رمز عبور با موفقیت تغییر کرد!</p>
+            <p className="text-sm text-gray-600">در حال انتقال به داشبورد...</p>
           </div>
         ) : (
           <form onSubmit={handleUpdatePassword} className="space-y-4">
@@ -71,6 +99,7 @@ export default function ResetPasswordPage() {
                 required
                 minLength={6}
               />
+              <p className="text-xs text-gray-500 mt-1">رمز باید حداقل ۶ کاراکتر و شامل حروف/اعداد انگلیسی باشد.</p>
             </div>
 
             <button
