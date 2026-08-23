@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 interface RegisterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (email: string) => void;
 }
 
 interface FormErrors {
@@ -32,6 +32,7 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   if (!isOpen) return null;
 
@@ -195,16 +196,16 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
         return;
       }
 
-      // Success - close modal and notify parent
+      // Success - switch to login mode with pre-filled email
+      setSuccessMessage('✅ ثبت‌نام با موفقیت انجام شد. لطفاً وارد شوید.');
       if (onSuccess) {
-        onSuccess();
+        onSuccess(formData.email);
       }
-      onClose();
       
-      // Reset form
+      // Reset form except email
       setFormData({
         username: '',
-        email: '',
+        email: formData.email,
         phone: '',
         address: '',
         postal_code: '',
@@ -247,6 +248,13 @@ export default function RegisterModal({ isOpen, onClose, onSuccess }: RegisterMo
         {submitError && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
             {submitError}
+          </div>
+        )}
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
+            {successMessage}
           </div>
         )}
 

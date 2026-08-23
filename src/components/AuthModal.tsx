@@ -16,6 +16,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   if (!isOpen) return null;
 
@@ -24,8 +25,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       <RegisterModal
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
-        onSuccess={() => {
-          onClose();
+        onSuccess={(registeredEmail) => {
+          setEmail(registeredEmail);
+          setSuccessMessage('✅ ثبت‌نام با موفقیت انجام شد. لطفاً وارد شوید.');
+          setShowRegisterModal(false);
+          setIsLoginMode(true);
         }}
       />
     );
@@ -82,6 +86,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           ورود به حساب
         </h2>
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4 text-sm">
+            {successMessage}
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
