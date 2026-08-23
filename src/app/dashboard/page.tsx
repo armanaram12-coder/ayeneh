@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [saving, setSaving] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,16 +27,11 @@ export default function DashboardPage() {
       setIsLoggedIn(true);
       setUser(session.user);
       
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-      setProfile(profileData);
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      setProfile(profileData || {});
       
-      // Load cart
-      setCartItems(getCart());
+      const cart = await getCart(session.user.id);
+      setCartItems(cart);
       
       setLoading(false);
     };
@@ -50,6 +46,7 @@ export default function DashboardPage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    setSaving(true);
     
     const { error } = await supabase
       .from('profiles')
@@ -61,205 +58,151 @@ export default function DashboardPage() {
       })
       .eq('id', user.id);
     
+    setSaving(false);
     if (error) {
-      alert('خطا در به‌روزرسانی: ' + error.message);
+      alert('❌ خطا در به‌روزرسانی: ' + error.message);
     } else {
       alert('✅ تغییرات با موفقیت ثبت شد');
     }
   };
 
-  const handleCartCheckout = () => {
-    alert('سیستم پرداخت به زودی فعال می‌شود!');
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`;
+    
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      alert('خطا در آپلود عکس: ' + uploadError.message);
+      return;
+    }
+    
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    
+    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+    if (updateError) {
+      alert('خطا در ذخیره آواتار: ' + updateError.message);
+    } else {
+      setProfile({ ...profile, avatar_url: publicUrl });
+      alert('✅ عکس پروفایل با موفقیت تغییر کرد');
+    }
   };
 
-  const handleClearCart = () => {
-    if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟')) {
-      localStorage.removeItem('ayeneh_cart');
+  const handleCartCheckout = () => alert('سیستم پرداخت به زودی فعال می‌شود!');
+  const handleClearCart = async () => {
+    if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟') && user) {
+      await supabase.from('cart').delete().eq('user_id', user.id);
       setCartItems([]);
     }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="text-purple-600 text-xl">در حال بارگذاری...</div>
-    </div>;
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="text-purple-600 text-xl">در حال بارگذاری...</div></div>;
+  if (!isLoggedIn) return null;
 
   const sidebarItems = [
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
-    { id: 'cart' as TabType, label: `سبد خرید (${getCartCount()})`, icon: '🛒' },
+    { id: 'cart' as TabType, label: `سبد خرید (${cartItems.reduce((s, i) => s + i.quantity, 0)})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: 'علاقه‌مندی‌ها', icon: '❤️' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
-    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '' },
+    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
-      {/* Header */}
       <div className="bg-white shadow-md p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">داشبورد کاربری</h1>
           <div className="flex items-center gap-4">
             <a href="/" className="flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors">
-              <span>🏠</span>
-              <span>بازگشت به صفحه اصلی</span>
+              <span>🏠</span><span>بازگشت به صفحه اصلی</span>
             </a>
-            <button 
-              onClick={handleLogout}
-              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
-            >
-              خروج
-            </button>
+            <button onClick={handleLogout} className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90">خروج</button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 flex gap-6">
-        {/* Sidebar */}
-        <div className="w-64 bg-white rounded-xl shadow-lg p-4 h-fit">
+      <div className="max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-64 bg-white rounded-xl shadow-lg p-4 h-fit">
           {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full text-right px-4 py-3 rounded-lg mb-2 flex items-center gap-3 transition-all ${
-                activeTab === item.id
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
-                  : 'text-gray-700 hover:bg-purple-50'
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full text-right px-4 py-3 rounded-lg mb-2 flex items-center gap-3 transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' : 'text-gray-700 hover:bg-purple-50'}`}>
+              <span>{item.icon}</span><span>{item.label}</span>
             </button>
           ))}
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 bg-white rounded-xl shadow-lg p-6">
-          {/* PROFILE TAB */}
           {activeTab === 'profile' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">اطلاعات پروفایل</h2>
-              
-              {/* Avatar */}
               <div className="flex flex-col items-center mb-8">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
-                  <span className="text-5xl text-white">👤</span>
-                </div>
-                <button className="text-sm text-purple-600 hover:text-purple-800 font-medium" disabled>
-                  تغییر عکس پروفایل (به زودی)
-                </button>
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-purple-300" />
+                ) : (
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
+                    <span className="text-5xl text-white">👤</span>
+                  </div>
+                )}
+                <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg">
+                  تغییر عکس پروفایل
+                  <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                </label>
               </div>
 
               <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-2xl mx-auto">
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">نام کاربری</label>
-                  <input
-                    type="text"
-                    value={profile?.username || ''}
-                    onChange={(e) => setProfile({...profile, username: e.target.value})}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                  />
+                  <input type="text" value={profile?.username || ''} onChange={(e) => setProfile({...profile, username: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500" />
                 </div>
-
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">ایمیل</label>
-                  <input
-                    type="email"
-                    value={user?.email || ''}
-                    disabled
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed"
-                  />
+                  <input type="email" value={user?.email || ''} disabled className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed" />
                   <p className="text-xs text-gray-500 mt-1">ایمیل قابل تغییر نیست</p>
                 </div>
-
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">شماره تلفن</label>
-                  <input
-                    type="tel"
-                    value={profile?.phone || ''}
-                    disabled
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed"
-                  />
+                  <input type="tel" value={profile?.phone || ''} disabled className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed" />
                   <p className="text-xs text-gray-500 mt-1">شماره تلفن قابل تغییر نیست</p>
                 </div>
-
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">آدرس منزل</label>
-                  <textarea
-                    value={profile?.address || ''}
-                    onChange={(e) => setProfile({...profile, address: e.target.value})}
-                    rows={3}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                  />
+                  <textarea value={profile?.address || ''} onChange={(e) => setProfile({...profile, address: e.target.value})} rows={3} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500" />
                 </div>
-
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">کد پستی</label>
-                  <input
-                    type="text"
-                    value={profile?.postal_code || ''}
-                    onChange={(e) => setProfile({...profile, postal_code: e.target.value})}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
-                  />
+                  <input type="text" value={profile?.postal_code || ''} onChange={(e) => setProfile({...profile, postal_code: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500" />
                 </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
-                >
-                  ذخیره تغییرات
+                <button type="submit" disabled={saving} className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50">
+                  {saving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
                 </button>
               </form>
             </div>
           )}
 
-          {/* CART TAB */}
           {activeTab === 'cart' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">سبد خرید شما</h2>
               {cartItems.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">🛒</div>
-                  <p className="text-gray-600 text-lg">سبد خرید شما خالی است</p>
-                </div>
+                <div className="text-center py-12"><div className="text-6xl mb-4">🛒</div><p className="text-gray-600 text-lg">سبد خرید شما خالی است</p></div>
               ) : (
                 <div className="space-y-4">
-                  {cartItems.map((item, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                        <p className="text-purple-600">{item.price.toLocaleString()} تومان</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-700">تعداد: {item.quantity}</span>
-                      </div>
+                  {cartItems.map((item) => (
+                    <div key={item.product_id} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                      <div><h3 className="font-semibold text-gray-900">{item.product_name}</h3><p className="text-purple-600">{item.price.toLocaleString()} تومان</p></div>
+                      <div className="flex items-center gap-3"><span className="text-gray-700">تعداد: {item.quantity}</span></div>
                     </div>
                   ))}
                   <div className="border-t pt-4 mt-4">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-lg font-bold text-gray-900">مجموع:</span>
-                      <span className="text-xl font-bold text-purple-600">
-                        {cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()} تومان
-                      </span>
+                      <span className="text-xl font-bold text-purple-600">{cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()} تومان</span>
                     </div>
                     <div className="flex gap-3">
-                      <button 
-                        onClick={handleCartCheckout}
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90"
-                      >
-                        ادامه فرآیند خرید
-                      </button>
-                      <button 
-                        onClick={handleClearCart}
-                        className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                      >
-                        خالی کردن سبد
-                      </button>
+                      <button onClick={handleCartCheckout} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90">ادامه فرآیند خرید</button>
+                      <button onClick={handleClearCart} className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">خالی کردن سبد</button>
                     </div>
                   </div>
                 </div>
@@ -267,95 +210,39 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* FAVORITES TAB */}
-          {activeTab === 'favorites' && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">علاقه‌مندی‌ها</h2>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">❤️</div>
-                <p className="text-gray-600 text-lg">لیست علاقه‌مندی‌ها خالی است</p>
-              </div>
-            </div>
-          )}
-
-          {/* REVIEWS TAB */}
-          {activeTab === 'reviews' && (
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">نظرات شما</h2>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">💬</div>
-                <p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p>
-              </div>
-            </div>
-          )}
-
-          {/* SUPPORT TAB */}
+          {activeTab === 'favorites' && <div className="text-center py-12"><div className="text-6xl mb-4">❤️</div><p className="text-gray-600 text-lg">لیست علاقه‌مندی‌ها خالی است</p></div>}
+          {activeTab === 'reviews' && <div className="text-center py-12"><div className="text-6xl mb-4">💬</div><p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p></div>}
+          
           {activeTab === 'support' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">پشتیبانی و پیگیری خرید</h2>
               <div className="space-y-4">
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-gray-700 mb-2">📧 ایمیل پشتیبانی:</p>
-                  <p className="text-purple-600 font-semibold">support@ayeneh.com</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-gray-700 mb-2">📱 شماره تماس:</p>
-                  <p className="text-purple-600 font-semibold">021-12345678</p>
-                </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-gray-700 mb-2">⏰ ساعات پاسخگویی:</p>
-                  <p className="text-gray-600">شنبه تا پنجشنبه، 9 صبح تا 6 عصر</p>
-                </div>
+                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📧 ایمیل پشتیبانی:</p><p className="text-purple-600 font-semibold">support@ayeneh.com</p></div>
+                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📱 شماره تماس:</p><p className="text-purple-600 font-semibold">021-12345678</p></div>
                 <div className="mt-6">
                   <label className="block text-gray-700 mb-2 font-medium">پیام شما:</label>
-                  <textarea 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
-                    rows={4}
-                    placeholder="پیام خود را بنویسید..."
-                  />
-                  <button 
-                    onClick={() => alert('پیام شما ارسال شد! به زودی با شما تماس می‌گیریم.')}
-                    className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
-                  >
-                    ارسال پیام
-                  </button>
+                  <textarea className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900" rows={4} placeholder="پیام خود را بنویسید..." />
+                  <button onClick={() => alert('پیام شما ارسال شد!')} className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90">ارسال پیام</button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* SECURITY TAB */}
           {activeTab === 'security' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">تغییر رمز عبور</h2>
               <form className="space-y-4 max-w-md" onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
-                const newPassword = formData.get('newPassword') as string;
-                
-                const { error } = await supabase.auth.updateUser({ password: newPassword });
-                if (error) {
-                  alert('خطا: ' + error.message);
-                } else {
-                  alert('✅ رمز عبور با موفقیت تغییر کرد');
-                }
+                const { error } = await supabase.auth.updateUser({ password: formData.get('newPassword') as string });
+                if (error) alert('خطا: ' + error.message);
+                else alert('✅ رمز عبور با موفقیت تغییر کرد');
               }}>
                 <div>
                   <label className="block text-gray-700 mb-2">رمز عبور جدید</label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    required
-                    minLength={6}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
-                  />
+                  <input type="password" name="newPassword" required minLength={6} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900" />
                 </div>
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90"
-                >
-                  تغییر رمز عبور
-                </button>
+                <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90">تغییر رمز عبور</button>
               </form>
             </div>
           )}
