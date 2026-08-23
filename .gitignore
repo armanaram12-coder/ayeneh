@@ -1,41 +1,6 @@
 ```
 # Next.js build outputs
 .next/
-
-# Dependencies
-node_modules/
-
-# Environment variables
-.env*
-!.env.example
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.swp
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-venv/
-env/
-.venv/
-
-# Build outputs
-dist/
-build/
-target/
+# TypeScript build info
+tsconfig.tsbuildinfo
 ```
