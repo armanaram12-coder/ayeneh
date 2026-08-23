@@ -65,7 +65,6 @@ export default function DashboardPage() {
       const favProds = allProds.filter((p: any) => favIds.includes(p.id));
       setFavoriteProducts(favProds);
 
-      // لود کردن سفارشات کاربر
       const orders = await getUserOrders(session.user.id);
       setUserOrders(orders);
       
@@ -128,7 +127,6 @@ export default function DashboardPage() {
   };
 
   const handleCartCheckout = () => {
-    // هدایت به صفحه تسویه حساب
     router.push('/checkout');
   };
   
@@ -148,7 +146,6 @@ export default function DashboardPage() {
       price: product.price_toman
     });
     
-    // آپدیت کردن سبد خرید بدون رفرش
     const updatedCart = await getCart(user.id);
     setCartItems(updatedCart);
     
@@ -181,7 +178,7 @@ export default function DashboardPage() {
     { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '📦' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
     { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
-    { id: 'security' as TabType, label: 'امنیت', icon: '' },
+    { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
   ];
 
   return (
@@ -224,7 +221,7 @@ export default function DashboardPage() {
                   <img src={profile.avatar_url} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-purple-300" />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
-                    <span className="text-5xl text-white"></span>
+                    <span className="text-5xl text-white">👤</span>
                   </div>
                 )}
                 <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg">
@@ -383,7 +380,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <button
-                       onClick={() => router.push(`/checkout/success/${order.id}`)}
+                        onClick={() => router.push(`/checkout/success/${order.id}`)}
                         className="mt-3 text-purple-600 hover:text-purple-800 text-sm font-semibold"
                       >
                         مشاهده جزئیات ←
