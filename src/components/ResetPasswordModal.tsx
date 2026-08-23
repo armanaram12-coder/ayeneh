@@ -24,7 +24,8 @@ export default function ResetPasswordModal({ isOpen, onClose }: ResetPasswordMod
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `https://ayeneh.vercel.app/auth/reset-password`,
+        // این آدرس باعث می‌شود کاربر به صفحه‌ای که می‌سازیم هدایت شود
+        redirectTo: `${window.location.origin}/auth/reset-password`,
       });
 
       if (error) {
@@ -56,13 +57,13 @@ export default function ResetPasswordModal({ isOpen, onClose }: ResetPasswordMod
         {success ? (
           <div className="text-center py-6">
             <div className="text-green-500 text-6xl mb-4">✅</div>
-            <p className="text-gray-700 mb-4">ایمیل بازیابی ارسال شد!</p>
+            <p className="text-gray-700 mb-4 font-bold">ایمیل بازیابی ارسال شد!</p>
             <p className="text-sm text-gray-600 mb-6">
-              لطفاً ایمیل خود را چک کنید و روی لینک ارسال شده کلیک کنید.
+              لطفاً پوشه Inbox یا Spam ایمیل خود را چک کنید و روی لینک "Reset password" کلیک کنید.
             </p>
             <button
               onClick={onClose}
-              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
             >
               بستن
             </button>
@@ -76,7 +77,7 @@ export default function ResetPasswordModal({ isOpen, onClose }: ResetPasswordMod
             )}
 
             <div>
-              <label className="block text-gray-700 mb-2">ایمیل خود را وارد کنید</label>
+              <label className="block text-gray-700 mb-2">ایمیل ثبت‌نام شده</label>
               <input
                 type="email"
                 value={email}
