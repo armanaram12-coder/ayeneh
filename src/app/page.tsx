@@ -7,12 +7,9 @@ import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
+import { toggleFavorite, getFavorites } from '@/lib/favorites';
 import productsData from '@/data/products.json';
-
-function toPersianDigits(num: number): string {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  return num.toString().replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
-}
+import Link from 'next/link';
 
 interface Product {
   id: number;
@@ -25,7 +22,22 @@ interface Product {
   volume_gram?: number;
   stock?: number;
   image?: string;
+  category?: string;
 }
+
+const categoryLabels: Record<string, string> = {
+  'عطر': 'عطر و خوشبوکننده',
+  'سرم': 'سرم تخصصی',
+  'کرم': 'کرم تخصصی',
+  'ضد آفتاب': 'ضد آفتاب',
+  'شوینده': 'شوینده و پاک کننده',
+  'دهان': 'دهان و دندان',
+  'آرایشی': 'آرایشی',
+  'شامپو': 'شامپو تخصصی',
+  'ماسک': 'ماسک تخصصی',
+  'کیت': 'کیت تخصصی',
+  'روغن': 'روغن تخصصی'
+};
 
 function getAllProducts(): Product[] {
   const allProducts: Product[] = [];
@@ -42,6 +54,7 @@ function getAllProducts(): Product[] {
           volume_ml: 'volume_ml' in product ? product.volume_ml : undefined,
           volume_gram: 'volume_gram' in product ? product.volume_gram : undefined,
           stock: product.stock,
+          category: category.name
         });
       }
     }
@@ -49,11 +62,17 @@ function getAllProducts(): Product[] {
   return allProducts;
 }
 
-function getCategoryNames(): string[] {
-  return ["عطر", "سرم", "کرم", "ضد آفتاب", "شوینده", "دهان", "آرایشی", "شامپو", "کیت", "ماسک", "روغن"];
-}
-
-function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: (product: Product) => void }) {
+function ProductCard({ 
+  product, 
+  onAddToCart, 
+  isFavorite, 
+  onToggleFavorite 
+}: { 
+  product: Product; 
+  onAddToCart: (product: Product) => void;
+  isFavorite: boolean;
+  onToggleFavorite: (productId: number) => void;
+}) {
   const formatPrice = (price: number) => price.toLocaleString('fa-IR');
   const [isDisabled, setIsDisabled] = useState(false);
   
@@ -64,14 +83,30 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300">
-      <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-        {product.image ? (
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-4xl">🧴</span>
-        )}
-      </div>
+    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300 relative">
+      <button
+        onClick={() => onToggleFavorite(product.id)}
+        className="absolute top-2 right-2 z-10"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className={`h-6 w-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`}
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      </button>
+
+      <Link href={`/product/${product.id}`}>
+        <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden cursor-pointer">
+          {product.image ? (
+            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-4xl"></span>
+          )}
+        </div>
+      </Link>
+      
       <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-10 text-sm">{product.name}</h3>
       <p className="text-[#7C3AED] font-bold text-lg mb-3">{formatPrice(product.price_toman)} تومان</p>
       <button
@@ -90,13 +125,28 @@ function ProductCard({ product, onAddToCart }: { product: Product; onAddToCart: 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [categories] = useState<string[]>(getCategoryNames());
   const [cartCount, setCartCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    setAllProducts(getAllProducts());
+    const products = getAllProducts();
+    setAllProducts(products);
+    
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+        const count = await getCartCount(session.user.id);
+        setCartCount(count);
+        const favs = await getFavorites(session.user.id);
+        setFavoriteIds(favs);
+      }
+    };
+    checkUser();
   }, []);
 
   const handleAddToCart = async (product: Product) => {
@@ -119,32 +169,30 @@ export default function Home() {
     setTimeout(() => setShowToast(false), 2000);
   };
 
-  const getFilteredProducts = () => {
-    switch (activeTab) {
-      case 'new':
-        return allProducts.slice(0, 8);
-      case 'bestseller':
-        return allProducts.slice(0, 8);
-      default:
-        return allProducts.slice(0, 12);
+  const handleToggleFavorite = async (productId: number) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('برای افزودن به علاقه‌مندی‌ها، لطفاً ابتدا وارد شوید.');
+      window.dispatchEvent(new Event('openAuthModal'));
+      return;
+    }
+
+    const isNowFavorite = await toggleFavorite(session.user.id, productId);
+    if (isNowFavorite) {
+      setFavoriteIds([...favoriteIds, productId]);
+    } else {
+      setFavoriteIds(favoriteIds.filter(id => id !== productId));
     }
   };
 
-  const filteredProducts = getFilteredProducts();
-  const bestSellers = allProducts.slice(0, 8);
-  const newArrivals = allProducts.slice(0, 4);
-
-  const blogArticles = [
-    { id: 1, title: 'راهنمای انتخاب عطر مناسب', image: '', excerpt: 'چگونه عطری مناسب با سلیقه و شخصیت خود انتخاب کنیم...' },
-    { id: 2, title: 'روتین مراقبت پوست روزانه', image: '✨', excerpt: 'مراحل کامل مراقبت از پوست برای داشتن پوستی شاداب...' },
-    { id: 3, title: 'تفاوت سرم و کرم مرطوب کننده', image: '💧', excerpt: 'بررسی تفاوت‌های کلیدی بین سرم‌ها و کرم‌های پوست...' },
-  ];
-
-  const testimonials = [
-    { id: 1, name: 'مریم احمدی', text: 'محصولات تراست واقعاً عالی هستند. کیفیت فوق‌العاده!', rating: 5 },
-    { id: 2, name: 'علی رضایی', text: 'عطر Eliot بهترین خرید من بود. رایحه‌ای بی‌نظیر!', rating: 5 },
-    { id: 3, name: 'سارا محمدی', text: 'سرم هیالورونیک اسید معجزه کرد. پوستم خیلی آبرسانی شده.', rating: 5 },
-  ];
+  const categories = Object.keys(categoryLabels);
+  
+  const filteredProducts = allProducts.filter(product => {
+    if (selectedCategory && product.category !== selectedCategory) return false;
+    if (activeTab === 'new') return product.id > allProducts.length - 8;
+    if (activeTab === 'bestseller') return product.id <= 8;
+    return true;
+  });
 
   return (
     <>
@@ -162,43 +210,78 @@ export default function Home() {
           <HeroSlider />
           <FlashSale />
 
+          {/* دسته‌بندی‌ها با عنوان زیر دایره */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
-              <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-4">
-                {categories.slice(0, 6).map((cat, index) => (
+              
+              {/* ردیف اول */}
+              <div className="flex flex-wrap justify-center gap-6 md:gap-8 mb-6">
+                {categories.slice(0, 6).map((cat) => (
                   <button
-                    key={index}
-                    onClick={() => console.log('Category clicked:', cat)}
-                    className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
+                    key={cat}
+                    onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                    className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${
+                      selectedCategory === cat ? 'scale-110' : ''
+                    }`}
                   >
-                    {cat}
+                    <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow`}>
+                      <span className="text-2xl md:text-3xl">
+                        {cat === 'عطر' ? '' : cat === 'سرم' ? '💧' : cat === 'کرم' ? '🧴' : cat === 'ضد آفتاب' ? '☀️' : cat === 'شوینده' ? '🧼' : '📦'}
+                      </span>
+                    </div>
+                    <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">
+                      {categoryLabels[cat]}
+                    </span>
                   </button>
                 ))}
               </div>
-              <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-                {categories.slice(6, 11).map((cat, index) => (
+              
+              {/* ردیف دوم */}
+              <div className="flex flex-wrap justify-center gap-6 md:gap-8">
+                {categories.slice(6, 11).map((cat) => (
                   <button
-                    key={index + 6}
-                    onClick={() => console.log('Category clicked:', cat)}
-                    className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-sm md:text-base shadow-md hover:shadow-lg transition-shadow duration-300 flex-shrink-0"
+                    key={cat}
+                    onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                    className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${
+                      selectedCategory === cat ? 'scale-110' : ''
+                    }`}
                   >
-                    {cat}
+                    <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow`}>
+                      <span className="text-2xl md:text-3xl">
+                        {cat === 'آرایشی' ? '💄' : cat === 'شامپو' ? '' : cat === 'ماسک' ? '🎭' : cat === 'کیت' ? '🧰' : ''}
+                      </span>
+                    </div>
+                    <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">
+                      {categoryLabels[cat]}
+                    </span>
                   </button>
                 ))}
               </div>
+
+              {selectedCategory && (
+                <div className="text-center mt-4">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="text-[#7C3AED] hover:underline text-sm"
+                  >
+                    نمایش همه دسته‌بندی‌ها ✕
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
+          {/* محصولات با تب‌ها */}
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
               
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
                 <button
-                  onClick={() => setActiveTab('all')}
+                  onClick={() => { setActiveTab('all'); setSelectedCategory(null); }}
                   className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    activeTab === 'all' 
+                    activeTab === 'all' && !selectedCategory
                       ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
                       : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                   }`}
@@ -227,78 +310,23 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="py-8 overflow-hidden">
-            <div className="container mx-auto px-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">پرفروش‌ترین محصولات</h2>
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {bestSellers.map((product) => (
-                  <div key={product.id} className="flex-shrink-0 w-48 md:w-56">
-                    <ProductCard product={product} onAddToCart={handleAddToCart} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="py-8">
-            <div className="container mx-auto px-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">جدیدترین محصولات</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {newArrivals.map((product) => (
-                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="py-8">
-            <div className="container mx-auto px-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">مجله زیبایی</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {blogArticles.map((article) => (
-                  <div key={article.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <div className="h-40 bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
-                      <span className="text-6xl">{article.image}</span>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-800 mb-2">{article.title}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{article.excerpt}</p>
-                      <button className="text-[#7C3AED] font-semibold text-sm hover:underline">
-                        ادامه مطلب ←
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="py-8 bg-white/50">
-            <div className="container mx-auto px-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">نظرات مشتریان</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {testimonials.map((testimonial) => (
-                  <div key={testimonial.id} className="bg-white rounded-xl shadow-md p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="text-gray-600 mb-4">{testimonial.text}</p>
-                    <p className="font-semibold text-[#7C3AED]">— {testimonial.name}</p>
-                  </div>
-                ))}
-              </div>
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-600 text-lg">محصولی در این دسته‌بندی وجود ندارد</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {filteredProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      onAddToCart={handleAddToCart}
+                      isFavorite={favoriteIds.includes(product.id)}
+                      onToggleFavorite={handleToggleFavorite}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </main>
