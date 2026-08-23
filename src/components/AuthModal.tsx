@@ -58,8 +58,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
       if (data.user) {
         console.log('Login successful:', data.user);
-        // Force reload to update Header
-        window.location.href = '/';
+        // هدایت مستقیم به داشبورد بعد از لاگین موفق
+        window.location.href = '/dashboard';
       }
     } catch (err) {
       console.error('Login exception:', err);
@@ -72,7 +72,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md relative" dir="rtl">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 z-10"
@@ -82,26 +81,22 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </svg>
         </button>
 
-        {/* Title */}
         <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           ورود به حساب
         </h2>
 
-        {/* Success Message */}
         {successMessage && (
           <div className="bg-green-50 text-green-600 p-3 rounded-lg mb-4 text-sm">
             {successMessage}
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
             {error}
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-gray-700 mb-2 text-sm">شماره موبایل یا ایمیل</label>
@@ -136,7 +131,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </button>
         </form>
 
-        {/* Toggle to Register */}
         <p className="text-center mt-6 text-gray-600">
           حساب ندارید؟
           <button
