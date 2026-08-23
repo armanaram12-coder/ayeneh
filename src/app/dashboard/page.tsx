@@ -1,441 +1,365 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
+import { getCart, getCartCount } from '@/lib/cart';
 
-type TabType = 'profile' | 'security' | 'orders' | 'favorites' | 'reviews';
+type TabType = 'profile' | 'cart' | 'favorites' | 'reviews' | 'support' | 'security';
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('profile');
-  const [username, setUsername] = useState<string>('');
-  
-  // Profile form state
-  const [profileData, setProfileData] = useState({
-    username: '',
-    phone: '',
-    address: '',
-    postal_code: '',
-  });
-  const [profileLoading, setProfileLoading] = useState(false);
-  const [profileSuccess, setProfileSuccess] = useState('');
-  const [profileError, setProfileError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const router = useRouter();
 
-  // Security form state
-  const [passwordData, setPasswordData] = useState({
-    current_password: '',
-    new_password: '',
-    confirm_password: '',
-  });
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordSuccess, setPasswordSuccess] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
-  // Check authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (!session) {
         router.push('/');
         return;
       }
-      
+      setIsLoggedIn(true);
       setUser(session.user);
       
-      // Load profile data from profiles table
-      const { data: profile } = await supabase
+      // Fetch profile
+      const { data: profileData } = await supabase
         .from('profiles')
-        .select('username')
+        .select('*')
         .eq('id', session.user.id)
         .single();
+      setProfile(profileData);
       
-      if (profile?.username) {
-        setUsername(profile.username);
-      }
+      // Load cart
+      setCartItems(getCart());
       
-      // Also load profile data from user metadata for form
-      const userMetadata = session.user.user_metadata;
-      setProfileData({
-        username: userMetadata?.username || profile?.username || '',
-        phone: userMetadata?.phone || '',
-        address: userMetadata?.address || '',
-        postal_code: userMetadata?.postal_code || '',
-      });
-      
-      setIsLoading(false);
+      setLoading(false);
     };
-    
     checkAuth();
   }, [router]);
-
-  // Handle profile update
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfileLoading(true);
-    setProfileSuccess('');
-    setProfileError('');
-
-    try {
-      const { error } = await supabase.from('profiles').update({
-        username: profileData.username,
-        phone: profileData.phone,
-        address: profileData.address,
-        postal_code: profileData.postal_code,
-      }).eq('id', user?.id);
-
-      if (error) throw error;
-
-      setProfileSuccess('اطلاعات پروفایل با موفقیت به‌روزرسانی شد');
-      setTimeout(() => setProfileSuccess(''), 3000);
-    } catch (err: any) {
-      setProfileError(err.message || 'خطایی در به‌روزرسانی پروفایل رخ داده است');
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
-  // Handle password change
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordLoading(true);
-    setPasswordSuccess('');
-    setPasswordError('');
-
-    // Validate passwords
-    if (passwordData.new_password.length < 8) {
-      setPasswordError('رمز عبور جدید باید حداقل ۸ کاراکتر باشد');
-      setPasswordLoading(false);
-      return;
-    }
-
-    if (!/[A-Z]/.test(passwordData.new_password)) {
-      setPasswordError('رمز عبور جدید باید حداقل یک حرف بزرگ داشته باشد');
-      setPasswordLoading(false);
-      return;
-    }
-
-    if (!/\d/.test(passwordData.new_password)) {
-      setPasswordError('رمز عبور جدید باید حداقل یک عدد داشته باشد');
-      setPasswordLoading(false);
-      return;
-    }
-
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(passwordData.new_password)) {
-      setPasswordError('رمز عبور جدید باید حداقل یک کاراکتر خاص داشته باشد');
-      setPasswordLoading(false);
-      return;
-    }
-
-    if (passwordData.new_password !== passwordData.confirm_password) {
-      setPasswordError('رمز عبور و تکرار آن مطابقت ندارند');
-      setPasswordLoading(false);
-      return;
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: passwordData.new_password,
-      });
-
-      if (error) throw error;
-
-      setPasswordSuccess('رمز عبور با موفقیت تغییر کرد');
-      setPasswordData({
-        current_password: '',
-        new_password: '',
-        confirm_password: '',
-      });
-      setTimeout(() => setPasswordSuccess(''), 3000);
-    } catch (err: any) {
-      setPasswordError(err.message || 'خطایی در تغییر رمز عبور رخ داده است');
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/');
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center" dir="rtl">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#7C3AED] mx-auto"></div>
-          <p className="mt-4 text-gray-600">در حال بارگذاری...</p>
-        </div>
-      </div>
-    );
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        username: profile.username,
+        address: profile.address,
+        postal_code: profile.postal_code,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id);
+    
+    if (error) {
+      alert('خطا در به‌روزرسانی: ' + error.message);
+    } else {
+      alert('✅ تغییرات با موفقیت ثبت شد');
+    }
+  };
+
+  const handleCartCheckout = () => {
+    alert('سیستم پرداخت به زودی فعال می‌شود!');
+  };
+
+  const handleClearCart = () => {
+    if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟')) {
+      localStorage.removeItem('ayeneh_cart');
+      setCartItems([]);
+    }
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="text-purple-600 text-xl">در حال بارگذاری...</div>
+    </div>;
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
-      {/* Header */}
-      <header className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link 
-            href="/"
-            className="text-sm text-gray-600 hover:text-[#7C3AED] transition-colors flex items-center gap-1"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            بازگشت به صفحه اصلی
-          </Link>
-          <h1 className="text-xl font-bold text-gray-900">داشبورد کاربری</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity"
-          >
-            خروج
-          </button>
-        </div>
-      </header>
+  if (!isLoggedIn) {
+    return null;
+  }
 
-      <div className="container mx-auto px-4 py-8 flex gap-6">
-        {/* Sidebar - Right side for RTL */}
-        <aside className="w-64 flex-shrink-0">
-          <div className="bg-white rounded-xl shadow-md p-4 sticky top-4">
-            <nav className="space-y-2">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'profile'
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
-                    : 'text-gray-600 hover:bg-purple-50'
-                }`}
-              >
-                👤 پروفایل
-              </button>
-              <button
-                onClick={() => setActiveTab('security')}
-                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'security'
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
-                    : 'text-gray-600 hover:bg-purple-50'
-                }`}
-              >
-                🔒 امنیت
-              </button>
-              <button
-                onClick={() => setActiveTab('orders')}
-                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'orders'
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
-                    : 'text-gray-600 hover:bg-purple-50'
-                }`}
-              >
-                📦 سفارشات
-              </button>
-              <button
-                onClick={() => setActiveTab('favorites')}
-                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'favorites'
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
-                    : 'text-gray-600 hover:bg-purple-50'
-                }`}
-              >
-                ❤️ علاقه‌مندی‌ها
-              </button>
-              <button
-                onClick={() => setActiveTab('reviews')}
-                className={`w-full text-right px-4 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'reviews'
-                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white'
-                    : 'text-gray-600 hover:bg-purple-50'
-                }`}
-              >
-                💬 نظرات
-              </button>
-            </nav>
+  const sidebarItems = [
+    { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
+    { id: 'cart' as TabType, label: `سبد خرید (${getCartCount()})`, icon: '🛒' },
+    { id: 'favorites' as TabType, label: 'علاقه‌مندی‌ها', icon: '❤️' },
+    { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
+    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '' },
+    { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
+      {/* Header */}
+      <div className="bg-white shadow-md p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">داشبورد کاربری</h1>
+          <div className="flex items-center gap-4">
+            <a href="/" className="flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors">
+              <span>🏠</span>
+              <span>بازگشت به صفحه اصلی</span>
+            </a>
+            <button 
+              onClick={handleLogout}
+              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
+            >
+              خروج
+            </button>
           </div>
-        </aside>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6 flex gap-6">
+        {/* Sidebar */}
+        <div className="w-64 bg-white rounded-xl shadow-lg p-4 h-fit">
+          {sidebarItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full text-right px-4 py-3 rounded-lg mb-2 flex items-center gap-3 transition-all ${
+                activeTab === item.id
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                  : 'text-gray-700 hover:bg-purple-50'
+              }`}
+            >
+              <span>{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
 
         {/* Main Content */}
-        <main className="flex-1">
-          {/* Profile Tab */}
+        <div className="flex-1 bg-white rounded-xl shadow-lg p-6">
+          {/* PROFILE TAB */}
           {activeTab === 'profile' && (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              {/* Avatar Section */}
-              <div className="flex justify-center mb-6">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center shadow-lg">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-              </div>
-              
+            <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">اطلاعات پروفایل</h2>
               
-              {profileSuccess && (
-                <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
-                  {profileSuccess}
+              {/* Avatar */}
+              <div className="flex flex-col items-center mb-8">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
+                  <span className="text-5xl text-white">👤</span>
                 </div>
-              )}
-              
-              {profileError && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                  {profileError}
-                </div>
-              )}
+                <button className="text-sm text-purple-600 hover:text-purple-800 font-medium" disabled>
+                  تغییر عکس پروفایل (به زودی)
+                </button>
+              </div>
 
-              <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-2xl mx-auto">
                 <div>
-                  <label className="block text-gray-700 mb-2">نام کاربری</label>
+                  <label className="block text-gray-700 mb-2 font-medium">نام کاربری</label>
                   <input
                     type="text"
-                    value={profileData.username}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, username: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
+                    value={profile?.username || ''}
+                    onChange={(e) => setProfile({...profile, username: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">شماره تلفن</label>
+                  <label className="block text-gray-700 mb-2 font-medium">ایمیل</label>
+                  <input
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">ایمیل قابل تغییر نیست</p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">شماره تلفن</label>
                   <input
                     type="tel"
-                    value={profileData.phone}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
+                    value={profile?.phone || ''}
+                    disabled
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed"
                   />
+                  <p className="text-xs text-gray-500 mt-1">شماره تلفن قابل تغییر نیست</p>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">آدرس منزل</label>
+                  <label className="block text-gray-700 mb-2 font-medium">آدرس منزل</label>
                   <textarea
-                    value={profileData.address}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                    value={profile?.address || ''}
+                    onChange={(e) => setProfile({...profile, address: e.target.value})}
                     rows={3}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white resize-none"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 mb-2">کد پستی</label>
+                  <label className="block text-gray-700 mb-2 font-medium">کد پستی</label>
                   <input
                     type="text"
-                    value={profileData.postal_code}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, postal_code: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))}
-                    maxLength={10}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
+                    value={profile?.postal_code || ''}
+                    onChange={(e) => setProfile({...profile, postal_code: e.target.value})}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  disabled={profileLoading}
-                  className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-lg font-semibold transition-all ${
-                    profileLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
-                  }`}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity"
                 >
-                  {profileLoading ? 'در حال به‌روزرسانی...' : 'به‌روزرسانی پروفایل'}
+                  ذخیره تغییرات
                 </button>
               </form>
             </div>
           )}
 
-          {/* Security Tab */}
-          {activeTab === 'security' && (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">تغییر رمز عبور</h2>
-              
-              {passwordSuccess && (
-                <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
-                  {passwordSuccess}
+          {/* CART TAB */}
+          {activeTab === 'cart' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">سبد خرید شما</h2>
+              {cartItems.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">🛒</div>
+                  <p className="text-gray-600 text-lg">سبد خرید شما خالی است</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {cartItems.map((item, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                        <p className="text-purple-600">{item.price.toLocaleString()} تومان</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-700">تعداد: {item.quantity}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="border-t pt-4 mt-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-lg font-bold text-gray-900">مجموع:</span>
+                      <span className="text-xl font-bold text-purple-600">
+                        {cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()} تومان
+                      </span>
+                    </div>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={handleCartCheckout}
+                        className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90"
+                      >
+                        ادامه فرآیند خرید
+                      </button>
+                      <button 
+                        onClick={handleClearCart}
+                        className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                      >
+                        خالی کردن سبد
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
-              
-              {passwordError && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                  {passwordError}
-                </div>
-              )}
+            </div>
+          )}
 
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 mb-2">رمز عبور فعلی</label>
-                  <input
-                    type="password"
-                    value={passwordData.current_password}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
+          {/* FAVORITES TAB */}
+          {activeTab === 'favorites' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">علاقه‌مندی‌ها</h2>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">❤️</div>
+                <p className="text-gray-600 text-lg">لیست علاقه‌مندی‌ها خالی است</p>
+              </div>
+            </div>
+          )}
+
+          {/* REVIEWS TAB */}
+          {activeTab === 'reviews' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">نظرات شما</h2>
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">💬</div>
+                <p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p>
+              </div>
+            </div>
+          )}
+
+          {/* SUPPORT TAB */}
+          {activeTab === 'support' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">پشتیبانی و پیگیری خرید</h2>
+              <div className="space-y-4">
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <p className="text-gray-700 mb-2">📧 ایمیل پشتیبانی:</p>
+                  <p className="text-purple-600 font-semibold">support@ayeneh.com</p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <p className="text-gray-700 mb-2">📱 شماره تماس:</p>
+                  <p className="text-purple-600 font-semibold">021-12345678</p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <p className="text-gray-700 mb-2">⏰ ساعات پاسخگویی:</p>
+                  <p className="text-gray-600">شنبه تا پنجشنبه، 9 صبح تا 6 عصر</p>
+                </div>
+                <div className="mt-6">
+                  <label className="block text-gray-700 mb-2 font-medium">پیام شما:</label>
+                  <textarea 
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
+                    rows={4}
+                    placeholder="پیام خود را بنویسید..."
                   />
+                  <button 
+                    onClick={() => alert('پیام شما ارسال شد! به زودی با شما تماس می‌گیریم.')}
+                    className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
+                  >
+                    ارسال پیام
+                  </button>
                 </div>
+              </div>
+            </div>
+          )}
 
+          {/* SECURITY TAB */}
+          {activeTab === 'security' && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">تغییر رمز عبور</h2>
+              <form className="space-y-4 max-w-md" onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const newPassword = formData.get('newPassword') as string;
+                
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+                if (error) {
+                  alert('خطا: ' + error.message);
+                } else {
+                  alert('✅ رمز عبور با موفقیت تغییر کرد');
+                }
+              }}>
                 <div>
                   <label className="block text-gray-700 mb-2">رمز عبور جدید</label>
                   <input
                     type="password"
-                    value={passwordData.new_password}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
-                    placeholder="حداقل ۸ کاراکتر، یک حرف بزرگ، یک عدد، یک کاراکتر خاص"
+                    name="newPassword"
+                    required
+                    minLength={6}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-gray-700 mb-2">تکرار رمز عبور جدید</label>
-                  <input
-                    type="password"
-                    value={passwordData.confirm_password}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#7C3AED] text-gray-900 bg-white"
-                  />
-                </div>
-
                 <button
                   type="submit"
-                  disabled={passwordLoading}
-                  className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-lg font-semibold transition-all ${
-                    passwordLoading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
-                  }`}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90"
                 >
-                  {passwordLoading ? 'در حال تغییر...' : 'تغییر رمز عبور'}
+                  تغییر رمز عبور
                 </button>
               </form>
             </div>
           )}
-
-          {/* Orders Tab */}
-          {activeTab === 'orders' && (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">سفارشات</h2>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">📦</div>
-                <p className="text-gray-700 text-lg">هنوز سفارشی ثبت نکرده‌اید</p>
-              </div>
-            </div>
-          )}
-
-          {/* Favorites Tab */}
-          {activeTab === 'favorites' && (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">علاقه‌مندی‌ها</h2>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">❤️</div>
-                <p className="text-gray-700 text-lg">لیست علاقه‌مندی‌ها خالی است</p>
-              </div>
-            </div>
-          )}
-
-          {/* Reviews Tab */}
-          {activeTab === 'reviews' && (
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">نظرات</h2>
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">💬</div>
-                <p className="text-gray-700 text-lg">هنوز نظری ثبت نکرده‌اید</p>
-              </div>
-            </div>
-          )}
-        </main>
+        </div>
       </div>
     </div>
   );
