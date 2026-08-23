@@ -1,161 +1,99 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getCart, removeFromCart, updateCartItemQuantity, clearCart, getCartTotal } from '@/lib/cart';
-import type { CartItem } from '@/lib/cart';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
-interface CartModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface CartItem {
+  id?: number;
+  product_id: number;
+  product_name: string;
+  price: number;
+  quantity: number;
 }
 
-export default function CartModal({ isOpen, onClose }: CartModalProps) {
+export default function CartModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // Load cart items when modal opens
   useEffect(() => {
+    const loadCart = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data } = await supabase
+          .from('cart')
+          .select('*')
+          .eq('user_id', session.user.id);
+        setCartItems(data || []);
+      }
+      setLoading(false);
+    };
+    
     if (isOpen) {
-      const items = getCart();
-      setCartItems(items);
-      setTotal(getCartTotal());
+      loadCart();
     }
   }, [isOpen]);
 
-  // Close modal on Escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
-
-  const handleRemoveItem = (itemId: number) => {
-    const updatedCart = removeFromCart(itemId);
-    setCartItems(updatedCart);
-    setTotal(getCartTotal());
-  };
-
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
-    const updatedCart = updateCartItemQuantity(itemId, newQuantity);
-    setCartItems(updatedCart);
-    setTotal(getCartTotal());
-  };
-
-  const handleClearCart = () => {
-    clearCart();
-    setCartItems([]);
-    setTotal(0);
-  };
-
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" dir="rtl">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/50 transition-opacity"
-        onClick={onClose}
-      />
-      
-      {/* Modal Content */}
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in duration-200 max-h-[80vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 pb-4 border-b">
-          <h2 className="text-xl font-bold text-gray-800">سبد خرید</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+  const handleCheckout = () => {
+    alert('سیستم پرداخت به زودی فعال می‌شود!');
+  };
 
-        {/* Cart Items or Empty State */}
-        {cartItems.length === 0 ? (
-          <div className="py-8 text-center">
-            <div className="text-6xl mb-4">🛒</div>
-            <p className="text-gray-600 text-lg mb-2">سبد خرید شما خالی است</p>
-            <p className="text-gray-400 text-sm">برای افزودن محصول به سبد خرید، از فروشگاه دیدن کنید</p>
-            <button
-              onClick={onClose}
-              className="mt-6 bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-6 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity"
-            >
-              بازگشت به فروشگاه
-            </button>
+  const handleClearCart = async () => {
+    if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟')) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase.from('cart').delete().eq('user_id', session.user.id);
+        setCartItems([]);
+      }
+    }
+  };
+
+  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl relative max-h-[90vh] overflow-y-auto" dir="rtl">
+        <button onClick={onClose} className="absolute top-4 left-4 text-gray-400 hover:text-gray-600">
+          ✕
+        </button>
+        
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">سبد خرید</h2>
+        
+        {loading ? (
+          <div className="text-center py-8">در حال بارگذاری...</div>
+        ) : cartItems.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4"></div>
+            <p className="text-gray-600">سبد خرید شما خالی است</p>
           </div>
         ) : (
-          <>
-            {/* Cart Items List */}
-            <div className="space-y-4 mb-4">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  {item.image && (
-                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                    <p className="text-purple-600 font-bold">{item.price.toLocaleString('fa-IR')} تومان</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                      className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
-                      disabled={item.quantity <= 1}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                      </svg>
-                    </button>
-                    <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                    <button
-                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full hover:bg-gray-300 transition-colors"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+          <div className="space-y-4">
+            {cartItems.map((item) => (
+              <div key={item.product_id} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
+                  <p className="text-purple-600">{item.price.toLocaleString()} تومان</p>
                 </div>
-              ))}
-            </div>
-
-            {/* Total and Actions */}
-            <div className="border-t pt-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className="font-semibold text-gray-700">مجموع:</span>
-                <span className="text-xl font-bold text-purple-600">{total.toLocaleString('fa-IR')} تومان</span>
+                <div className="text-gray-700">تعداد: {item.quantity}</div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleClearCart}
-                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-full font-semibold hover:bg-gray-300 transition-colors"
-                >
+            ))}
+            
+            <div className="border-t pt-4 mt-4">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-lg font-bold text-gray-900">مجموع:</span>
+                <span className="text-xl font-bold text-purple-600">{total.toLocaleString()} تومان</span>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={handleCheckout} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold">
+                  ادامه فرآیند خرید
+                </button>
+                <button onClick={handleClearCart} className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                   خالی کردن سبد
                 </button>
-                <button
-                  onClick={onClose}
-                  className="flex-1 bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity"
-                >
-                  ادامه خرید
-                </button>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
