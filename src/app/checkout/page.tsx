@@ -79,7 +79,6 @@ export default function CheckoutPage() {
       
       const order = await createOrder(user.id, items, formData);
       
-      // محاسبه هزینه ارسال برای ذخیره در دیتابیس
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       const shippingCost = subtotal >= 3000000 ? 0 : (shippingMethod === 'post' ? 160000 : 0);
 
@@ -95,7 +94,6 @@ export default function CheckoutPage() {
       
       await supabase.from('cart').delete().eq('user_id', user.id);
       
-      // هدایت به صفحه موفقیت (یا درگاه پرداخت)
       router.push(`/checkout/success/${order.id}`);
       
     } catch (error) {
@@ -119,10 +117,8 @@ export default function CheckoutPage() {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            {/* ستون راست: فرم اطلاعات (۶۶٪) */}
             <div className="lg:col-span-2 space-y-6">
               
-              {/* اطلاعات تماس */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">اطلاعات تماس و ارسال</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -131,4 +127,241 @@ export default function CheckoutPage() {
                     <input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 mb-2 text-sm font-medium">کد پستی *</label>
+                    <input
+                      type="text"
+                      value={formData.postal_code}
+                      onChange={(e) => setFormData({...formData, postal_code: e.target.value})}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition"
+                      required
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-gray-700 mb-2 text-sm font-medium">آدرس کامل *</label>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      rows={3}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">روش ارسال</h2>
+                <div className="space-y-3">
+                  <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    shippingMethod === 'post' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="shipping"
+                      value="post"
+                      checked={shippingMethod === 'post'}
+                      onChange={(e) => setShippingMethod(e.target.value as any)}
+                      className="w-5 h-5 mt-1"
+                    />
+                    <div>
+                      <p className="font-bold text-gray-900">پست پیشتاز</p>
+                      <p className="text-sm text-gray-600">
+                        {subtotal >= 3000000 ? 'ارسال رایگان (سفارش بالای ۳ میلیون تومان)' : '۶۰,۰۰۰ تومان - ارسال به سراسر کشور'}
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    shippingMethod === 'tehran' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="shipping"
+                      value="tehran"
+                      checked={shippingMethod === 'tehran'}
+                      onChange={(e) => setShippingMethod(e.target.value as any)}
+                      className="w-5 h-5 mt-1"
+                    />
+                    <div>
+                      <p className="font-bold text-gray-900">تحویل حضوری در دفتر یوسف آباد تهران</p>
+                      <p className="text-sm text-gray-600">بدون هزینه اضافی</p>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    shippingMethod === 'mashhad' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="shipping"
+                      value="mashhad"
+                      checked={shippingMethod === 'mashhad'}
+                      onChange={(e) => setShippingMethod(e.target.value as any)}
+                      className="w-5 h-5 mt-1"
+                    />
+                    <div>
+                      <p className="font-bold text-gray-900">تحویل حضوری در فروشگاه مشهد</p>
+                      <p className="text-sm text-gray-600">بدون هزینه اضافی</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">روش پرداخت</h2>
+                <div className="space-y-3">
+                  <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    paymentMethod === 'online' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="online"
+                      checked={paymentMethod === 'online'}
+                      onChange={(e) => setPaymentMethod(e.target.value as any)}
+                      className="w-5 h-5"
+                    />
+                    <div>
+                      <p className="font-bold text-gray-900">پرداخت امن زیبال</p>
+                      <p className="text-sm text-gray-600">پرداخت امن به وسیله کلیه کارت‌های عضو شتاب از طریق درگاه زیبال</p>
+                    </div>
+                  </label>
+
+                  <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    paymentMethod === 'card' ? 'border-purple-600 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="payment"
+                      value="card"
+                      checked={paymentMethod === 'card'}
+                      onChange={(e) => setPaymentMethod(e.target.value as any)}
+                      className="w-5 h-5"
+                    />
+                    <div>
+                      <p className="font-bold text-gray-900">کارت به کارت</p>
+                      <p className="text-sm text-gray-600">واریز به حساب و ارسال فیش واریزی</p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      className="w-5 h-5 mt-0.5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      required
+                    />
+                    <span className="text-sm text-gray-700 leading-relaxed">
+                      اطلاعات شخصی شما برای پردازش سفارش شما، پشتیبانی از تجربه شما در سراسر این وب سایت و برای اهدافی که در 
+                      <a href="/privacy-policy" className="text-purple-600 hover:underline mx-1">سیاست حفظ حریم خصوصی</a> 
+                      ذکر شده است استفاده می‌شود.
+                      <br />
+                      <strong className="text-red-600 block mt-2">⚠️ لطفاً پیش از ورود به صفحه پرداخت، VPN خود را خاموش کنید.</strong>
+                    </span>
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-4 rounded-lg font-bold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
+                >
+                  {loading ? 'در حال پردازش...' : 'پرداخت و ثبت نهایی سفارش'}
+                </button>
+              </div>
+            </div>
+
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-4">
+                <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">خلاصه سفارش</h2>
+                
+                <div className="space-y-4 mb-6 max-h-60 overflow-y-auto">
+                  {cartItems.map((item) => (
+                    <div key={item.product_id} className="flex justify-between items-start text-sm">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">{item.product_name}</p>
+                        <p className="text-gray-500 text-xs mt-1">{item.quantity} عدد</p>
+                      </div>
+                      <p className="font-semibold text-gray-900 whitespace-nowrap mr-4">
+                        {(item.price * item.quantity).toLocaleString()} تومان
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value)}
+                      placeholder="کد تخفیف"
+                      className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                    <button 
+                      type="button"
+                      className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition"
+                      onClick={() => alert('سیستم کد تخفیف به زودی فعال می‌شود')}
+                    >
+                      اعمال
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3 border-t pt-4 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>جمع جزء:</span>
+                    <span>{subtotal.toLocaleString()} تومان</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>حمل و نقل:</span>
+                    <span>
+                      {shippingCost === 0 ? 'رایگان' : `${shippingCost.toLocaleString()} تومان`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold text-gray-900 border-t pt-3 mt-3">
+                    <span>مجموع:</span>
+                    <span className="text-purple-600">{total.toLocaleString()} تومان</span>
+                  </div>
+                </div>
+
+                <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-100 text-xs text-gray-700 space-y-3">
+                  <p className="font-bold text-purple-800">📦 نکات مهم درباره ارسال سفارشات:</p>
+                  <ul className="space-y-2 list-disc list-inside">
+                    <li>ارسال رایگان برای سفارشات بالای ۳ میلیون تومان در کل کشور</li>
+                    <li>ارسال با پست پیشتاز به مبلغ ۶۰ هزار تومان برای تمامی کاربران</li>
+                    <li>تحویل حضوری در تهران و مشهد بدون هزینه اضافی</li>
+                  </ul>
+                  
+                  <div className="pt-2 border-t border-purple-200">
+                    <p className="font-bold text-purple-800 mb-1">📍 مراکز تحویل حضوری:</p>
+                    <p className="mb-2"><strong>دفتر تهران:</strong> خیابان یوسف آباد، بالاتر از میدان جمال الدین اسد آبادی، نبش کوچه ۳۹، پلاک ۳۹، ساختمان کاج، طبقه دوم، واحد ۳</p>
+                    <p className="mb-2"><strong>فروشگاه مشهد:</strong> بلوار دانش آموز، بعد از دانش آموز ۱۹، پلاک ۱۹/۲</p>
+                  </div>
+
+                  <div className="pt-2 border-t border-purple-200">
+                    <p className="font-bold text-purple-800 mb-1">⏰ ساعات کاری:</p>
+                    <p><strong>دفتر تهران:</strong> شنبه تا چهارشنبه ۱۰ الی ۱۸ | پنجشنبه ۱ الی ۱۶</p>
+                    <p className="mt-1"><strong>فروشگاه مشهد:</strong> شنبه تا پنجشنبه ۹ الی ۱۴ و ۱۷ الی ۲۲</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
