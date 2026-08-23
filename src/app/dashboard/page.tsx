@@ -132,11 +132,17 @@ export default function DashboardPage() {
 
   const handleAddFavoriteToCart = async (product: any) => {
     if (!user) return;
+    
     await addToCart(user.id, {
       id: product.id,
       name: product.name,
       price: product.price_toman
     });
+    
+    // آپدیت کردن سبد خرید بدون رفرش
+    const updatedCart = await getCart(user.id);
+    setCartItems(updatedCart);
+    
     alert('✅ به سبد خرید اضافه شد');
   };
 
@@ -160,11 +166,11 @@ export default function DashboardPage() {
   const cartCount = cartItems.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
 
   const sidebarItems = [
-    { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
+    { id: 'profile' as TabType, label: 'پروفایل', icon: '' },
     { id: 'cart' as TabType, label: `سبد خرید (${cartCount})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '' },
-    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
+    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
   ];
 
@@ -323,7 +329,7 @@ export default function DashboardPage() {
 
           {activeTab === 'reviews' && (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">💬</div>
+              <div className="text-6xl mb-4"></div>
               <p className="text-gray-600 text-lg">هنوز نظری ثبت نکرده‌اید</p>
             </div>
           )}
