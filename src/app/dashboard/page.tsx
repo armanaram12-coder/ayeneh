@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { getCart, getCartCount, addToCart } from '@/lib/cart';
+import { getCart, addToCart } from '@/lib/cart';
 import { getFavorites, toggleFavorite } from '@/lib/favorites';
 import productsData from '@/data/products.json';
 
@@ -55,7 +55,6 @@ export default function DashboardPage() {
       const cart = await getCart(session.user.id);
       setCartItems(cart);
 
-      // Load favorites
       const favIds = await getFavorites(session.user.id);
       setFavoriteIds(favIds);
       const allProds = getAllProducts();
@@ -150,7 +149,7 @@ export default function DashboardPage() {
 
   const sidebarItems = [
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
-    { id: 'cart' as TabType, label: `سبد خرید (${cartItems.reduce((s, i) => s + i.quantity, 0)})`, icon: '🛒' },
+    { id: 'cart' as TabType, label: `سبد خرید (${cartItems.reduce((s, i) => s + i.quantity, 0)})`, icon: '' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
     { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
