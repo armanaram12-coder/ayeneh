@@ -18,16 +18,20 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // تابع به‌روزرسانی تعداد سبد خرید
+  // تابع به‌روزرسانی تعداد سبد خرید (ایزوله برای هر کاربر)
   const updateCartCount = async (uid: string) => {
-    const count = await getCartCount(uid);
-    setCartCount(count);
+    try {
+      const count = await getCartCount(uid);
+      setCartCount(count);
+      // ذخیره با کلید مخصوص هر کاربر
+      localStorage.setItem(`cartCount_${uid}`, count.toString());
+    } catch (error) {
+      console.error('Error updating cart count:', error);
+    }
   };
 
   useEffect(() => {
-    let subscription: any = null;
-
-    const checkAuth = async () => {
+    const initHeader = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsAuthenticated(true);
@@ -39,40 +43,37 @@ export default function Header() {
           .single();
         if (profile?.username) setUsername(profile.username);
         
+        // خواندن تعداد از دیتابیس
         await updateCartCount(session.user.id);
-
-        // ✅ Subscribe به تغییرات جدول cart برای به‌روزرسانی خودکار
-        subscription = supabase
-          .channel('cart-changes')
-          .on(
-            'postgres_changes',
-            {
-              event: '*', // همه رویدادها (INSERT, UPDATE, DELETE)
-              schema: 'public',
-              table: 'cart',
-              filter: `user_id=eq.${session.user.id}`
-            },
-            async () => {
-              await updateCartCount(session.user.id);
-            }
-          )
-          .subscribe();
       }
     };
-    checkAuth();
+    
+    initHeader();
+
+    // گوش دادن به تغییرات localStorage (فقط برای کلیدهای مربوط به سبد خرید)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key && e.key.startsWith('cartCount_') && userId && e.key === `cartCount_${userId}`) {
+        const newCount = e.newValue ? parseInt(e.newValue, 10) : 0;
+        setCartCount(newCount);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
 
     const handleOpenAuth = () => setIsAuthModalOpen(true);
     window.addEventListener('openAuthModal', handleOpenAuth);
 
     return () => {
+      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('openAuthModal', handleOpenAuth);
-      if (subscription) {
-        supabase.removeChannel(subscription);
-      }
     };
-  }, []);
+  }, [userId]);
 
   const handleLogout = async () => {
+    if (userId) {
+      // پاک کردن localStorage مخصوص این کاربر
+      localStorage.removeItem(`cartCount_${userId}`);
+    }
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUsername(null);
