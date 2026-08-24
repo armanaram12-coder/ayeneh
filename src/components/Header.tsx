@@ -18,13 +18,10 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // تابع به‌روزرسانی تعداد سبد خرید (ایزوله برای هر کاربر)
   const updateCartCount = async (uid: string) => {
     try {
       const count = await getCartCount(uid);
       setCartCount(count);
-      // ذخیره با کلید مخصوص هر کاربر
-      localStorage.setItem(`cartCount_${uid}`, count.toString());
     } catch (error) {
       console.error('Error updating cart count:', error);
     }
@@ -42,38 +39,30 @@ export default function Header() {
           .eq('id', session.user.id)
           .single();
         if (profile?.username) setUsername(profile.username);
-        
-        // خواندن تعداد از دیتابیس
         await updateCartCount(session.user.id);
       }
     };
-    
     initHeader();
 
-    // گوش دادن به تغییرات localStorage (فقط برای کلیدهای مربوط به سبد خرید)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key && e.key.startsWith('cartCount_') && userId && e.key === `cartCount_${userId}`) {
-        const newCount = e.newValue ? parseInt(e.newValue, 10) : 0;
-        setCartCount(newCount);
+    // ✅ گوش دادن به رویداد به‌روزرسانی سبد خرید از سایر صفحات
+    const handleCartUpdate = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await updateCartCount(session.user.id);
       }
     };
-    
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleCartUpdate);
 
     const handleOpenAuth = () => setIsAuthModalOpen(true);
     window.addEventListener('openAuthModal', handleOpenAuth);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('openAuthModal', handleOpenAuth);
     };
-  }, [userId]);
+  }, []);
 
   const handleLogout = async () => {
-    if (userId) {
-      // پاک کردن localStorage مخصوص این کاربر
-      localStorage.removeItem(`cartCount_${userId}`);
-    }
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setUsername(null);
