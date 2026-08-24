@@ -369,7 +369,9 @@ export default function CheckoutPage() {
                     />
                     <span className="text-sm text-gray-700 leading-relaxed">
                       اطلاعات شخصی شما برای پردازش سفارش شما، پشتیبانی از تجربه شما در سراسر این وب سایت و برای اهدافی که در 
-                      <a href="/privacy-policy" className="text-purple-600 hover:underline mx-1">سیاست حفظ حریم خصوصی</a> 
+                      <Link href="/privacy-policy" className="text-purple-600 hover:underline mx-1" target="_blank">
+  سیاست حفظ حریم خصوصی و قوانین خرید
+</Link> 
                       ذکر شده است استفاده می‌شود.
                       <br />
                       <strong className="text-red-600 block mt-2">⚠️ لطفاً پیش از ورود به صفحه پرداخت، VPN خود را خاموش کنید.</strong>
