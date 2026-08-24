@@ -18,7 +18,15 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // تابع به‌روزرسانی تعداد سبد خرید
+  const updateCartCount = async (uid: string) => {
+    const count = await getCartCount(uid);
+    setCartCount(count);
+  };
+
   useEffect(() => {
+    let subscription: any = null;
+
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -31,8 +39,24 @@ export default function Header() {
           .single();
         if (profile?.username) setUsername(profile.username);
         
-        const count = await getCartCount(session.user.id);
-        setCartCount(count);
+        await updateCartCount(session.user.id);
+
+        // ✅ Subscribe به تغییرات جدول cart برای به‌روزرسانی خودکار
+        subscription = supabase
+          .channel('cart-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*', // همه رویدادها (INSERT, UPDATE, DELETE)
+              schema: 'public',
+              table: 'cart',
+              filter: `user_id=eq.${session.user.id}`
+            },
+            async () => {
+              await updateCartCount(session.user.id);
+            }
+          )
+          .subscribe();
       }
     };
     checkAuth();
@@ -40,19 +64,11 @@ export default function Header() {
     const handleOpenAuth = () => setIsAuthModalOpen(true);
     window.addEventListener('openAuthModal', handleOpenAuth);
 
-    // گوش دادن به رویداد به‌روزرسانی سبد خرید از سایر صفحات
-    const handleCartUpdate = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const count = await getCartCount(session.user.id);
-        setCartCount(count);
-      }
-    };
-    window.addEventListener('cartUpdated', handleCartUpdate);
-
     return () => {
       window.removeEventListener('openAuthModal', handleOpenAuth);
-      window.removeEventListener('cartUpdated', handleCartUpdate);
+      if (subscription) {
+        supabase.removeChannel(subscription);
+      }
     };
   }, []);
 
