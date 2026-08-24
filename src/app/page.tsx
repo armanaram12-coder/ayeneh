@@ -5,6 +5,8 @@ import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import FloatingContact from '@/components/FloatingContact';
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import { toggleFavorite, getFavorites } from '@/lib/favorites';
@@ -77,7 +79,6 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
 }
 
 export default function Home() {
-  // ✅ رفع ارور Hydration: مقدار پیش‌فرض همیشه true است
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -87,7 +88,6 @@ export default function Home() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
 
   useEffect(() => {
-    // ✅ بررسی اسپلش اسکرین فقط در محیط کلاینت
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
     if (hasSeen === 'true') {
       setShowSplash(false);
@@ -118,8 +118,6 @@ export default function Home() {
     }
 
     await addToCart(session.user.id, { id: product.id, name: product.name, price: product.price_toman });
-    
-    // ✅ ارسال سیگنال به هدر برای به‌روزرسانی عدد
     window.dispatchEvent(new Event('cartUpdated'));
     
     setCartCount(await getCartCount(session.user.id));
@@ -149,12 +147,20 @@ export default function Home() {
   return (
     <>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-      {showToast && <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">✅ به سبد خرید اضافه شد</div>}
+      
+      {showToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
+          ✅ به سبد خرید اضافه شد
+        </div>
+      )}
+      
       {!showSplash && (
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
           <Header />
           <HeroSlider />
           <FlashSale />
+          
+          {/* دسته‌بندی محصولات */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
@@ -181,6 +187,8 @@ export default function Home() {
               {selectedCategory && <div className="text-center mt-4"><button onClick={() => setSelectedCategory(null)} className="text-[#7C3AED] hover:underline text-sm">نمایش همه دسته‌بندی‌ها ✕</button></div>}
             </div>
           </section>
+
+          {/* لیست محصولات (فیلتر شده) */}
           <section className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
@@ -200,6 +208,88 @@ export default function Home() {
               )}
             </div>
           </section>
+
+          {/* ✅ بخش جدید ۱: چرا فروشگاه آینه؟ */}
+          <section className="py-16 bg-white">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">چرا فروشگاه آینه را انتخاب کنید؟</h2>
+                <p className="text-gray-600 max-w-2xl mx-auto">تفاوت ما در تعهد به کیفیت و مشاوره دلسوزانه است</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { icon: '🛡️', title: 'ضمانت ۱۰۰٪ اصالت کالا', desc: 'تمامی محصولات تراست و سایر برندها با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
+                  { icon: '👨‍⚕️', title: 'مشاوره تخصصی رایگان', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین روتین را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
+                  { icon: '🚀', title: 'ارسال سریع و ایمن', desc: 'سفارشات شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن به سراسر ایران ارسال می‌شود.' },
+                  { icon: '💎', title: 'قیمت منصفانه و رقابتی', desc: 'حذف واسطه‌ها به ما این امکان را می‌دهد تا بهترین قیمت را برای محصولات اورجینال ارائه دهیم.' }
+                ].map((item, index) => (
+                  <div key={index} className="bg-purple-50/50 rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-purple-100">
+                    <div className="text-4xl mb-4">{item.icon}</div>
+                    <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ بخش جدید ۲: معرفی تخصصی محصولات تراست */}
+          <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+
+            <div className="container mx-auto px-4 relative z-10">
+              <div className="flex flex-col lg:flex-row items-center gap-12">
+                <div className="lg:w-1/2">
+                  <span className="inline-block bg-purple-700/50 text-purple-200 px-4 py-1 rounded-full text-sm font-semibold mb-4 border border-purple-500/30">
+                    نمایندگی فروش برند Trust
+                  </span>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+                    راز درخشش پوست شما، <br/>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">در روتین مراقبتی تراست است</span>
+                  </h2>
+                  <p className="text-gray-300 leading-relaxed mb-6 text-justify">
+                    محصولات تراست (Trust) با فرمولاسیون پیشرفته و مواد اولیه باکیفیت، نیازهای مختلف پوستی از جمله آبرسانی، ضدچروک، روشن‌کنندگی و محافظت در برابر آفتاب را پوشش می‌دهند. ما در فروشگاه آینه، نه تنها فروشنده، بلکه مشاور شما برای انتخاب ترکیب صحیح سرم‌ها، کرم‌ها و شوینده‌های تراست هستیم تا بیشترین بازدهی را برای پوست خود تجربه کنید.
+                  </p>
+                  <div className="flex flex-wrap gap-4">
+                    <Link href="/" className="bg-white text-purple-900 px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-lg">
+                      مشاهده محصولات تراست
+                    </Link>
+                    <a href="https://wa.me/989352225693" target="_blank" rel="noopener noreferrer" className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-500 transition-colors shadow-lg flex items-center gap-2">
+                      <span>💬</span> درخواست مشاوره رایگان
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="lg:w-1/2 grid grid-cols-2 gap-4">
+                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center">
+                    <div className="text-3xl mb-3">💧</div>
+                    <h4 className="font-bold mb-2">سرم‌های تخصصی</h4>
+                    <p className="text-xs text-gray-300">آبرسانی عمیق و جوانسازی با تکنولوژی روز</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center mt-8">
+                    <div className="text-3xl mb-3">☀️</div>
+                    <h4 className="font-bold mb-2">محافظت از پوست</h4>
+                    <p className="text-xs text-gray-300">ضدآفتاب‌های رنگی و بی‌رنگ با بافت سبک</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center">
+                    <div className="text-3xl mb-3">🧴</div>
+                    <h4 className="font-bold mb-2">پاک‌کننده‌ها</h4>
+                    <p className="text-xs text-gray-300">شوینده‌های ملایم بدون ایجاد خشکی و حساسیت</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center mt-8">
+                    <div className="text-3xl mb-3">🌸</div>
+                    <h4 className="font-bold mb-2">عطر و خوشبوکننده</h4>
+                    <p className="text-xs text-gray-300">رایحه‌های ماندگار و منحصر به فرد</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* فوتر و دکمه شناور */}
+          <Footer />
+          <FloatingContact />
         </main>
       )}
     </>
