@@ -42,7 +42,6 @@ export default function DashboardPage() {
   const [userOrders, setUserOrders] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   
-  // Stateهای فرم پشتیبانی
   const [supportSubject, setSupportSubject] = useState('');
   const [supportMessage, setSupportMessage] = useState('');
   const [sendingSupport, setSendingSupport] = useState(false);
@@ -162,20 +161,29 @@ export default function DashboardPage() {
     setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
   };
 
-  // تابع حذف سفارش
+  // تابع حذف سفارش (اصلاح شده و مطمئن)
   const handleDeleteOrder = async (orderId: string) => {
-    if (!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
+    if (!confirm('آیا از حذف این سفارش مطمئن هستید؟ این عملیات قابل بازگشت نیست.')) return;
     
     const { error } = await supabase.from('orders').delete().eq('id', orderId);
+    
     if (error) {
-      alert('خطا در حذف سفارش');
+      console.error('Delete error:', error);
+      alert('❌ خطا در حذف سفارش: ' + error.message);
     } else {
-      setUserOrders(userOrders.filter((order: any) => order.id !== orderId));
+      // خواندن مجدد سفارشات از دیتابیس برای اطمینان ۱۰۰٪ از هماهنگی UI و دیتابیس
+      const { data: updatedOrders } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      setUserOrders(updatedOrders || []);
       alert('✅ سفارش با موفقیت حذف شد');
     }
   };
 
-  // تابع ارسال پیام پشتیبانی
+  // تابع ارسال پیام پشتیبانی (بدون mailto گیج‌کننده)
   const handleSendSupportMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !supportSubject || !supportMessage) {
@@ -185,7 +193,6 @@ export default function DashboardPage() {
 
     setSendingSupport(true);
     try {
-      // ۱. ذخیره در سوپابیس
       const { error: dbError } = await supabase.from('support_messages').insert({
         user_id: user.id,
         subject: supportSubject,
@@ -195,11 +202,7 @@ export default function DashboardPage() {
 
       if (dbError) throw dbError;
 
-      // ۲. باز کردن کلاینت ایمیل کاربر برای ارسال مستقیم به تو
-      const mailtoLink = `mailto:ayenehshop@gmail.com?subject=${encodeURIComponent('پشتیبانی سایت آینه: ' + supportSubject)}&body=${encodeURIComponent(supportMessage + '\n\n---\nشناسه کاربری: ' + user.id)}`;
-      window.location.href = mailtoLink;
-
-      alert('✅ پیام شما ثبت شد و برنامه ایمیل شما باز می‌شود.');
+      alert('✅ پیام شما با موفقیت در سیستم ثبت شد. به زودی پاسخ خواهیم داد.');
       setSupportSubject('');
       setSupportMessage('');
     } catch (error) {
@@ -239,7 +242,6 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-2xl font-bold text-gray-900">داشبورد کاربری</h1>
           <div className="flex items-center gap-3">
-            {/* دکمه بازگشت زیبا و استاندارد */}
             <a 
               href="/" 
               className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:border-purple-300 transition-all shadow-sm"
@@ -440,7 +442,6 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">پشتیبانی و پیگیری خرید</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* اطلاعات تماس */}
                 <div className="space-y-4">
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
                     <p className="text-gray-700 mb-1 font-medium">📧 ایمیل پشتیبانی:</p>
@@ -450,13 +451,12 @@ export default function DashboardPage() {
                     <p className="text-gray-700 mb-1 font-medium">📱 شماره تماس:</p>
                     <p className="text-purple-700 font-bold text-lg" dir="ltr">09352225693</p>
                   </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-gray-700">
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-gray-700">
                     <p className="font-bold mb-2">💡 راهنما:</p>
-                    <p>پیام شما هم در سیستم ما ذخیره می‌شود و هم برنامه ایمیل شما باز می‌شود تا پیام مستقیماً برای ما ارسال گردد.</p>
+                    <p>پیام شما مستقیماً در سیستم پشتیبانی ما ذخیره می‌شود و کارشناسان ما در اسرع وقت پاسخگوی شما خواهند بود.</p>
                   </div>
                 </div>
 
-                {/* فرم ارسال پیام */}
                 <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
                   <h3 className="font-bold text-gray-800 mb-4">ارسال پیام جدید</h3>
                   <form onSubmit={handleSendSupportMessage} className="space-y-4">
