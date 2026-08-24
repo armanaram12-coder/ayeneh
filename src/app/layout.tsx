@@ -53,7 +53,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// ✅ اصلاح شد: استفاده از React.ReactNode به جای LayoutProps اشتباه
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="fa"
