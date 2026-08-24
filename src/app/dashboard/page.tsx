@@ -161,27 +161,29 @@ export default function DashboardPage() {
     setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
   };
 
-  // تابع حذف سفارش (با گزارش خطای دقیق)
+    // تابع حذف سفارش (با رفرش صفحه بعد از حذف)
   const handleDeleteOrder = async (orderId: string) => {
     if (!confirm('آیا از حذف این سفارش مطمئن هستید؟ این عملیات قابل بازگشت نیست.')) return;
     if (!user) {
-      alert('❌ خطا: کاربر شناسایی نشد. لطفاً صفحه را رفرش کنید.');
+      alert(' خطا: کاربر شناسایی نشد. لطفاً صفحه را رفرش کنید.');
       return;
     }
     
-    console.log('Attempting to delete order:', orderId, 'for user:', user.id);
-    
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('orders')
       .delete()
       .eq('id', orderId)
-      .eq('user_id', user.id); // شرط اضافی برای امنیت بیشتر
+      .eq('user_id', user.id);
 
     if (error) {
-      console.error('Supabase Delete Error:', error);
-      alert('❌ خطا در حذف سفارش:\n' + error.message + '\n\nلطفاً این متن را برای پشتیبانی فنی ارسال کنید.');
+      console.error('Delete error:', error);
+      alert(' خطا در حذف سفارش: ' + error.message);
       return;
     }
+    
+    // رفرش صفحه برای اطمینان ۱۰۰٪ از هماهنگی با دیتابیس
+    window.location.reload();
+  };
     
     // خواندن مجدد لیست از دیتابیس
     const { data: updatedOrders, error: fetchError } = await supabase
