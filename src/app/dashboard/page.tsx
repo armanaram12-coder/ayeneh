@@ -161,29 +161,44 @@ export default function DashboardPage() {
     setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
   };
 
-  // تابع حذف سفارش (اصلاح شده و مطمئن)
+  // تابع حذف سفارش (با گزارش خطای دقیق)
   const handleDeleteOrder = async (orderId: string) => {
     if (!confirm('آیا از حذف این سفارش مطمئن هستید؟ این عملیات قابل بازگشت نیست.')) return;
+    if (!user) {
+      alert('❌ خطا: کاربر شناسایی نشد. لطفاً صفحه را رفرش کنید.');
+      return;
+    }
     
-    const { error } = await supabase.from('orders').delete().eq('id', orderId);
+    console.log('Attempting to delete order:', orderId, 'for user:', user.id);
     
+    const { data, error } = await supabase
+      .from('orders')
+      .delete()
+      .eq('id', orderId)
+      .eq('user_id', user.id); // شرط اضافی برای امنیت بیشتر
+
     if (error) {
-      console.error('Delete error:', error);
-      alert('❌ خطا در حذف سفارش: ' + error.message);
-    } else {
-      // خواندن مجدد سفارشات از دیتابیس برای اطمینان ۱۰۰٪ از هماهنگی UI و دیتابیس
-      const { data: updatedOrders } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      console.error('Supabase Delete Error:', error);
+      alert('❌ خطا در حذف سفارش:\n' + error.message + '\n\nلطفاً این متن را برای پشتیبانی فنی ارسال کنید.');
+      return;
+    }
+    
+    // خواندن مجدد لیست از دیتابیس
+    const { data: updatedOrders, error: fetchError } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
       
+    if (fetchError) {
+      console.error('Fetch Error:', fetchError);
+    } else {
       setUserOrders(updatedOrders || []);
       alert('✅ سفارش با موفقیت حذف شد');
     }
   };
 
-  // تابع ارسال پیام پشتیبانی (بدون mailto گیج‌کننده)
+  // تابع ارسال پیام پشتیبانی (با ذخیره نام و شماره)
   const handleSendSupportMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !supportSubject || !supportMessage) {
@@ -195,6 +210,8 @@ export default function DashboardPage() {
     try {
       const { error: dbError } = await supabase.from('support_messages').insert({
         user_id: user.id,
+        username: profile?.username || user.email || 'کاربر بدون نام',
+        phone: profile?.phone || 'ثبت نشده',
         subject: supportSubject,
         message: supportMessage,
         status: 'unread'
@@ -237,15 +254,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
-      {/* هدر داشبورد */}
       <div className="bg-white shadow-md p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-2xl font-bold text-gray-900">داشبورد کاربری</h1>
           <div className="flex items-center gap-3">
-            <a 
-              href="/" 
-              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:border-purple-300 transition-all shadow-sm"
-            >
+            <a href="/" className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:border-purple-300 transition-all shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
@@ -257,7 +270,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
-        {/* سایدبار */}
         <div className="w-full md:w-64 bg-white rounded-xl shadow-lg p-4 h-fit">
           {sidebarItems.map((item) => (
             <button 
@@ -274,9 +286,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* محتوای اصلی */}
         <div className="flex-1 bg-white rounded-xl shadow-lg p-6">
-          
           {activeTab === 'profile' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">اطلاعات پروفایل</h2>
