@@ -41,6 +41,12 @@ export default function DashboardPage() {
   const [favoriteProducts, setFavoriteProducts] = useState<any[]>([]);
   const [userOrders, setUserOrders] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  
+  // Stateهای فرم پشتیبانی
+  const [supportSubject, setSupportSubject] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');
+  const [sendingSupport, setSendingSupport] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -139,16 +145,13 @@ export default function DashboardPage() {
 
   const handleAddFavoriteToCart = async (product: any) => {
     if (!user) return;
-    
     await addToCart(user.id, {
       id: product.id,
       name: product.name,
       price: product.price_toman
     });
-    
     const updatedCart = await getCart(user.id);
     setCartItems(updatedCart);
-    
     alert('✅ به سبد خرید اضافه شد');
   };
 
@@ -157,6 +160,54 @@ export default function DashboardPage() {
     await toggleFavorite(user.id, productId);
     setFavoriteIds(favoriteIds.filter(id => id !== productId));
     setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
+  };
+
+  // تابع حذف سفارش
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('آیا از حذف این سفارش مطمئن هستید؟')) return;
+    
+    const { error } = await supabase.from('orders').delete().eq('id', orderId);
+    if (error) {
+      alert('خطا در حذف سفارش');
+    } else {
+      setUserOrders(userOrders.filter((order: any) => order.id !== orderId));
+      alert('✅ سفارش با موفقیت حذف شد');
+    }
+  };
+
+  // تابع ارسال پیام پشتیبانی
+  const handleSendSupportMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !supportSubject || !supportMessage) {
+      alert('لطفاً موضوع و متن پیام را وارد کنید.');
+      return;
+    }
+
+    setSendingSupport(true);
+    try {
+      // ۱. ذخیره در سوپابیس
+      const { error: dbError } = await supabase.from('support_messages').insert({
+        user_id: user.id,
+        subject: supportSubject,
+        message: supportMessage,
+        status: 'unread'
+      });
+
+      if (dbError) throw dbError;
+
+      // ۲. باز کردن کلاینت ایمیل کاربر برای ارسال مستقیم به تو
+      const mailtoLink = `mailto:ayenehshop@gmail.com?subject=${encodeURIComponent('پشتیبانی سایت آینه: ' + supportSubject)}&body=${encodeURIComponent(supportMessage + '\n\n---\nشناسه کاربری: ' + user.id)}`;
+      window.location.href = mailtoLink;
+
+      alert('✅ پیام شما ثبت شد و برنامه ایمیل شما باز می‌شود.');
+      setSupportSubject('');
+      setSupportMessage('');
+    } catch (error) {
+      console.error(error);
+      alert('❌ خطا در ارسال پیام. لطفاً دوباره تلاش کنید.');
+    } finally {
+      setSendingSupport(false);
+    }
   };
 
   if (loading) {
@@ -177,25 +228,34 @@ export default function DashboardPage() {
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
     { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '📦' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
-    { id: 'support' as TabType, label: 'پشتیبانی و پیگیری', icon: '📞' },
+    { id: 'support' as TabType, label: 'پشتیبانی', icon: '📞' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
+      {/* هدر داشبورد */}
       <div className="bg-white shadow-md p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-2xl font-bold text-gray-900">داشبورد کاربری</h1>
-          <div className="flex items-center gap-4">
-            <a href="/" className="flex items-center gap-2 text-purple-600 hover:text-purple-800 transition-colors">
-              <span>🏠</span><span>بازگشت به صفحه اصلی</span>
+          <div className="flex items-center gap-3">
+            {/* دکمه بازگشت زیبا و استاندارد */}
+            <a 
+              href="/" 
+              className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:border-purple-300 transition-all shadow-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>بازگشت به فروشگاه</span>
             </a>
-            <button onClick={handleLogout} className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90">خروج</button>
+            <button onClick={handleLogout} className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg hover:opacity-90 transition-opacity font-medium">خروج</button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 flex flex-col md:flex-row gap-6">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
+        {/* سایدبار */}
         <div className="w-full md:w-64 bg-white rounded-xl shadow-lg p-4 h-fit">
           {sidebarItems.map((item) => (
             <button 
@@ -212,7 +272,9 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* محتوای اصلی */}
         <div className="flex-1 bg-white rounded-xl shadow-lg p-6">
+          
           {activeTab === 'profile' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">اطلاعات پروفایل</h2>
@@ -224,7 +286,7 @@ export default function DashboardPage() {
                     <span className="text-5xl text-white">👤</span>
                   </div>
                 )}
-                <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg">
+                <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg border border-purple-200">
                   تغییر عکس پروفایل
                   <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                 </label>
@@ -238,12 +300,10 @@ export default function DashboardPage() {
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">ایمیل</label>
                   <input type="email" value={user?.email || ''} disabled className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed" />
-                  <p className="text-xs text-gray-500 mt-1">ایمیل قابل تغییر نیست</p>
                 </div>
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">شماره تلفن</label>
-                  <input type="tel" value={profile?.phone || ''} disabled className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-100 text-gray-900 cursor-not-allowed" />
-                  <p className="text-xs text-gray-500 mt-1">شماره تلفن قابل تغییر نیست</p>
+                  <input type="tel" value={profile?.phone || ''} onChange={(e) => setProfile({...profile, phone: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-purple-500" />
                 </div>
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">آدرس منزل</label>
@@ -295,12 +355,7 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">❤️</div>
                   <p className="text-gray-600 text-lg">لیست علاقه‌مندی‌ها خالی است</p>
-                  <button 
-                    onClick={() => router.push('/')}
-                    className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
-                  >
-                    مشاهده محصولات
-                  </button>
+                  <button onClick={() => router.push('/')} className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90">مشاهده محصولات</button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -313,18 +368,8 @@ export default function DashboardPage() {
                         <h3 className="font-semibold text-gray-900 mb-1">{product.name}</h3>
                         <p className="text-purple-600 font-bold mb-2">{product.price_toman.toLocaleString()} تومان</p>
                         <div className="flex gap-2">
-                          <button 
-                            onClick={() => handleAddFavoriteToCart(product)}
-                            className="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700"
-                          >
-                            افزودن به سبد
-                          </button>
-                          <button 
-                            onClick={() => handleRemoveFavorite(product.id)}
-                            className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200"
-                          >
-                            حذف
-                          </button>
+                          <button onClick={() => handleAddFavoriteToCart(product)} className="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700">افزودن به سبد</button>
+                          <button onClick={() => handleRemoveFavorite(product.id)} className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200">حذف</button>
                         </div>
                       </div>
                     </div>
@@ -341,12 +386,7 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <div className="text-6xl mb-4">📦</div>
                   <p className="text-gray-600 text-lg">هنوز سفارشی ثبت نکرده‌اید</p>
-                  <button 
-                    onClick={() => router.push('/')}
-                    className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90"
-                  >
-                    مشاهده محصولات
-                  </button>
+                  <button onClick={() => router.push('/')} className="mt-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90">مشاهده محصولات</button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -355,9 +395,7 @@ export default function DashboardPage() {
                       <div className="flex justify-between items-start mb-3 flex-wrap gap-2">
                         <div>
                           <h3 className="font-bold text-gray-900">سفارش #{order.order_number}</h3>
-                          <p className="text-sm text-gray-600">
-                            {new Date(order.created_at).toLocaleDateString('fa-IR')}
-                          </p>
+                          <p className="text-sm text-gray-600">{new Date(order.created_at).toLocaleDateString('fa-IR')}</p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getOrderStatusColor(order.status)}`}>
                           {getOrderStatusText(order.status)}
@@ -368,23 +406,22 @@ export default function DashboardPage() {
                           <span className="text-gray-700">آدرس ارسال:</span>
                           <span className="text-sm text-gray-600 text-left max-w-xs">{order.shipping_address}</span>
                         </div>
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-gray-700">تلفن تماس:</span>
-                          <span className="text-sm text-gray-600">{order.phone}</span>
-                        </div>
                         <div className="flex justify-between items-center">
                           <span className="text-gray-700 font-semibold">مجموع:</span>
-                          <span className="text-lg font-bold text-purple-600">
-                            {order.total_amount.toLocaleString()} تومان
-                          </span>
+                          <span className="text-lg font-bold text-purple-600">{order.total_amount.toLocaleString()} تومان</span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => router.push(`/checkout/success/${order.id}`)}
-                        className="mt-3 text-purple-600 hover:text-purple-800 text-sm font-semibold"
-                      >
-                        مشاهده جزئیات ←
-                      </button>
+                      <div className="flex justify-end mt-3">
+                        <button
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="text-xs bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded hover:bg-red-100 transition-colors flex items-center gap-1"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          حذف سفارش
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -402,13 +439,57 @@ export default function DashboardPage() {
           {activeTab === 'support' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">پشتیبانی و پیگیری خرید</h2>
-              <div className="space-y-4">
-                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📧 ایمیل پشتیبانی:</p><p className="text-purple-600 font-semibold">support@ayeneh.com</p></div>
-                <div className="bg-purple-50 p-4 rounded-lg"><p className="text-gray-700 mb-2">📱 شماره تماس:</p><p className="text-purple-600 font-semibold">021-12345678</p></div>
-                <div className="mt-6">
-                  <label className="block text-gray-700 mb-2 font-medium">پیام شما:</label>
-                  <textarea className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-900" rows={4} placeholder="پیام خود را بنویسید..." />
-                  <button onClick={() => alert('پیام شما ارسال شد!')} className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg hover:opacity-90">ارسال پیام</button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* اطلاعات تماس */}
+                <div className="space-y-4">
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <p className="text-gray-700 mb-1 font-medium">📧 ایمیل پشتیبانی:</p>
+                    <p className="text-purple-700 font-bold text-lg" dir="ltr">ayenehshop@gmail.com</p>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <p className="text-gray-700 mb-1 font-medium">📱 شماره تماس:</p>
+                    <p className="text-purple-700 font-bold text-lg" dir="ltr">09352225693</p>
+                  </div>
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-sm text-gray-700">
+                    <p className="font-bold mb-2">💡 راهنما:</p>
+                    <p>پیام شما هم در سیستم ما ذخیره می‌شود و هم برنامه ایمیل شما باز می‌شود تا پیام مستقیماً برای ما ارسال گردد.</p>
+                  </div>
+                </div>
+
+                {/* فرم ارسال پیام */}
+                <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm">
+                  <h3 className="font-bold text-gray-800 mb-4">ارسال پیام جدید</h3>
+                  <form onSubmit={handleSendSupportMessage} className="space-y-4">
+                    <div>
+                      <label className="block text-gray-700 mb-2 text-sm font-medium">موضوع پیام *</label>
+                      <input 
+                        type="text" 
+                        value={supportSubject}
+                        onChange={(e) => setSupportSubject(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none"
+                        placeholder="مثال: پیگیری سفارش شماره ۱۲۳"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-2 text-sm font-medium">متن پیام *</label>
+                      <textarea 
+                        value={supportMessage}
+                        onChange={(e) => setSupportMessage(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-purple-500 outline-none"
+                        rows={5}
+                        placeholder="پیام خود را با جزئیات بنویسید..."
+                        required
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={sendingSupport}
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {sendingSupport ? 'در حال ارسال...' : 'ارسال پیام به پشتیبانی'}
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>
