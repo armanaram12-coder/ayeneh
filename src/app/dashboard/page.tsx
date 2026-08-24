@@ -161,11 +161,11 @@ export default function DashboardPage() {
     setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
   };
 
-    // تابع حذف سفارش (با رفرش صفحه بعد از حذف)
+  // تابع حذف سفارش (با رفرش صفحه بعد از حذف)
   const handleDeleteOrder = async (orderId: string) => {
     if (!confirm('آیا از حذف این سفارش مطمئن هستید؟ این عملیات قابل بازگشت نیست.')) return;
     if (!user) {
-      alert(' خطا: کاربر شناسایی نشد. لطفاً صفحه را رفرش کنید.');
+      alert('❌ خطا: کاربر شناسایی نشد. لطفاً صفحه را رفرش کنید.');
       return;
     }
     
@@ -177,27 +177,12 @@ export default function DashboardPage() {
 
     if (error) {
       console.error('Delete error:', error);
-      alert(' خطا در حذف سفارش: ' + error.message);
+      alert('❌ خطا در حذف سفارش: ' + error.message);
       return;
     }
     
-    // رفرش صفحه برای اطمینان ۱۰۰٪ از هماهنگی با دیتابیس
+    // رفرش صفحه برای اطمینان ۱۰٪ از هماهنگی با دیتابیس
     window.location.reload();
-  }
-    
-    // خواندن مجدد لیست از دیتابیس
-    const { data: updatedOrders, error: fetchError } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-      
-    if (fetchError) {
-      console.error('Fetch Error:', fetchError);
-    } else {
-      setUserOrders(updatedOrders || []);
-      alert('✅ سفارش با موفقیت حذف شد');
-    }
   };
 
   // تابع ارسال پیام پشتیبانی (با ذخیره نام و شماره)
@@ -248,7 +233,7 @@ export default function DashboardPage() {
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
     { id: 'cart' as TabType, label: `سبد خرید (${cartCount})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
-    { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '📦' },
+    { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
     { id: 'support' as TabType, label: 'پشتیبانی', icon: '📞' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
@@ -297,7 +282,7 @@ export default function DashboardPage() {
                   <img src={profile.avatar_url} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-purple-300" />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
-                    <span className="text-5xl text-white">👤</span>
+                    <span className="text-5xl text-white"></span>
                   </div>
                 )}
                 <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg border border-purple-200">
@@ -338,7 +323,7 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">سبد خرید شما</h2>
               {cartItems.length === 0 ? (
-                <div className="text-center py-12"><div className="text-6xl mb-4">🛒</div><p className="text-gray-600 text-lg">سبد خرید شما خالی است</p></div>
+                <div className="text-center py-12"><div className="text-6xl mb-4"></div><p className="text-gray-600 text-lg">سبد خرید شما خالی است</p></div>
               ) : (
                 <div className="space-y-4">
                   {cartItems.map((item) => (
