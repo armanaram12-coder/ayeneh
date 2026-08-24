@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // ✅ این خط اضافه شد تا ارور برطرف شود
 import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
 import { getCart } from '@/lib/cart';
@@ -109,7 +110,6 @@ export default function CheckoutPage() {
     loadData();
   }, [router]);
 
-  // وقتی استان تغییر می‌کنه، شهرها رو آپدیت کن
   useEffect(() => {
     if (formData.province && cities[formData.province]) {
       setAvailableCities(cities[formData.province]);
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
                     <div>
                       <p className="font-bold text-gray-900">پست پیشتاز</p>
                       <p className="text-sm text-gray-600">
-                        {subtotal >= 3000000 ? 'ارسال رایگان (سفارش بالای ۳ میلیون تومان)' : '۶۰,۰۰۰ تومان - ارسال به سراسر کشور (۳ تا ۵ روز کاری)'}
+                        {subtotal >= 3000000 ? 'ارسال رایگان (سفارش بالای ۳ میلیون تومان)' : '۱۶۰,۰۰۰ تومان - ارسال به سراسر کشور (۳ تا ۵ روز کاری)'}
                       </p>
                     </div>
                   </label>
@@ -369,9 +369,9 @@ export default function CheckoutPage() {
                     />
                     <span className="text-sm text-gray-700 leading-relaxed">
                       اطلاعات شخصی شما برای پردازش سفارش شما، پشتیبانی از تجربه شما در سراسر این وب سایت و برای اهدافی که در 
-                      <Link href="/privacy-policy" className="text-purple-600 hover:underline mx-1" target="_blank">
-  سیاست حفظ حریم خصوصی و قوانین خرید
-</Link> 
+                      <Link href="/privacy-policy" className="text-purple-600 hover:underline mx-1 font-bold" target="_blank">
+                        سیاست حفظ حریم خصوصی و قوانین خرید
+                      </Link> 
                       ذکر شده است استفاده می‌شود.
                       <br />
                       <strong className="text-red-600 block mt-2">⚠️ لطفاً پیش از ورود به صفحه پرداخت، VPN خود را خاموش کنید.</strong>
@@ -459,13 +459,13 @@ export default function CheckoutPage() {
                   
                   <div className="pt-2 border-t border-purple-200">
                     <p className="font-bold text-purple-800 mb-1">📍 مرکز تحویل حضوری:</p>
-                    <p className="mb-2"><strong>دفتر تهران:</strong> خیابان یوسف آباد، بالاتر از میدان جمال الدین اسد آبادی، نبش کوچه ۳، پلاک ۳۴۹، ساختمان کاج، طبقه دوم، واحد </p>
+                    <p className="mb-2"><strong>دفتر تهران:</strong> خیابان یوسف آباد، بالاتر از میدان جمال الدین اسد آبادی، نبش کوچه ۳۹، پلاک ۳۴۹، ساختمان کاج، طبقه دوم، واحد ۳</p>
                   </div>
 
                   <div className="pt-2 border-t border-purple-200">
                     <p className="font-bold text-purple-800 mb-1">⏰ ساعات کاری دفتر تحویل حضوری:</p>
-                    <p>شنبه تا چهارشنبه: ۱:۰۰ الی ۱:۰۰</p>
-                    <p>پنجشنبه‌ها: ۰:۰۰ الی ۶:۰۰</p>
+                    <p>شنبه تا چهارشنبه: ۱۰:۰۰ الی ۱۸:۰۰</p>
+                    <p>پنجشنبه‌ها: ۱۰:۰۰ الی ۱۶:۰۰</p>
                   </div>
                 </div>
 
