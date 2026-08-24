@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { getCart, addToCart } from '@/lib/cart';
+import { getCart, addToCart, removeFromCart, clearCart } from '@/lib/cart';
 import { getFavorites, toggleFavorite } from '@/lib/favorites';
 import { getUserOrders, getOrderStatusText, getOrderStatusColor } from '@/lib/orders';
 import productsData from '@/data/products.json';
@@ -137,8 +137,9 @@ export default function DashboardPage() {
   
   const handleClearCart = async () => {
     if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟') && user) {
-      await supabase.from('cart').delete().eq('user_id', user.id);
+      await clearCart(user.id);
       setCartItems([]);
+      window.dispatchEvent(new Event('cartUpdated'));
     }
   };
 
@@ -151,6 +152,7 @@ export default function DashboardPage() {
     });
     const updatedCart = await getCart(user.id);
     setCartItems(updatedCart);
+    window.dispatchEvent(new Event('cartUpdated'));
     alert('✅ به سبد خرید اضافه شد');
   };
 
@@ -161,19 +163,14 @@ export default function DashboardPage() {
     setFavoriteProducts(favoriteProducts.filter((p: any) => p.id !== productId));
   };
 
-  // تابع حذف سفارش (با رفرش صفحه بعد از حذف)
   const handleDeleteOrder = async (orderId: string) => {
     if (!confirm('آیا از حذف این سفارش مطمئن هستید؟ این عملیات قابل بازگشت نیست.')) return;
     if (!user) {
-      alert('❌ خطا: کاربر شناسایی نشد. لطفاً صفحه را رفرش کنید.');
+      alert('❌ خطا: کاربر شناسایی نشد.');
       return;
     }
     
-    const { error } = await supabase
-      .from('orders')
-      .delete()
-      .eq('id', orderId)
-      .eq('user_id', user.id);
+    const { error } = await supabase.from('orders').delete().eq('id', orderId).eq('user_id', user.id);
 
     if (error) {
       console.error('Delete error:', error);
@@ -181,11 +178,9 @@ export default function DashboardPage() {
       return;
     }
     
-    // رفرش صفحه برای اطمینان ۱۰٪ از هماهنگی با دیتابیس
     window.location.reload();
   };
 
-  // تابع ارسال پیام پشتیبانی (با ذخیره نام و شماره)
   const handleSendSupportMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !supportSubject || !supportMessage) {
@@ -233,7 +228,7 @@ export default function DashboardPage() {
     { id: 'profile' as TabType, label: 'پروفایل', icon: '👤' },
     { id: 'cart' as TabType, label: `سبد خرید (${cartCount})`, icon: '🛒' },
     { id: 'favorites' as TabType, label: `علاقه‌مندی‌ها (${favoriteIds.length})`, icon: '❤️' },
-    { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '' },
+    { id: 'orders' as TabType, label: `سفارشات (${userOrders.length})`, icon: '📦' },
     { id: 'reviews' as TabType, label: 'نظرات', icon: '💬' },
     { id: 'support' as TabType, label: 'پشتیبانی', icon: '📞' },
     { id: 'security' as TabType, label: 'امنیت', icon: '🔒' },
@@ -274,6 +269,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex-1 bg-white rounded-xl shadow-lg p-6">
+          
           {activeTab === 'profile' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">اطلاعات پروفایل</h2>
@@ -282,7 +278,7 @@ export default function DashboardPage() {
                   <img src={profile.avatar_url} alt="Profile" className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-purple-300" />
                 ) : (
                   <div className="w-32 h-32 rounded-full bg-gradient-to-r from-purple-500 to-pink-400 flex items-center justify-center mb-4">
-                    <span className="text-5xl text-white"></span>
+                    <span className="text-5xl text-white">👤</span>
                   </div>
                 )}
                 <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-800 font-medium bg-purple-50 px-4 py-2 rounded-lg border border-purple-200">
@@ -319,17 +315,42 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {/* ✅ بخش سبد خرید با دکمه حذف تک‌تک */}
           {activeTab === 'cart' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">سبد خرید شما</h2>
               {cartItems.length === 0 ? (
-                <div className="text-center py-12"><div className="text-6xl mb-4"></div><p className="text-gray-600 text-lg">سبد خرید شما خالی است</p></div>
+                <div className="text-center py-12">
+                  <div className="text-6xl mb-4">🛒</div>
+                  <p className="text-gray-600 text-lg">سبد خرید شما خالی است</p>
+                </div>
               ) : (
                 <div className="space-y-4">
                   {cartItems.map((item) => (
                     <div key={item.product_id} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                      <div><h3 className="font-semibold text-gray-900">{item.product_name}</h3><p className="text-purple-600">{item.price.toLocaleString()} تومان</p></div>
-                      <div className="flex items-center gap-3"><span className="text-gray-700">تعداد: {item.quantity}</span></div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
+                        <p className="text-purple-600">{item.price.toLocaleString()} تومان</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-gray-700">تعداد: {item.quantity}</span>
+                        <button
+                          onClick={async () => {
+                            if (user) {
+                              await removeFromCart(user.id, item.product_id);
+                              const updatedCart = await getCart(user.id);
+                              setCartItems(updatedCart);
+                              window.dispatchEvent(new Event('cartUpdated'));
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded border border-red-200 hover:bg-red-100 transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          حذف
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <div className="border-t pt-4 mt-4">
