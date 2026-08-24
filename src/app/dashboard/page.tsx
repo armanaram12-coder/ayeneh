@@ -183,7 +183,7 @@ export default function DashboardPage() {
     
     // رفرش صفحه برای اطمینان ۱۰۰٪ از هماهنگی با دیتابیس
     window.location.reload();
-  };
+  }
     
     // خواندن مجدد لیست از دیتابیس
     const { data: updatedOrders, error: fetchError } = await supabase
