@@ -40,7 +40,18 @@ function getAllProducts(): Product[] {
   for (const category of data.categories || []) {
     for (const subcategory of category.subcategories || []) {
       for (const product of subcategory.products || []) {
-        allProducts.push({ id: product.id, name: product.name, price_toman: product.price_toman, brand: product.brand, gender: product.gender, type: product.type, volume_ml: product.volume_ml, volume_gram: product.volume_gram, stock: product.stock, category: category.name });
+        allProducts.push({ 
+          id: product.id, 
+          name: product.name, 
+          price_toman: product.price_toman, 
+          brand: product.brand, 
+          gender: product.gender, 
+          type: product.type, 
+          volume_ml: product.volume_ml, 
+          volume_gram: product.volume_gram, 
+          stock: product.stock, 
+          category: category.name 
+        });
       }
     }
   }
@@ -58,19 +69,27 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300 relative">
+    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300 relative flex flex-col">
       <button onClick={() => onToggleFavorite(product.id)} className="absolute top-2 right-2 z-10">
         <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       </button>
       <Link href={`/product/${product.id}`}>
-        <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden cursor-pointer">
+        <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden cursor-pointer">
           {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover" /> : <span className="text-4xl">🧴</span>}
         </div>
       </Link>
-      <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2 h-10 text-sm">{product.name}</h3>
-      <p className="text-[#7C3AED] font-bold text-lg mb-3">{formatPrice(product.price_toman)} تومان</p>
+      <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 h-10 text-sm">{product.name}</h3>
+      
+      {/* ✅ نمایش حجم محصول */}
+      {(product.volume_ml || product.volume_gram) && (
+        <p className="text-xs text-gray-500 mb-2">
+          {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
+        </p>
+      )}
+      
+      <p className="text-[#7C3AED] font-bold text-lg mb-3 mt-auto">{formatPrice(product.price_toman)} تومان</p>
       <button onClick={handleAddToCart} disabled={isDisabled} className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}>
         {isDisabled ? 'در حال پردازش...' : 'افزودن به سبد'}
       </button>
@@ -80,7 +99,8 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('all');
+  // ✅ تغییر پیش‌فرض به 'bestseller' برای جلوگیری از شلوغی اولیه
+  const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [cartCount, setCartCount] = useState(0);
@@ -89,9 +109,7 @@ export default function Home() {
 
   useEffect(() => {
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
-    if (hasSeen === 'true') {
-      setShowSplash(false);
-    }
+    if (hasSeen === 'true') setShowSplash(false);
 
     setAllProducts(getAllProducts());
     const checkUser = async () => {
@@ -116,10 +134,8 @@ export default function Home() {
       window.dispatchEvent(new Event('openAuthModal'));
       return;
     }
-
     await addToCart(session.user.id, { id: product.id, name: product.name, price: product.price_toman });
     window.dispatchEvent(new Event('cartUpdated'));
-    
     setCartCount(await getCartCount(session.user.id));
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
@@ -137,8 +153,10 @@ export default function Home() {
   };
 
   const categories = Object.keys(categoryLabels);
+  
+  // ✅ اصلاح منطق فیلتر برای جلوگیری از خطای تطابق نام دسته‌بندی
   const filteredProducts = allProducts.filter(product => {
-    if (selectedCategory && product.category !== selectedCategory) return false;
+    if (selectedCategory && product.category?.trim() !== selectedCategory.trim()) return false;
     if (activeTab === 'new') return product.id > allProducts.length - 8;
     if (activeTab === 'bestseller') return product.id <= 8;
     return true;
@@ -147,12 +165,7 @@ export default function Home() {
   return (
     <>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-      
-      {showToast && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
-          ✅ به سبد خرید اضافه شد
-        </div>
-      )}
+      {showToast && <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">✅ به سبد خرید اضافه شد</div>}
       
       {!showSplash && (
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
@@ -160,7 +173,6 @@ export default function Home() {
           <HeroSlider />
           <FlashSale />
           
-          {/* دسته‌بندی محصولات */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
@@ -188,8 +200,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* لیست محصولات (فیلتر شده) */}
-          <section className="py-8">
+          <section id="products-section" className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
@@ -209,7 +220,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بخش جدید ۱: چرا فروشگاه آینه؟ */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
               <div className="text-center mb-12">
@@ -233,7 +243,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بخش جدید ۲: معرفی تخصصی محصولات تراست */}
           <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -249,45 +258,37 @@ export default function Home() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">در روتین مراقبتی تراست است</span>
                   </h2>
                   <p className="text-gray-300 leading-relaxed mb-6 text-justify">
-                    محصولات تراست (Trust) با فرمولاسیون پیشرفته و مواد اولیه باکیفیت، نیازهای مختلف پوستی از جمله آبرسانی، ضدچروک، روشن‌کنندگی و محافظت در برابر آفتاب را پوشش می‌دهند. ما در فروشگاه آینه، نه تنها فروشنده، بلکه مشاور شما برای انتخاب ترکیب صحیح سرم‌ها، کرم‌ها و شوینده‌های تراست هستیم تا بیشترین بازدهی را برای پوست خود تجربه کنید.
+                    محصولات تراست (Trust) با فرمولاسیون پیشرفته و مواد اولیه باکیفیت، نیازهای مختلف پوستی از جمله آبرسانی، ضدچروک، روشن‌کنندگی و محافظت در برابر آفتاب را پوشش می‌دهند. ما در فروشگاه آینه، نه تنها فروشنده، بلکه مشاور شما برای انتخاب ترکیب صحیح سرم‌ها، کرم‌ها و شوینده‌های تراست هستیم.
                   </p>
                   <div className="flex flex-wrap gap-4">
-                    <Link href="/" className="bg-white text-purple-900 px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-lg">
+                    <a href="#products-section" className="bg-white text-purple-900 px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-lg">
                       مشاهده محصولات تراست
-                    </Link>
-                    <a href="https://wa.me/989352225693" target="_blank" rel="noopener noreferrer" className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-500 transition-colors shadow-lg flex items-center gap-2">
+                    </a>
+                    <a href="https://wa.me/989352225693" className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-500 transition-colors shadow-lg flex items-center gap-2">
                       <span>💬</span> درخواست مشاوره رایگان
                     </a>
                   </div>
                 </div>
                 
+                {/* ✅ اصلاح هم‌اندازه بودن باکس‌ها با h-full و flex */}
                 <div className="lg:w-1/2 grid grid-cols-2 gap-4">
-                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center">
-                    <div className="text-3xl mb-3">💧</div>
-                    <h4 className="font-bold mb-2">سرم‌های تخصصی</h4>
-                    <p className="text-xs text-gray-300">آبرسانی عمیق و جوانسازی با تکنولوژی روز</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center mt-8">
-                    <div className="text-3xl mb-3">☀️</div>
-                    <h4 className="font-bold mb-2">محافظت از پوست</h4>
-                    <p className="text-xs text-gray-300">ضدآفتاب‌های رنگی و بی‌رنگ با بافت سبک</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center">
-                    <div className="text-3xl mb-3">🧴</div>
-                    <h4 className="font-bold mb-2">پاک‌کننده‌ها</h4>
-                    <p className="text-xs text-gray-300">شوینده‌های ملایم بدون ایجاد خشکی و حساسیت</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center mt-8">
-                    <div className="text-3xl mb-3">🌸</div>
-                    <h4 className="font-bold mb-2">عطر و خوشبوکننده</h4>
-                    <p className="text-xs text-gray-300">رایحه‌های ماندگار و منحصر به فرد</p>
-                  </div>
+                  {[
+                    { icon: '💧', title: 'سرم‌های تخصصی', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
+                    { icon: '☀️', title: 'محافظت از پوست', desc: 'ضدآفتاب‌های رنگی و بی‌رنگ با بافت سبک' },
+                    { icon: '🧴', title: 'پاک‌کننده‌ها', desc: 'شوینده‌های ملایم بدون ایجاد خشکی و حساسیت' },
+                    { icon: '🌸', title: 'عطر و خوشبوکننده', desc: 'رایحه‌های ماندگار و منحصر به فرد' }
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center h-full flex flex-col justify-center items-center">
+                      <div className="text-3xl mb-3">{item.icon}</div>
+                      <h4 className="font-bold mb-2">{item.title}</h4>
+                      <p className="text-xs text-gray-300">{item.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </section>
 
-          {/* فوتر و دکمه شناور */}
           <Footer />
           <FloatingContact />
         </main>
