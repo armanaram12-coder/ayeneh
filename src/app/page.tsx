@@ -6,12 +6,13 @@ import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
 import FloatingContact from '@/components/FloatingContact';
-import AIConsultant from '@/components/AIConsultant'; // ✅ ربات جدید
+import AIConsultant from '@/components/AIConsultant';
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import { toggleFavorite, getFavorites } from '@/lib/favorites';
 import productsData from '@/data/products.json';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Product {
   id: number; name: string; price_toman: number; brand?: string; gender?: string;
@@ -19,7 +20,7 @@ interface Product {
 }
 
 const categoryIcons: Record<string, string> = {
-  'عطر و خوشبوکننده': '🌸', 'سرم تخصصی': '💧', 'کرم تخصصی': '🧴', 'ضد آفتاب': '☀️',
+  'عطر و خوشبوکننده': '', 'سرم تخصصی': '💧', 'کرم تخصصی': '', 'ضد آفتاب': '️',
   'شوینده و پاک کننده': '🧼', 'دهان و دندان': '🦷', 'آرایشی': '💄', 'شامپو تخصصی': '🧴',
   'ماسک تخصصی': '🎭', 'کیت تخصصی': '🧰', 'روغن و لوسیون': '🧴'
 };
@@ -117,6 +118,31 @@ export default function Home() {
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
           <Header />
           <HeroSlider />
+          
+          {/* ✅ بخش آمار و ارقام */}
+          <section className="py-12 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div>
+                  <div className="text-4xl md:text-5xl font-bold mb-2">+۱۰,۰۰</div>
+                  <div className="text-purple-100 text-sm md:text-base">مشتری راضی</div>
+                </div>
+                <div>
+                  <div className="text-4xl md:text-5xl font-bold mb-2">+۱۹۰</div>
+                  <div className="text-purple-100 text-sm md:text-base">محصول آرایشی بهداشتی</div>
+                </div>
+                <div>
+                  <div className="text-4xl md:text-5xl font-bold mb-2">+۵</div>
+                  <div className="text-purple-100 text-sm md:text-base">برند معتبر</div>
+                </div>
+                <div>
+                  <div className="text-4xl md:text-5xl font-bold mb-2">۲۴/۷</div>
+                  <div className="text-purple-100 text-sm md:text-base">مشاوره تخصصی</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <FlashSale />
           
           <section className="py-8 overflow-hidden">
@@ -146,6 +172,40 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ✅ محصول ویژه هفته */}
+          <section className="py-16 bg-gradient-to-br from-yellow-50 to-orange-50">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <span className="inline-block bg-yellow-400 text-yellow-900 px-4 py-1 rounded-full text-sm font-bold mb-3">⭐ محصول ویژه</span>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900">محصول ویژه هفته - تراست</h2>
+                <p className="text-gray-600 mt-2">این هفته با ۲۰٪ تخفیف ویژه</p>
+              </div>
+              <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div className="grid md:grid-cols-2 gap-8 p-8">
+                  <div className="h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
+                    <span className="text-8xl">🧴</span>
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">سرم جوانساز، لیفت و ضدچروک تراست اسمارت</h3>
+                    <p className="text-gray-600 mb-4">این سرم تخصصی با فرمولاسیون پیشرفته، به جوانسازی، لیفتینگ و کاهش چروک‌های پوست شما کمک می‌کند. حاوی مواد مؤثره قوی برای نتایج قابل مشاهده.</p>
+                    <div className="flex items-center gap-4 mb-6">
+                      <span className="text-gray-400 line-through text-lg">۱,۸۴۹,۰۰۰ تومان</span>
+                      <span className="text-3xl font-bold text-[#7C3AED]">۱,۴۷۹,۰۰۰ تومان</span>
+                    </div>
+                    <div className="flex gap-3">
+                      <button className="flex-1 bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">
+                        افزودن به سبد خرید
+                      </button>
+                      <button className="px-6 py-3 border-2 border-[#7C3AED] text-[#7C3AED] rounded-xl font-bold hover:bg-purple-50 transition-colors">
+                        جزئیات بیشتر
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section id="products-section" className="py-8">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">جدیدترین محصولات تراست و برندهای معتبر</h2>
@@ -167,7 +227,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بخش سئو محور: چرا آینه؟ */}
+          {/* ✅ بخش چرا آینه */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">چرا فروشگاه آینه بهترین مرجع خرید محصولات آرایشی بهداشتی و تراست است؟</h2>
@@ -189,7 +249,169 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بخش سئو محور: معرفی تخصصی تراست */}
+          {/* ✅ مجله آینه */}
+          <section className="py-16 bg-gradient-to-br from-purple-50 to-pink-50">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">مجله آینه - راهنمای تخصصی مراقبت از پوست و مو</h2>
+                <p className="text-gray-600">مقالات آموزشی، معرفی محصولات تراست و نکات زیبایی</p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-8">
+                {[
+                  { title: 'روتین پوستی مناسب برای پوست چرب', category: 'مراقبت پوست', date: '۲۵ مرداد ۱۴۰۵', image: '📝' },
+                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۲۰ مرداد ۱۴۰۵', image: '📖' },
+                  { title: 'معرفی بهترین ضد آفتاب‌های تراست', category: 'محصولات', date: '۱۵ مرداد ۱۴۰۵', image: '☀️' }
+                ].map((article, idx) => (
+                  <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="h-48 bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
+                      <span className="text-6xl">{article.image}</span>
+                    </div>
+                    <div className="p-6">
+                      <span className="text-xs text-purple-600 font-bold">{article.category}</span>
+                      <h3 className="font-bold text-gray-900 mt-2 mb-3 line-clamp-2">{article.title}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{article.date}</p>
+                      <Link href="/blog" className="text-[#7C3AED] font-bold hover:underline text-sm">ادامه مطلب ←</Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="text-center mt-8">
+                <Link href="/blog" className="inline-block bg-white border-2 border-[#7C3AED] text-[#7C3AED] px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition-colors">
+                  مشاهده همه مقالات مجله آینه
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ برندهای همکار */}
+          <section className="py-16 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">برندهای معتبر همکار با فروشگاه آینه</h2>
+              <p className="text-gray-600 text-center mb-12">ما فقط با برندهای معتبر و دارای مجوز همکاری می‌کنیم</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
+                {['Trust', 'Serje', 'LifeGuard', 'Aura', 'Smart', 'Professional'].map((brand, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded-xl p-6 flex items-center justify-center h-24 hover:shadow-lg transition-shadow">
+                    <span className="text-xl font-bold text-gray-700">{brand}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ نظرات مشتریان */}
+          <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">نظرات مشتریان فروشگاه آینه</h2>
+              <p className="text-purple-200 text-center mb-12">بیش از ۱۰,۰۰۰ مشتری راضی از خرید محصولات آرایشی بهداشتی و تراست</p>
+              <div className="grid md:grid-cols-3 gap-8">
+                {[
+                  { name: 'سارا م.', text: 'محصولات تراست واقعاً عالی هستند. مشاوره رایگان آینه هم خیلی کمکم کرد تا روتین مناسب پوستم رو پیدا کنم.', rating: 5 },
+                  { name: 'محمد ر.', text: 'سرعت ارسال عالی بود و محصولات کاملاً اصل بودند. حتماً دوباره خرید می‌کنم.', rating: 5 },
+                  { name: 'نیلوفر ک.', text: 'بهترین فروشگاه برای خرید لوازم آرایشی بهداشتی. قیمت‌ها منصفانه و کیفیت عالی.', rating: 5 }
+                ].map((review, idx) => (
+                  <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div className="flex gap-1 mb-4">
+                      {[...Array(review.rating)].map((_, i) => (
+                        <span key={i} className="text-yellow-400 text-xl">★</span>
+                      ))}
+                    </div>
+                    <p className="text-gray-200 mb-4 leading-relaxed">"{review.text}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center font-bold">
+                        {review.name.charAt(0)}
+                      </div>
+                      <span className="font-bold">{review.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ اپ آینه */}
+          <section className="py-16 bg-gradient-to-br from-green-50 to-teal-50">
+            <div className="container mx-auto px-4">
+              <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
+                  <div className="flex flex-col justify-center">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">اپلیکیشن موبایل آینه</h2>
+                    <p className="text-gray-600 mb-6">همیشه و همه‌جا به جدیدترین محصولات آرایشی بهداشتی، تخفیف‌های ویژه و مشاوره تخصصی دسترسی داشته باشید.</p>
+                    <ul className="space-y-3 mb-8">
+                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>خرید سریع و آسان</span></li>
+                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>مشاوره هوشمند پوست و مو</span></li>
+                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>اطلاع از تخفیف‌های لحظه‌ای</span></li>
+                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>پیگیری سفارش به صورت آنلاین</span></li>
+                    </ul>
+                    <div className="flex gap-4">
+                      <button className="bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity">
+                        <span className="text-2xl">🍎</span>
+                        <div className="text-right">
+                          <div className="text-xs">Download on the</div>
+                          <div className="font-bold">App Store</div>
+                        </div>
+                      </button>
+                      <button className="bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity">
+                        <span className="text-2xl">▶</span>
+                        <div className="text-right">
+                          <div className="text-xs">GET IT ON</div>
+                          <div className="font-bold">Google Play</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
+                    <div className="text-center">
+                      <span className="text-9xl">📱</span>
+                      <p className="text-gray-600 mt-4 font-bold">به زودی...</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ اینستاگرام */}
+          <section className="py-16 bg-white">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">ما را در اینستاگرام دنبال کنید</h2>
+              <p className="text-gray-600 text-center mb-12">@ayeneh.shop - جدیدترین محصولات، آموزش‌ها و تخفیف‌ها</p>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                {[...Array(6)].map((_, idx) => (
+                  <div key={idx} className="aspect-square bg-gradient-to-br from-purple-200 to-pink-200 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer">
+                    <span className="text-4xl">📸</span>
+                  </div>
+                ))}
+              </div>
+              <div className="text-center mt-8">
+                <a href="https://instagram.com/ayeneh.shop" target="_blank" rel="noopener noreferrer" className="inline-block bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">
+                  دنبال کردن در اینستاگرام
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ خبرنامه */}
+          <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
+            <div className="container mx-auto px-4">
+              <div className="max-w-3xl mx-auto text-center">
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">عضویت در خبرنامه آینه</h2>
+                <p className="text-purple-100 mb-8">از جدیدترین محصولات تراست، تخفیف‌های ویژه و مقالات آموزشی باخبر شوید</p>
+                <form className="flex flex-col md:flex-row gap-4 max-w-xl mx-auto">
+                  <input 
+                    type="email" 
+                    placeholder="ایمیل خود را وارد کنید..." 
+                    className="flex-1 px-6 py-4 rounded-xl text-gray-900 focus:outline-none focus:ring-4 focus:ring-purple-300"
+                  />
+                  <button type="button" className="bg-white text-purple-600 px-8 py-4 rounded-xl font-bold hover:bg-purple-50 transition-colors">
+                    عضویت
+                  </button>
+                </form>
+                <p className="text-xs text-purple-200 mt-4">با عضویت، موافقت خود را با دریافت ایمیل‌های تبلیغاتی اعلام می‌کنید.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* ✅ بخش Trust Section */}
           <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -225,7 +447,7 @@ export default function Home() {
           </section>
 
           <FloatingContact />
-          <AIConsultant /> {/* ✅ ربات مشاور هوشمند اضافه شد */}
+          <AIConsultant />
         </main>
       )}
     </>
