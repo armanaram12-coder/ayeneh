@@ -44,7 +44,6 @@ export default function Header() {
     };
     initHeader();
 
-    // ✅ گوش دادن به رویداد به‌روزرسانی سبد خرید از سایر صفحات
     const handleCartUpdate = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -84,27 +83,32 @@ export default function Header() {
                 </svg>
               </button>
               <Link href="/" className="flex items-center">
-  <img 
-    src="/logo.png" 
-    alt="فروشگاه آینه" 
-    className="h-12 md:h-14 w-auto object-contain"
-  />
-</Link>
+                <img 
+                  src="/logo.png" 
+                  alt="فروشگاه آینه" 
+                  className="h-12 md:h-14 w-auto object-contain"
+                />
+              </Link>
             </div>
 
-           <div className="hidden md:flex flex-1 max-w-lg mx-8">
-  <a href="/#search-section" className="relative w-full block">
-    <input 
-      type="text" 
-      placeholder="جستجو در محصولات تراست..." 
-      readOnly
-      className="w-full border border-gray-300 rounded-full px-4 py-2 pr-10 text-gray-700 bg-white cursor-pointer focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 transition-all"
-    />
-    <svg className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-  </a>
-</div>
+            {/* ✅ بخش جستجو: تبدیل به دکمه شیک با اسکرول نرم */}
+            <div className="hidden md:flex flex-1 max-w-lg mx-8">
+              <button 
+                onClick={() => {
+                  const searchSection = document.getElementById('search-section');
+                  if (searchSection) {
+                    searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                className="relative w-full flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2.5 hover:border-[#7C3AED] hover:shadow-md transition-all cursor-pointer group"
+              >
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#7C3AED] transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="text-gray-500 text-sm group-hover:text-gray-700">جستجو در محصولات تراست...</span>
+              </button>
+            </div>
+
             <div className="flex items-center gap-3">
               <Link href="/dashboard" className="hidden sm:flex items-center gap-1 text-gray-600 hover:text-[#7C3AED] transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
