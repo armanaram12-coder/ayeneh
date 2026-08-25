@@ -82,11 +82,11 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
       <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 h-10 text-sm">{product.name}</h3>
       
       {/* ✅ نمایش حجم محصول */}
-      {(product.volume_ml || product.volume_gram) && (
-        <p className="text-xs text-gray-500 mb-2">
-          {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
-        </p>
-      )}
+     {(product.volume_ml || product.volume_gram) && (
+  <p className="text-sm font-bold text-gray-700 mb-2">
+    {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
+  </p>
+)}
       
       <p className="text-[#7C3AED] font-bold text-lg mb-3 mt-auto">{formatPrice(product.price_toman)} تومان</p>
       <button onClick={handleAddToCart} disabled={isDisabled} className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}>
