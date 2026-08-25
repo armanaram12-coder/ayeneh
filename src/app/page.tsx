@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
@@ -59,83 +59,6 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
       <button onClick={handleAddToCart} disabled={isDisabled} className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}>
         {isDisabled ? 'در حال پردازش...' : 'افزودن به سبد خرید'}
       </button>
-    </div>
-  );
-}
-
-// ✅ کامپوننت جستجوی هوشمند
-function SearchBox({ allProducts }: { allProducts: Product[] }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (searchQuery.trim().length > 0) {
-      const filtered = allProducts.filter(product => 
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 8);
-      setFilteredProducts(filtered);
-      setIsOpen(true);
-    } else {
-      setIsOpen(false);
-    }
-  }, [searchQuery, allProducts]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div ref={searchRef} className="relative w-full max-w-2xl mx-auto">
-      <div className="relative">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="جستجو در محصولات تراست..."
-          className="w-full bg-white/95 backdrop-blur-sm border-2 border-purple-200 rounded-2xl px-6 py-4 pr-12 text-gray-800 placeholder-gray-500 focus:outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-purple-100 transition-all shadow-lg"
-        />
-        <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </div>
-      
-      {isOpen && filteredProducts.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden z-[9999] max-h-96 overflow-y-auto">
-          {filteredProducts.map((product) => (
-            <Link 
-              key={product.id} 
-              href={`/product/${product.id}`}
-              className="flex items-center gap-4 p-4 hover:bg-purple-50 transition-colors border-b border-purple-50 last:border-b-0"
-              onClick={() => { setIsOpen(false); setSearchQuery(''); }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" /> : <span className="text-2xl">🧴</span>}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-gray-900 text-sm truncate">{product.name}</h4>
-                <p className="text-xs text-gray-500">{product.brand} | {product.category}</p>
-                <p className="text-[#7C3AED] font-bold text-sm mt-1">{product.price_toman.toLocaleString('fa-IR')} تومان</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-      
-      {isOpen && searchQuery.trim().length > 0 && filteredProducts.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 p-6 text-center z-50">
-          <p className="text-gray-500">محصولی با این نام یافت نشد 😔</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -199,7 +122,6 @@ export default function Home() {
     return true;
   });
 
-  // ✅ تابع اصلاح‌شده بدون ارور سینتکس + اسکرول نرم
   const handleCategoryClick = (cat: string) => { 
     if (selectedCategory === cat) {
       setSelectedCategory(null);
@@ -224,16 +146,8 @@ export default function Home() {
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
           <Header />
           <HeroSlider />
+          <FlashSale />
           
-          {/* ✅ باکس جستجوی هوشمند با id برای اسکرول */}
-          <section id="search-section" className="py-12 bg-gradient-to-r from-purple-600 to-pink-500 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
-            <div className="container mx-auto px-4 relative z-10">
-              <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">جستجو در محصولات آرایشی بهداشتی و تراست</h2>
-              <SearchBox allProducts={allProducts} />
-            </div>
-          </section>
-
           {/* ✅ آمار و ارقام */}
           <section className="py-12 bg-white">
             <div className="container mx-auto px-4">
@@ -257,8 +171,6 @@ export default function Home() {
               </div>
             </div>
           </section>
-
-          <FlashSale />
           
           {/* ✅ محصول ویژه هفته */}
           <section className="py-16 bg-gradient-to-br from-yellow-50 to-orange-50">
@@ -294,7 +206,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ دسته‌بندی محصولات با استایل متمایز و انیمیشن */}
+          {/* ✅ دسته‌بندی محصولات */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات آرایشی و بهداشتی</h2>
