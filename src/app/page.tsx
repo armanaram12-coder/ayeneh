@@ -81,12 +81,12 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
       </Link>
       <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 h-10 text-sm">{product.name}</h3>
       
-      {/* ✅ نمایش حجم محصول */}
-     {(product.volume_ml || product.volume_gram) && (
-  <p className="text-sm font-bold text-gray-700 mb-2">
-    {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
-  </p>
-)}
+      {/* ✅ نمایش حجم محصول با فونت بولد و پررنگ */}
+      {(product.volume_ml || product.volume_gram) && (
+        <p className="text-sm font-bold text-gray-700 mb-2">
+          {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
+        </p>
+      )}
       
       <p className="text-[#7C3AED] font-bold text-lg mb-3 mt-auto">{formatPrice(product.price_toman)} تومان</p>
       <button onClick={handleAddToCart} disabled={isDisabled} className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}>
@@ -98,7 +98,6 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
 
 export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
-  // ✅ تغییر پیش‌فرض به 'bestseller' برای جلوگیری از شلوغی اولیه
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -153,11 +152,17 @@ export default function Home() {
 
   const categories = Object.keys(categoryLabels);
   
-  // ✅ اصلاح منطق فیلتر برای جلوگیری از خطای تطابق نام دسته‌بندی
+  // ✅ منطق فیلتر اصلاح‌شده: اولویت مطلق با دسته‌بندی انتخاب شده است
   const filteredProducts = allProducts.filter(product => {
-    if (selectedCategory && product.category?.trim() !== selectedCategory.trim()) return false;
+    if (selectedCategory) {
+      // اگر دسته‌بندی انتخاب شده، فقط محصولات همان دسته را نشان بده (بدون حساسیت به حروف بزرگ/کوچک)
+      return product.category?.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
+    }
+    
+    // اگر دسته‌بندی انتخاب نشده، بر اساس تب فیلتر کن
     if (activeTab === 'new') return product.id > allProducts.length - 8;
     if (activeTab === 'bestseller') return product.id <= 8;
+    
     return true;
   });
 
@@ -177,7 +182,19 @@ export default function Home() {
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات</h2>
               <div className="flex flex-wrap justify-center gap-6 md:gap-8 mb-6">
                 {categories.slice(0, 6).map((cat) => (
-                  <button key={cat} onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)} className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}>
+                  <button 
+                    key={cat} 
+                    onClick={() => {
+                      if (selectedCategory === cat) {
+                        setSelectedCategory(null);
+                        setActiveTab('all'); // ریست کردن تب هنگام لغو انتخاب
+                      } else {
+                        setSelectedCategory(cat);
+                        setActiveTab('all'); // ✅ ریست کردن تب به 'all' برای جلوگیری از تداخل فیلترها
+                      }
+                    }} 
+                    className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}
+                  >
                     <div className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow">
                       <span className="text-2xl md:text-3xl">{cat === 'عطر' ? '🌸' : cat === 'سرم' ? '💧' : cat === 'کرم' ? '🧴' : cat === 'ضد آفتاب' ? '☀️' : cat === 'شوینده' ? '🧼' : '📦'}</span>
                     </div>
@@ -187,7 +204,19 @@ export default function Home() {
               </div>
               <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                 {categories.slice(6, 11).map((cat) => (
-                  <button key={cat} onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)} className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}>
+                  <button 
+                    key={cat} 
+                    onClick={() => {
+                      if (selectedCategory === cat) {
+                        setSelectedCategory(null);
+                        setActiveTab('all');
+                      } else {
+                        setSelectedCategory(cat);
+                        setActiveTab('all'); // ✅ ریست کردن تب به 'all'
+                      }
+                    }} 
+                    className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}
+                  >
                     <div className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow">
                       <span className="text-2xl md:text-3xl">{cat === 'آرایشی' ? '💄' : cat === 'شامپو' ? '🧴' : cat === 'ماسک' ? '🎭' : cat === 'کیت' ? '🧰' : '🧴'}</span>
                     </div>
@@ -195,7 +224,21 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              {selectedCategory && <div className="text-center mt-4"><button onClick={() => setSelectedCategory(null)} className="text-[#7C3AED] hover:underline text-sm">نمایش همه دسته‌بندی‌ها ✕</button></div>}
+              
+              {/* ✅ دکمه لغو انتخاب دسته‌بندی */}
+              {selectedCategory && (
+                <div className="text-center mt-4">
+                  <button 
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setActiveTab('all');
+                    }} 
+                    className="text-[#7C3AED] hover:underline text-sm font-semibold"
+                  >
+                    نمایش همه دسته‌بندی‌ها ✕
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
@@ -203,10 +246,26 @@ export default function Home() {
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">محصولات</h2>
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
-                <button onClick={() => { setActiveTab('all'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'all' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}>همه محصولات</button>
-                <button onClick={() => setActiveTab('new')} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'new' ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}>جدیدترین</button>
-                <button onClick={() => setActiveTab('bestseller')} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'bestseller' ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}>پرفروش‌ترین</button>
+                <button 
+                  onClick={() => { setActiveTab('all'); setSelectedCategory(null); }} 
+                  className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'all' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}
+                >
+                  همه محصولات
+                </button>
+                <button 
+                  onClick={() => { setActiveTab('new'); setSelectedCategory(null); }} 
+                  className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'new' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}
+                >
+                  جدیدترین
+                </button>
+                <button 
+                  onClick={() => { setActiveTab('bestseller'); setSelectedCategory(null); }} 
+                  className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'bestseller' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}
+                >
+                  پرفروش‌ترین
+                </button>
               </div>
+              
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-12"><p className="text-gray-600 text-lg">محصولی در این دسته‌بندی وجود ندارد</p></div>
               ) : (
@@ -269,7 +328,6 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {/* ✅ اصلاح هم‌اندازه بودن باکس‌ها با h-full و flex */}
                 <div className="lg:w-1/2 grid grid-cols-2 gap-4">
                   {[
                     { icon: '💧', title: 'سرم‌های تخصصی', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
@@ -288,7 +346,6 @@ export default function Home() {
             </div>
           </section>
 
-        
           <FloatingContact />
         </main>
       )}
