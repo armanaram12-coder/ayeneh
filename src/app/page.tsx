@@ -110,7 +110,7 @@ function SearchBox({ allProducts }: { allProducts: Product[] }) {
       </div>
       
       {isOpen && filteredProducts.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden z-[9999] max-h-96 overflow-y-auto">
           {filteredProducts.map((product) => (
             <Link 
               key={product.id} 
