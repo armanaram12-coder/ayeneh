@@ -5,7 +5,6 @@ import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import FloatingContact from '@/components/FloatingContact';
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
@@ -289,7 +288,7 @@ export default function Home() {
             </div>
           </section>
 
-          <Footer />
+        
           <FloatingContact />
         </main>
       )}
