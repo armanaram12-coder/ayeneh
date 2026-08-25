@@ -83,7 +83,13 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <Link href="/" className="text-2xl font-bold text-[#7C3AED]">آینه</Link>
+              <Link href="/" className="flex items-center">
+  <img 
+    src="/logo.png" 
+    alt="فروشگاه آینه" 
+    className="h-12 md:h-14 w-auto object-contain"
+  />
+</Link>
             </div>
 
             <div className="hidden md:flex flex-1 max-w-lg mx-8">
