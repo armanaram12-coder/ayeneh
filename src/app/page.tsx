@@ -81,7 +81,6 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { p
       </Link>
       <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 h-10 text-sm">{product.name}</h3>
       
-      {/* ✅ نمایش حجم محصول با فونت بولد و پررنگ */}
       {(product.volume_ml || product.volume_gram) && (
         <p className="text-sm font-bold text-gray-700 mb-2">
           {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
@@ -152,19 +151,38 @@ export default function Home() {
 
   const categories = Object.keys(categoryLabels);
   
-  // ✅ منطق فیلتر اصلاح‌شده: اولویت مطلق با دسته‌بندی انتخاب شده است
+  // ✅ فیلتر کاملاً اصلاح‌شده
   const filteredProducts = allProducts.filter(product => {
+    // اگر دسته‌بندی انتخاب شده
     if (selectedCategory) {
-      // اگر دسته‌بندی انتخاب شده، فقط محصولات همان دسته را نشان بده (بدون حساسیت به حروف بزرگ/کوچک)
-      return product.category?.trim().toLowerCase() === selectedCategory.trim().toLowerCase();
+      const productCategory = product.category || '';
+      // مقایسه مستقیم و ساده
+      return productCategory === selectedCategory;
     }
     
     // اگر دسته‌بندی انتخاب نشده، بر اساس تب فیلتر کن
-    if (activeTab === 'new') return product.id > allProducts.length - 8;
-    if (activeTab === 'bestseller') return product.id <= 8;
+    if (activeTab === 'new') {
+      return product.id > allProducts.length - 8;
+    }
+    if (activeTab === 'bestseller') {
+      return product.id <= 8;
+    }
     
+    // حالت 'all'
     return true;
   });
+
+  const handleCategoryClick = (cat: string) => {
+    if (selectedCategory === cat) {
+      // اگر همان دسته انتخاب شده بود، لغو کن
+      setSelectedCategory(null);
+    } else {
+      // دسته جدید را انتخاب کن
+      setSelectedCategory(cat);
+    }
+    // تب را ریست کن
+    setActiveTab('all');
+  };
 
   return (
     <>
@@ -184,19 +202,11 @@ export default function Home() {
                 {categories.slice(0, 6).map((cat) => (
                   <button 
                     key={cat} 
-                    onClick={() => {
-                      if (selectedCategory === cat) {
-                        setSelectedCategory(null);
-                        setActiveTab('all'); // ریست کردن تب هنگام لغو انتخاب
-                      } else {
-                        setSelectedCategory(cat);
-                        setActiveTab('all'); // ✅ ریست کردن تب به 'all' برای جلوگیری از تداخل فیلترها
-                      }
-                    }} 
+                    onClick={() => handleCategoryClick(cat)}
                     className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}
                   >
                     <div className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow">
-                      <span className="text-2xl md:text-3xl">{cat === 'عطر' ? '🌸' : cat === 'سرم' ? '💧' : cat === 'کرم' ? '🧴' : cat === 'ضد آفتاب' ? '☀️' : cat === 'شوینده' ? '🧼' : '📦'}</span>
+                      <span className="text-2xl md:text-3xl">{cat === 'عطر' ? '🌸' : cat === 'سرم' ? '💧' : cat === 'کرم' ? '🧴' : cat === 'ضد آفتاب' ? '☀️' : cat === 'شوینده' ? '' : '📦'}</span>
                     </div>
                     <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">{categoryLabels[cat]}</span>
                   </button>
@@ -206,26 +216,17 @@ export default function Home() {
                 {categories.slice(6, 11).map((cat) => (
                   <button 
                     key={cat} 
-                    onClick={() => {
-                      if (selectedCategory === cat) {
-                        setSelectedCategory(null);
-                        setActiveTab('all');
-                      } else {
-                        setSelectedCategory(cat);
-                        setActiveTab('all'); // ✅ ریست کردن تب به 'all'
-                      }
-                    }} 
+                    onClick={() => handleCategoryClick(cat)}
                     className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}
                   >
                     <div className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow">
-                      <span className="text-2xl md:text-3xl">{cat === 'آرایشی' ? '💄' : cat === 'شامپو' ? '🧴' : cat === 'ماسک' ? '🎭' : cat === 'کیت' ? '🧰' : '🧴'}</span>
+                      <span className="text-2xl md:text-3xl">{cat === 'آرایشی' ? '💄' : cat === 'شامپو' ? '🧴' : cat === 'ماسک' ? '🎭' : cat === 'کیت' ? '🧰' : ''}</span>
                     </div>
                     <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">{categoryLabels[cat]}</span>
                   </button>
                 ))}
               </div>
               
-              {/* ✅ دکمه لغو انتخاب دسته‌بندی */}
               {selectedCategory && (
                 <div className="text-center mt-4">
                   <button 
@@ -267,12 +268,22 @@ export default function Home() {
               </div>
               
               {filteredProducts.length === 0 ? (
-                <div className="text-center py-12"><p className="text-gray-600 text-lg">محصولی در این دسته‌بندی وجود ندارد</p></div>
+                <div className="text-center py-12">
+                  <p className="text-gray-600 text-lg">محصولی در این دسته‌بندی وجود ندارد</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    (دسته انتخابی: {selectedCategory || 'هیچ'})
+                  </p>
+                </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} isFavorite={favoriteIds.includes(product.id)} onToggleFavorite={handleToggleFavorite} />
-                  ))}
+                <div>
+                  <p className="text-center text-sm text-gray-600 mb-4">
+                    تعداد محصولات نمایش داده شده: {filteredProducts.length}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {filteredProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} isFavorite={favoriteIds.includes(product.id)} onToggleFavorite={handleToggleFavorite} />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -288,7 +299,7 @@ export default function Home() {
                 {[
                   { icon: '🛡️', title: 'ضمانت ۱۰۰٪ اصالت کالا', desc: 'تمامی محصولات تراست و سایر برندها با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
                   { icon: '👨‍⚕️', title: 'مشاوره تخصصی رایگان', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین روتین را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
-                  { icon: '🚀', title: 'ارسال سریع و ایمن', desc: 'سفارشات شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن به سراسر ایران ارسال می‌شود.' },
+                  { icon: '', title: 'ارسال سریع و ایمن', desc: 'سفارشات شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن به سراسر ایران ارسال می‌شود.' },
                   { icon: '💎', title: 'قیمت منصفانه و رقابتی', desc: 'حذف واسطه‌ها به ما این امکان را می‌دهد تا بهترین قیمت را برای محصولات اورجینال ارائه دهیم.' }
                 ].map((item, index) => (
                   <div key={index} className="bg-purple-50/50 rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-purple-100">
@@ -333,7 +344,7 @@ export default function Home() {
                     { icon: '💧', title: 'سرم‌های تخصصی', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
                     { icon: '☀️', title: 'محافظت از پوست', desc: 'ضدآفتاب‌های رنگی و بی‌رنگ با بافت سبک' },
                     { icon: '🧴', title: 'پاک‌کننده‌ها', desc: 'شوینده‌های ملایم بدون ایجاد خشکی و حساسیت' },
-                    { icon: '🌸', title: 'عطر و خوشبوکننده', desc: 'رایحه‌های ماندگار و منحصر به فرد' }
+                    { icon: '', title: 'عطر و خوشبوکننده', desc: 'رایحه‌های ماندگار و منحصر به فرد' }
                   ].map((item, idx) => (
                     <div key={idx} className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center h-full flex flex-col justify-center items-center">
                       <div className="text-3xl mb-3">{item.icon}</div>
