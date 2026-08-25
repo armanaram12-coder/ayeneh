@@ -64,10 +64,12 @@ export default function Header() {
     }
   }, [searchQuery, allProducts]);
 
+  // ✅ اصلاح شده: بستن کادر و پاک کردن متن هنگام کلیک بیرون
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
+        setSearchQuery(''); // پاک کردن متن جستجو برای ریست شدن کامل
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
