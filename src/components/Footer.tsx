@@ -22,21 +22,21 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-300">
               <li><Link href="/" className="hover:text-purple-300 transition-colors flex items-center gap-2"><span>◂</span> صفحه اصلی</Link></li>
               <li><Link href="/privacy-policy" className="hover:text-purple-300 transition-colors flex items-center gap-2"><span>◂</span> قوانین و مقررات خرید</Link></li>
-              <li><Link href="/dashboard" className="hover:text-purple-300 transition-colors flex items-center gap-2"><span>◂</span> پیگیری سفارشات</Link></li>
-              <li><Link href="/checkout" className="hover:text-purple-300 transition-colors flex items-center gap-2"><span>◂</span> تسویه حساب</Link></li>
+              <li><Link href="/dashboard" className="hover:text-purpleER300 transition-colors flex items-center gap-2"><span>◂</span> پیگیری سفارشات</Link></li>
+              <li><Link href="/checkout" className="hover:text-purple-300 transition-colors flex items-center gap-2"><span></span> تسویه حساب</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="text-lg font-bold mb-4 text-purple-300">ارتباط با آرمان آرام</h4>
             <ul className="space-y-4 text-gray-300 text-sm">
-              <li className="flex items-start gap-3"><span className="text-purple-400 mt-1">📱</span><div><p className="font-semibold text-white">شماره تماس و واتس‌اپ:</p><a href="tel:09352225693" className="hover:text-purple-300 transition-colors font-mono text-left block dir-ltr">09352225693</a></div></li>
-              <li className="flex items-start gap-3"><span className="text-purple-400 mt-1">✉️</span><div><p className="font-semibold text-white">پشتیبانی ایمیلی:</p><a href="mailto:ayenehshop@gmail.com" className="hover:text-purple-300 transition-colors text-left block dir-ltr">ayenehshop@gmail.com</a></div></li>
-              <li className="flex items-start gap-3"><span className="text-purple-400 mt-1">📍</span><span>دفتر تهران: یوسف آباد، بالاتر از میدان جمال الدین اسد آبادی، نبش کوچه ۳۹، پلاک ۳۴۹، ساختمان کاج، طبقه دوم، واحد ۳</span></li>
+              <li className="flex items-start gap-3"><span className="text-purple-400 mt-1"></span><div><p className="font-semibold text-white">شماره تماس و واتس‌اپ:</p><a href="tel:09352225693" className="hover:text-purple-300 transition-colors font-mono text-left block dir-ltr">09352225693</a></div></li>
+              <li className="flex items-start gap-3"><span className="text-purple-400 mt-1">✉️</span><div><p className="font-semibold text-white">پشتیبانی ایمیلی:</p><a href="mailto:ayenehshop@gmail.com" className="hover:text-purple-ER300 transition-colors text-left block dir-ltr">ayenehshop@gmail.com</a></div></li>
+              <li className="flex items-startER3 gap-3"><span className="text-purple-400 mt-1">📍</span><span>دفتر تهران: یوسف آباد، بالاتر از میدان جمال الدین اسد آبادی، نبش کوچه ۳، پلاک ۳۴۹، ساختمان کاج، طبقه دوم، واحد ۳</span></li>
             </ul>
           </div>
         </div>
 
-        {/* ✅ بخش سئو و کلمات کلیدی (بسیار مهم برای گوگل) */}
+        {/* ✅ بخش سئو و کلمات کلیدی */}
         <div className="border-t border-purple-800/50 pt-8 mb-8">
           <h4 className="text-sm font-bold mb-3 text-purple-300">جستجوهای پرطرفدار در فروشگاه آینه:</h4>
           <div className="flex flex-wrap gap-2 text-xs text-gray-400">
@@ -55,7 +55,7 @@ export default function Footer() {
 
         <div className="border-t border-purple-800/50 pt-6 text-center text-sm text-gray-400">
           <p>© ۱۴۰۵ فروشگاه اینترنتی آینه (با مدیریت آرمان آرام) - تمامی حقوق مادی و معنوی محفوظ است.</p>
-          <p className="mt-2 text-xs text-purple-400/70">طراحی و توسعه با ❤️ | مرجع تخصصی محصولات Trust در ایران</p>
+          <p className="mt-2 text-xs text-purple-400/70">طراحی و توسعه آرمان آرام | نماینده فروش محصولات تراست</p>
         </div>
       </div>
     </footer>
