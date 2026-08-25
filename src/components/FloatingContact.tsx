@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 
 export default function FloatingContact() {
   const [isHovered, setIsHovered] = useState(false);
+
+  // ✅ لینک استاندارد و مطمئن واتس‌اپ بیزینس با پیام پیش‌فرض
+  const whatsappLink = "https://api.whatsapp.com/send?phone=989352225693&text=سلام،%20من%20برای%20مشاوره%20خرید%20پیام%20می‌دهم.";
 
   return (
     <div 
@@ -12,23 +14,25 @@ export default function FloatingContact() {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* متن بازشو */}
+      {/* متن بازشو هنگام هاور */}
       <div className={`bg-white text-gray-800 px-4 py-2 rounded-lg shadow-xl border border-purple-100 transition-all duration-300 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-        <p className="text-sm font-bold text-purple-700">مشاوره تخصصی پوست و مو</p>
+        {/* ✅ تغییر متن به درخواست شما */}
+        <p className="text-sm font-bold text-purple-700">مشاوره برای خرید</p>
         <p className="text-xs text-gray-600 mt-1">پاسخگویی در واتس‌اپ و تماس</p>
       </div>
 
-      {/* دکمه اصلی */}
+      {/* دکمه اصلی واتس‌اپ */}
       <a 
-        href="https://wa.me/989352225693" 
+        href={whatsappLink} 
         target="_blank" 
         rel="noopener noreferrer"
         className="group relative flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300"
+        title="مشاوره برای خرید در واتس‌اپ"
       >
-        {/* انیمیشن پالس */}
+        {/* انیمیشن پالس (موج‌دار) */}
         <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
         
-        {/* آیکون */}
+        {/* آیکون چت */}
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
