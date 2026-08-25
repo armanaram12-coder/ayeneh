@@ -440,11 +440,23 @@ export default function Home() {
                     <h2 className="text-3xl font-bold text-gray-900 mb-4">اپلیکیشن موبایل آینه</h2>
                     <p className="text-gray-600 mb-6">همیشه و همه‌جا به جدیدترین محصولات آرایشی بهداشتی، تخفیف‌های ویژه و مشاوره تخصصی دسترسی داشته باشید.</p>
                     <ul className="space-y-3 mb-8">
-                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>خرید سریع و آسان</span></li>
-                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>مشاوره هوشمند پوست و مو</span></li>
-                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>اطلاع از تخفیف‌های لحظه‌ای</span></li>
-                      <li className="flex items-center gap-3"><span className="text-green-500">✓</span><span>پیگیری سفارش به صورت آنلاین</span></li>
-                    </ul>
+  <li className="flex items-center gap-3 text-gray-800 font-medium">
+    <span className="text-green-500 text-lg">✓</span>
+    <span>خرید سریع و آسان</span>
+  </li>
+  <li className="flex items-center gap-3 text-gray-800 font-medium">
+    <span className="text-green-500 text-lg">✓</span>
+    <span>مشاوره هوشمند پوست و مو</span>
+  </li>
+  <li className="flex items-center gap-3 text-gray-800 font-medium">
+    <span className="text-green-500 text-lg">✓</span>
+    <span>اطلاع از تخفیف‌های لحظه‌ای</span>
+  </li>
+  <li className="flex items-center gap-3 text-gray-800 font-medium">
+    <span className="text-green-500 text-lg">✓</span>
+    <span>پیگیری سفارش به صورت آنلاین</span>
+  </li>
+</ul>
                     <div className="flex gap-4">
                       <button className="bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity">
                         <span className="text-2xl">🍎</span>
