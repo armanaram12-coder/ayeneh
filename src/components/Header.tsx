@@ -1,11 +1,36 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { getCartCount } from '@/lib/cart';
 import AuthModal from './AuthModal';
 import CartModal from './CartModal';
+import productsData from '@/data/products.json';
+
+interface Product {
+  id: number; name: string; price_toman: number; brand?: string; category?: string; image?: string;
+}
+
+function getAllProducts(): Product[] {
+  const allProducts: Product[] = [];
+  const data = productsData as any;
+  for (const category of data.categories || []) {
+    for (const subcategory of category.subcategories || []) {
+      for (const product of subcategory.products || []) {
+        allProducts.push({ 
+          id: product.id, 
+          name: product.name, 
+          price_toman: product.price_toman, 
+          brand: product.brand, 
+          category: category.name,
+          image: product.image 
+        });
+      }
+    }
+  }
+  return allProducts;
+}
 
 export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -17,6 +42,37 @@ export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+
+  // ✅ جستجوی هوشمند در هدر
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const allProducts = getAllProducts();
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      const filtered = allProducts.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 6);
+      setFilteredProducts(filtered);
+      setIsSearchOpen(true);
+    } else {
+      setIsSearchOpen(false);
+    }
+  }, [searchQuery, allProducts]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const updateCartCount = async (uid: string) => {
     try {
@@ -73,7 +129,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-md sticky top-0 z-40" dir="rtl">
+      <header className="bg-white shadow-md sticky top-0 z-50" dir="rtl">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -91,22 +147,49 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* ✅ بخش جستجو: تبدیل به دکمه شیک با اسکرول نرم */}
-            <div className="hidden md:flex flex-1 max-w-lg mx-8">
-              <button 
-                onClick={() => {
-                  const searchSection = document.getElementById('search-section');
-                  if (searchSection) {
-                    searchSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-                className="relative w-full flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-full px-4 py-2.5 hover:border-[#7C3AED] hover:shadow-md transition-all cursor-pointer group"
-              >
-                <svg className="w-5 h-5 text-gray-400 group-hover:text-[#7C3AED] transition-colors" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {/* ✅ باکس جستجوی هوشمند واقعی در هدر */}
+            <div className="hidden md:flex flex-1 max-w-lg mx-8 relative" ref={searchRef}>
+              <div className="relative w-full">
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="جستجو در محصولات تراست..." 
+                  className="w-full border border-gray-300 rounded-full px-4 py-2.5 pr-10 text-gray-800 bg-white focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-purple-100 transition-all"
+                />
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span className="text-gray-500 text-sm group-hover:text-gray-700">جستجو در محصولات تراست...</span>
-              </button>
+              </div>
+              
+              {/* ✅ نتایج جستجو با z-index بسیار بالا برای قرار گرفتن روی همه چیز */}
+              {isSearchOpen && filteredProducts.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden z-[9999] max-h-96 overflow-y-auto">
+                  {filteredProducts.map((product) => (
+                    <Link 
+                      key={product.id} 
+                      href={`/product/${product.id}`}
+                      className="flex items-center gap-4 p-3 hover:bg-purple-50 transition-colors border-b border-purple-50 last:border-b-0"
+                      onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
+                    >
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" /> : <span className="text-xl">🧴</span>}
+                      </div>
+                      <div className="flex-1 min-w-0 text-right">
+                        <h4 className="font-bold text-gray-900 text-sm truncate">{product.name}</h4>
+                        <p className="text-xs text-gray-500">{product.brand} | {product.category}</p>
+                        <p className="text-[#7C3AED] font-bold text-xs mt-1">{product.price_toman.toLocaleString('fa-IR')} تومان</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              
+              {isSearchOpen && searchQuery.trim().length > 0 && filteredProducts.length === 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 p-4 text-center z-[9999]">
+                  <p className="text-gray-500 text-sm">محصولی با این نام یافت نشد 😔</p>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3">
