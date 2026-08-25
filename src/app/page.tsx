@@ -200,7 +200,21 @@ export default function Home() {
     return true;
   });
 
-  const handleCategoryClick = (cat: string) => { setSelectedCategory(selectedCategory === cat ? null : cat); setActiveTab('all'); };
+  const handleCategoryClick = (cat: string) => { 
+  if (selectedCategory === cat) {
+    setSelectedCategory(null);
+  } else {
+    setSelectedCategory(cat);
+    // ✅ اسکرول نرم به بخش محصولات
+    setTimeout(() => {
+      const productsSection = document.getElementById('products-section');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }
+  setActiveTab('all'); 
+}; };
 
   return (
     <>
@@ -213,7 +227,7 @@ export default function Home() {
           <HeroSlider />
           
           {/* ✅ باکس جستجوی هوشمند */}
-          <section className="py-12 bg-gradient-to-r from-purple-600 to-pink-500 relative overflow-hidden">
+          <section id="search-section" className="py-12 bg-gradient-to-r from-purple-600 to-pink-500 relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
             <div className="container mx-auto px-4 relative z-10">
               <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">جستجو در محصولات آرایشی بهداشتی و تراست</h2>
@@ -297,12 +311,28 @@ export default function Home() {
               </div>
               <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                 {categories.slice(6, 11).map((cat) => (
-                  <button key={cat} onClick={() => handleCategoryClick(cat)} className={`flex flex-col items-center gap-2 transition-transform hover:scale-105 ${selectedCategory === cat ? 'scale-110' : ''}`}>
-                    <div className="w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg shadow-md hover:shadow-lg transition-shadow">
-                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || ''}</span>
-                    </div>
-                    <span className="text-xs md:text-sm text-gray-700 font-medium text-center max-w-[100px]">{cat}</span>
-                  </button>
+                  <button 
+  key={cat} 
+  onClick={() => handleCategoryClick(cat)} 
+  className={`flex flex-col items-center gap-2 transition-all duration-300 ${
+    selectedCategory === cat 
+      ? 'scale-110' 
+      : 'hover:scale-105'
+  }`}
+>
+  <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg transition-all duration-300 ${
+    selectedCategory === cat 
+      ? 'shadow-2xl ring-4 ring-purple-300 ring-offset-2 animate-pulse' 
+      : 'shadow-md hover:shadow-lg'
+  }`}>
+    <span className="text-2xl md:text-3xl">{categoryIcons[cat] || '📦'}</span>
+  </div>
+  <span className={`text-xs md:text-sm font-medium text-center max-w-[100px] transition-all duration-300 ${
+    selectedCategory === cat 
+      ? 'text-[#7C3AED] font-bold' 
+      : 'text-gray-700'
+  }`}>{cat}</span>
+</button>
                 ))}
               </div>
               {selectedCategory && <div className="text-center mt-4"><button onClick={() => { setSelectedCategory(null); setActiveTab('all'); }} className="text-[#7C3AED] hover:underline text-sm font-semibold">نمایش همه دسته‌بندی‌های آرایشی بهداشتی </button></div>}
