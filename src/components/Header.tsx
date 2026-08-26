@@ -43,7 +43,6 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
-  // ✅ جستجوی هوشمند در هدر
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -64,12 +63,11 @@ export default function Header() {
     }
   }, [searchQuery, allProducts]);
 
-  // ✅ اصلاح شده: بستن کادر و پاک کردن متن هنگام کلیک بیرون
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
-        setSearchQuery(''); // پاک کردن متن جستجو برای ریست شدن کامل
+        setSearchQuery('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -141,15 +139,10 @@ export default function Header() {
                 </svg>
               </button>
               <Link href="/" className="flex items-center">
-                <img 
-                  src="/logo.png" 
-                  alt="فروشگاه آینه" 
-                  className="h-12 md:h-14 w-auto object-contain"
-                />
+                <img src="/logo.png" alt="فروشگاه آینه" className="h-12 md:h-14 w-auto object-contain" />
               </Link>
             </div>
 
-            {/* ✅ باکس جستجوی هوشمند واقعی در هدر */}
             <div className="hidden md:flex flex-1 max-w-lg mx-8 relative" ref={searchRef}>
               <div className="relative w-full">
                 <input 
@@ -164,7 +157,6 @@ export default function Header() {
                 </svg>
               </div>
               
-              {/* ✅ نتایج جستجو با z-index بسیار بالا برای قرار گرفتن روی همه چیز */}
               {isSearchOpen && filteredProducts.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-purple-100 overflow-hidden z-[9999] max-h-96 overflow-y-auto">
                   {filteredProducts.map((product) => (
@@ -174,8 +166,13 @@ export default function Header() {
                       className="flex items-center gap-4 p-3 hover:bg-purple-50 transition-colors border-b border-purple-50 last:border-b-0"
                       onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
                     >
-                      <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        {product.image ? <img src={product.image} alt={product.name} className="w-full h-full object-cover rounded-lg" /> : <span className="text-xl">🧴</span>}
+                      {/* ✅ اصلاح عکس در جستجو: object-contain و padding */}
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
+                        {product.image && product.image.trim() !== '' ? (
+                          <img src={product.image.trim()} alt={product.name} className="w-full h-full object-contain" />
+                        ) : (
+                          <span className="text-2xl">🧴</span>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0 text-right">
                         <h4 className="font-bold text-gray-900 text-sm truncate">{product.name}</h4>
