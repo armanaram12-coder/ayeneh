@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { addToCart, getCartCount } from '@/lib/cart';
-import productsData from '@/data/products.json';
+import { addToCart } from '@/lib/cart';
 import Link from 'next/link';
 
 interface Product {
   id: number;
   name: string;
   price_toman: number;
+  image?: string;
 }
 
 function toPersianDigits(num: number): string {
@@ -21,25 +21,31 @@ function formatPrice(price: number): string {
   return price.toLocaleString('fa-IR');
 }
 
-function getFirstProduct(): Product | null {
-  for (const category of productsData.categories) {
-    for (const subcategory of category.subcategories) {
-      for (const product of subcategory.products) {
-        return {
-          id: product.id,
-          name: product.name,
-          price_toman: product.price_toman,
-        };
-      }
-    }
-  }
-  return null;
-}
-
 export default function FlashSale() {
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
+
+  // ✅ خواندن محصول از Supabase
+  useEffect(() => {
+    const fetchProduct = async () => {
+      // گرفتن اولین محصول (یا می‌توانی ID خاصی را مشخص کنی)
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price_toman, image')
+        .order('id', { ascending: true })
+        .limit(1)
+        .single();
+      
+      if (data && !error) {
+        setProduct(data);
+      }
+      setLoading(false);
+    };
+    
+    fetchProduct();
+  }, []);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -61,10 +67,6 @@ export default function FlashSale() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    setProduct(getFirstProduct());
-  }, []);
-
   const handleAddToCart = async () => {
     if (!product) return;
 
@@ -81,7 +83,6 @@ export default function FlashSale() {
       price: product.price_toman,
     });
     
-    // ✅ ارسال سیگنال به هدر برای به‌روزرسانی عدد سبد خرید
     window.dispatchEvent(new Event('cartUpdated'));
     
     setShowToast(true);
@@ -89,6 +90,17 @@ export default function FlashSale() {
   };
 
   const discountPercent = 10;
+  
+  if (loading) {
+    return (
+      <section className="w-full py-8 md:py-12" dir="rtl" style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #E879F9 100%)' }}>
+        <div className="container mx-auto px-4 text-center text-white">
+          در حال بارگذاری...
+        </div>
+      </section>
+    );
+  }
+  
   if (!product) return null;
 
   const originalPrice = product.price_toman;
@@ -126,6 +138,15 @@ export default function FlashSale() {
               </div>
 
               <Link href={`/product/${product.id}`}>
+                {/* ✅ نمایش عکس محصول */}
+                <div className="h-48 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                  {product.image && product.image.trim() !== '' ? (
+                    <img src={product.image.trim()} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-6xl">🧴</span>
+                  )}
+                </div>
+                
                 <h3 className="text-gray-800 font-semibold mb-4 text-center line-clamp-2 h-14 cursor-pointer hover:text-[#7C3AED] transition-colors">
                   {product.name}
                 </h3>
