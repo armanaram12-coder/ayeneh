@@ -27,10 +27,8 @@ export default function FlashSale() {
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
 
-  // ✅ خواندن محصول از Supabase
   useEffect(() => {
     const fetchProduct = async () => {
-      // گرفتن اولین محصول (یا می‌توانی ID خاصی را مشخص کنی)
       const { data, error } = await supabase
         .from('products')
         .select('id, name, price_toman, image')
@@ -132,18 +130,22 @@ export default function FlashSale() {
           </div>
 
           <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 relative">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 relative group">
               <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-md text-sm font-bold z-10">
                 ٪{toPersianDigits(discountPercent)} تخفیف
               </div>
 
-              <Link href={`/product/${product.id}`}>
-                {/* ✅ نمایش عکس محصول */}
+              <Link href={`/product/${product.id}`} className="block">
+                {/* ✅ اصلاح عکس پیشنهاد شگفت‌انگیز: object-contain + padding + افکت زوم */}
                 <div className="h-48 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
                   {product.image && product.image.trim() !== '' ? (
-                    <img src={product.image.trim()} alt={product.name} className="w-full h-full object-cover" />
+                    <img 
+                      src={product.image.trim()} 
+                      alt={product.name} 
+                      className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110" 
+                    />
                   ) : (
-                    <span className="text-6xl">🧴</span>
+                    <span className="text-6xl transition-transform duration-500 group-hover:scale-110">🧴</span>
                   )}
                 </div>
                 
