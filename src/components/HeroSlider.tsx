@@ -6,8 +6,8 @@ interface Slide {
   id: number;
   title: string;
   buttonText: string;
-  image?: string;    // ✅ لینک عکس از سوپابیس (اختیاری)
-  gradient?: string; // ✅ گرادیان جایگزین در صورت نبود عکس (اختیاری)
+  image?: string;
+  gradient?: string;
 }
 
 const slides: Slide[] = [
@@ -15,28 +15,25 @@ const slides: Slide[] = [
     id: 1,
     title: 'تخفیف‌های ویژه فصلی',
     buttonText: 'مشاهده محصولات',
-    https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp
-    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slide1.jpg', 
+    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp',
   },
   {
     id: 2,
     title: 'محصولات پرفروش هفته',
     buttonText: 'خرید الآن',
-    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slide2.jpg',
+    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider2.webp',
   },
   {
     id: 3,
     title: 'راهنمای انتخاب عطر',
     buttonText: 'مطالعه بیشتر',
-    // ✅ اگر هنوز عکس آپلود نکردی، این خط را فعال کن تا گرادیان نشان داده شود:
-    // gradient: 'from-[#5B21B6] to-[#A855F7]',
-    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slide3.jpg',
+    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider3.webp',
   },
   {
     id: 4,
     title: 'روتین مراقبت پوست',
     buttonText: 'مشاهده کیت‌ها',
-    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slide4.jpg',
+    image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider4.webp',
   },
 ];
 
@@ -68,8 +65,6 @@ export default function HeroSlider() {
         >
           {slides.map((slide) => (
             <div key={slide.id} className="min-w-full h-full relative">
-              
-              {/* ✅ پس‌زمینه: اگر عکس بود عکس، اگر نبود گرادیان */}
               <div className="absolute inset-0">
                 {slide.image ? (
                   <>
@@ -78,7 +73,6 @@ export default function HeroSlider() {
                       alt={slide.title}
                       className="w-full h-full object-cover"
                     />
-                    {/* لایه تاریک روی عکس برای خوانایی بهتر متن */}
                     <div className="absolute inset-0 bg-black/40" />
                   </>
                 ) : (
@@ -86,7 +80,6 @@ export default function HeroSlider() {
                 )}
               </div>
               
-              {/* محتوا (متن و دکمه) */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-lg">
                   {slide.title}
@@ -100,7 +93,6 @@ export default function HeroSlider() {
         </div>
       </div>
 
-      {/* دکمه‌های ناوبری (قبلی/بعدی) */}
       <button
         onClick={goToPrevious}
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full z-20 transition-all duration-300 backdrop-blur-sm"
@@ -121,7 +113,6 @@ export default function HeroSlider() {
         </svg>
       </button>
 
-      {/* نقاط ناوبری (Dots) */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
         {slides.map((_, index) => (
           <button
