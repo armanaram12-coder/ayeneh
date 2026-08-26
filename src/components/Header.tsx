@@ -6,30 +6,14 @@ import { supabase } from '@/lib/supabase';
 import { getCartCount } from '@/lib/cart';
 import AuthModal from './AuthModal';
 import CartModal from './CartModal';
-import productsData from '@/data/products.json';
 
 interface Product {
-  id: number; name: string; price_toman: number; brand?: string; category?: string; image?: string;
-}
-
-function getAllProducts(): Product[] {
-  const allProducts: Product[] = [];
-  const data = productsData as any;
-  for (const category of data.categories || []) {
-    for (const subcategory of category.subcategories || []) {
-      for (const product of subcategory.products || []) {
-        allProducts.push({ 
-          id: product.id, 
-          name: product.name, 
-          price_toman: product.price_toman, 
-          brand: product.brand, 
-          category: category.name,
-          image: product.image 
-        });
-      }
-    }
-  }
-  return allProducts;
+  id: number; 
+  name: string; 
+  price_toman: number; 
+  brand?: string; 
+  category?: string; 
+  image?: string;
 }
 
 export default function Header() {
@@ -43,11 +27,28 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // ✅ جستجوی هوشمند - خواندن از Supabase
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
-  const allProducts = getAllProducts();
+
+  // ✅ خواندن همه محصولات از Supabase برای جستجو
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price_toman, brand, category, image')
+        .order('id', { ascending: true });
+      
+      if (data && !error) {
+        setAllProducts(data);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim().length > 0) {
@@ -166,12 +167,16 @@ export default function Header() {
                       className="flex items-center gap-4 p-3 hover:bg-purple-50 transition-colors border-b border-purple-50 last:border-b-0"
                       onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
                     >
-                      {/* ✅ اصلاح عکس در جستجو: object-contain و padding */}
+                      {/* ✅ نمایش عکس در جستجو با object-contain */}
                       <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
                         {product.image && product.image.trim() !== '' ? (
-                          <img src={product.image.trim()} alt={product.name} className="w-full h-full object-contain" />
+                          <img 
+                            src={product.image.trim()} 
+                            alt={product.name} 
+                            className="w-full h-full object-contain" 
+                          />
                         ) : (
-                          <span className="text-2xl">🧴</span>
+                          <span className="text-2xl"></span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0 text-right">
