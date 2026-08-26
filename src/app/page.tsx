@@ -10,53 +10,82 @@ import AIConsultant from '@/components/AIConsultant';
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import { toggleFavorite, getFavorites } from '@/lib/favorites';
-import productsData from '@/data/products.json';
 import Link from 'next/link';
 
 interface Product {
-  id: number; name: string; price_toman: number; brand?: string; gender?: string;
-  type?: string; volume_ml?: number; volume_gram?: number; stock?: number; image?: string; category?: string;
+  id: number;
+  name: string;
+  price_toman: number;
+  brand?: string;
+  gender?: string;
+  type?: string;
+  volume_ml?: number;
+  volume_gram?: number;
+  stock?: number;
+  image?: string;
+  category?: string;
 }
 
 const categoryIcons: Record<string, string> = {
-  'عطر و خوشبوکننده': '🌸', 'سرم تخصصی': '💧', 'کرم تخصصی': '🧴', 'ضد آفتاب': '☀️',
-  'شوینده و پاک کننده': '🧼', 'دهان و دندان': '🦷', 'آرایشی': '💄', 'شامپو تخصصی': '🧴',
-  'ماسک تخصصی': '🎭', 'کیت تخصصی': '🧰', 'روغن و لوسیون': '🧴'
+  'عطر و خوشبوکننده': '🌸',
+  'سرم تخصصی': '💧',
+  'کرم تخصصی': '🧴',
+  'ضد آفتاب': '️',
+  'شوینده و پاک کننده': '🧼',
+  'دهان و دندان': '🦷',
+  'آرایشی': '💄',
+  'شامپو تخصصی': '🧴',
+  'ماسک تخصصی': '🎭',
+  'کیت تخصصی': '🧰',
+  'روغن و لوسیون': '🧴'
 };
 const categories = Object.keys(categoryIcons);
 
-function getAllProducts(): Product[] {
-  const allProducts: Product[] = [];
-  const data = productsData as any;
-  for (const category of data.categories || []) {
-    for (const subcategory of category.subcategories || []) {
-      for (const product of subcategory.products || []) {
-        allProducts.push({ id: product.id, name: product.name, price_toman: product.price_toman, brand: product.brand, gender: product.gender, type: product.type, volume_ml: product.volume_ml, volume_gram: product.volume_gram, stock: product.stock, category: category.name });
-      }
-    }
-  }
-  return allProducts;
-}
-
-function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { product: Product; onAddToCart: (product: Product) => void; isFavorite: boolean; onToggleFavorite: (productId: number) => void }) {
+function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { 
+  product: Product; 
+  onAddToCart: (product: Product) => void; 
+  isFavorite: boolean; 
+  onToggleFavorite: (productId: number) => void; 
+}) {
   const formatPrice = (price: number) => price.toLocaleString('fa-IR');
   const [isDisabled, setIsDisabled] = useState(false);
-  const handleAddToCart = () => { setIsDisabled(true); onAddToCart(product); setTimeout(() => setIsDisabled(false), 1000); };
+  
+  const handleAddToCart = () => { 
+    setIsDisabled(true); 
+    onAddToCart(product); 
+    setTimeout(() => setIsDisabled(false), 1000); 
+  };
   
   return (
     <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300 relative flex flex-col">
       <button onClick={() => onToggleFavorite(product.id)} className="absolute top-2 right-2 z-10">
-        <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
       </button>
       <Link href={`/product/${product.id}`}>
         <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden cursor-pointer">
-          {product.image ? <img src={product.image} alt={`خرید ${product.name} برند ${product.brand || 'تراست'}`} className="w-full h-full object-cover" /> : <span className="text-4xl">🧴</span>}
+          {product.image && product.image.trim() !== '' ? (
+            <img src={product.image.trim()} alt={`خرید ${product.name} برند ${product.brand || 'تراست'}`} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-4xl">🧴</span>
+          )}
         </div>
       </Link>
       <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 h-10 text-sm">{product.name}</h3>
-      {(product.volume_ml || product.volume_gram) && <p className="text-sm font-bold text-gray-700 mb-2">{product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}</p>}
+      {(product.volume_ml || product.volume_gram) && (
+        <p className="text-sm font-bold text-gray-700 mb-2">
+          {product.volume_ml ? `${product.volume_ml} میلی‌لیتر` : `${product.volume_gram} گرم`}
+        </p>
+      )}
       <p className="text-[#7C3AED] font-bold text-lg mb-3 mt-auto">{formatPrice(product.price_toman)} تومان</p>
-      <button onClick={handleAddToCart} disabled={isDisabled} className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'}`}>
+      <button 
+        onClick={handleAddToCart} 
+        disabled={isDisabled} 
+        className={`w-full bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${
+          isDisabled ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'
+        }`}
+      >
         {isDisabled ? 'در حال پردازش...' : 'افزودن به سبد خرید'}
       </button>
     </div>
@@ -68,37 +97,72 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   const [showToast, setShowToast] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
+  // ✅ خواندن محصولات از Supabase
   useEffect(() => {
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
     if (hasSeen === 'true') setShowSplash(false);
-    setAllProducts(getAllProducts());
+    
+    const fetchProducts = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('id', { ascending: true });
+      
+      if (data && !error) {
+        setAllProducts(data);
+      }
+      setLoading(false);
+    };
+    
+    fetchProducts();
+    
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) { setCartCount(await getCartCount(session.user.id)); setFavoriteIds(await getFavorites(session.user.id)); }
+      if (session) { 
+        setCartCount(await getCartCount(session.user.id)); 
+        setFavoriteIds(await getFavorites(session.user.id)); 
+      }
     };
     checkUser();
   }, []);
 
-  const handleSplashFinish = () => { if (typeof window !== 'undefined') sessionStorage.setItem('hasSeenSplash', 'true'); setShowSplash(false); };
+  const handleSplashFinish = () => { 
+    if (typeof window !== 'undefined') sessionStorage.setItem('hasSeenSplash', 'true'); 
+    setShowSplash(false); 
+  };
   
   const handleAddToCart = async (product: Product) => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { alert('برای افزودن محصول به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.'); window.dispatchEvent(new Event('openAuthModal')); return; }
-    await addToCart(session.user.id, { id: product.id, name: product.name, price: product.price_toman });
+    if (!session) { 
+      alert('برای افزودن محصول به سبد خرید، لطفاً ابتدا وارد حساب کاربری خود شوید.'); 
+      window.dispatchEvent(new Event('openAuthModal')); 
+      return; 
+    }
+    await addToCart(session.user.id, { 
+      id: product.id, 
+      name: product.name, 
+      price: product.price_toman 
+    });
     window.dispatchEvent(new Event('cartUpdated'));
     setCartCount(await getCartCount(session.user.id));
-    setShowToast(true); setTimeout(() => setShowToast(false), 2000);
+    setShowToast(true); 
+    setTimeout(() => setShowToast(false), 2000);
   };
   
   const handleToggleFavorite = async (productId: number) => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { alert('برای افزودن به علاقه‌مندی‌ها، لطفاً ابتدا وارد شوید.'); window.dispatchEvent(new Event('openAuthModal')); return; }
+    if (!session) { 
+      alert('برای افزودن به علاقه‌مندی‌ها، لطفاً ابتدا وارد شوید.'); 
+      window.dispatchEvent(new Event('openAuthModal')); 
+      return; 
+    }
     const isNowFavorite = await toggleFavorite(session.user.id, productId);
     setFavoriteIds(isNowFavorite ? [...favoriteIds, productId] : favoriteIds.filter(id => id !== productId));
   };
@@ -137,10 +201,22 @@ export default function Home() {
     setActiveTab('all'); 
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-purple-100">
+        <div className="text-purple-600 text-xl">در حال بارگذاری محصولات...</div>
+      </div>
+    );
+  }
+
   return (
     <>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-      {showToast && <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">✅ به سبد خرید اضافه شد</div>}
+      {showToast && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg animate-bounce">
+          ✅ به سبد خرید اضافه شد
+        </div>
+      )}
       
       {!showSplash && (
         <main className="min-h-screen bg-gradient-to-br from-purple-50 to-purple-100" dir="rtl">
@@ -161,11 +237,11 @@ export default function Home() {
                   <div className="text-gray-600 text-sm md:text-base">محصول آرایشی بهداشتی</div>
                 </div>
                 <div>
-                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">+۵</div>
+                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">+</div>
                   <div className="text-gray-600 text-sm md:text-base">برند معتبر</div>
                 </div>
                 <div>
-                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">۲۴/۷</div>
+                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">۴/۷</div>
                   <div className="text-gray-600 text-sm md:text-base">مشاوره تخصصی</div>
                 </div>
               </div>
@@ -182,11 +258,17 @@ export default function Home() {
               </div>
               <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
                 <div className="grid md:grid-cols-2 gap-8 p-8">
-                  <div className="h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
-                    <span className="text-8xl">🧴</span>
+                  <div className="h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center overflow-hidden">
+                    {allProducts[41] && allProducts[41].image ? (
+                      <img src={allProducts[41].image} alt="محصول ویژه" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-8xl">🧴</span>
+                    )}
                   </div>
                   <div className="flex flex-col justify-center">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">سرم جوانساز، لیفت و ضدچروک تراست اسمارت</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                      {allProducts[41]?.name || 'سرم جوانساز، لیفت و ضدچروک تراست اسمارت'}
+                    </h3>
                     <p className="text-gray-600 mb-4">این سرم تخصصی با فرمولاسیون پیشرفته، به جوانسازی، لیفتینگ و کاهش چروک‌های پوست شما کمک می‌کند. حاوی مواد مؤثره قوی برای نتایج قابل مشاهده.</p>
                     <div className="flex items-center gap-4 mb-6">
                       <span className="text-gray-400 line-through text-lg">۱,۸۴۹,۰۰۰ تومان</span>
@@ -224,7 +306,7 @@ export default function Home() {
                         ? 'shadow-2xl ring-4 ring-purple-300 ring-offset-2 animate-pulse' 
                         : 'shadow-md hover:shadow-lg'
                     }`}>
-                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || '📦'}</span>
+                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || ''}</span>
                     </div>
                     <span className={`text-xs md:text-sm font-medium text-center max-w-[100px] transition-all duration-300 ${
                       selectedCategory === cat ? 'text-[#7C3AED] font-bold' : 'text-gray-700'
@@ -268,9 +350,21 @@ export default function Home() {
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">جدیدترین محصولات تراست و برندهای معتبر</h2>
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
-                <button onClick={() => { setActiveTab('all'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'all' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}>همه محصولات</button>
-                <button onClick={() => { setActiveTab('new'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'new' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}>جدیدترین‌ها</button>
-                <button onClick={() => { setActiveTab('bestseller'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${activeTab === 'bestseller' && !selectedCategory ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'}`}>پرفروش‌ترین‌های تراست</button>
+                <button onClick={() => { setActiveTab('all'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === 'all' && !selectedCategory 
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
+                    : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
+                }`}>همه محصولات</button>
+                <button onClick={() => { setActiveTab('new'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === 'new' && !selectedCategory 
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
+                    : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
+                }`}>جدیدترین‌ها</button>
+                <button onClick={() => { setActiveTab('bestseller'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === 'bestseller' && !selectedCategory 
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
+                    : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
+                }`}>پرفروش‌ترین‌های تراست</button>
               </div>
               {filteredProducts.length === 0 ? (
                 <div className="text-center py-12"><p className="text-gray-600 text-lg">محصولی در این دسته‌بندی وجود ندارد</p></div>
@@ -279,7 +373,13 @@ export default function Home() {
                   <p className="text-center text-sm text-gray-600 mb-4">تعداد محصولات نمایش داده شده: {filteredProducts.length}</p>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} isFavorite={favoriteIds.includes(product.id)} onToggleFavorite={handleToggleFavorite} />
+                      <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        onAddToCart={handleAddToCart} 
+                        isFavorite={favoriteIds.includes(product.id)} 
+                        onToggleFavorite={handleToggleFavorite} 
+                      />
                     ))}
                   </div>
                 </div>
@@ -319,7 +419,7 @@ export default function Home() {
               <div className="grid md:grid-cols-3 gap-8">
                 {[
                   { title: 'روتین پوستی مناسب برای پوست چرب', category: 'مراقبت پوست', date: '۲۵ مرداد ۱۴۰۵', image: '📝' },
-                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۲۰ مرداد ۱۴۰۵', image: '📖' },
+                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۰ مرداد ۱۴۰۵', image: '📖' },
                   { title: 'معرفی بهترین ضد آفتاب‌های تراست', category: 'محصولات', date: '۱۵ مرداد ۱۴۰۵', image: '☀️' }
                 ].map((article, idx) => (
                   <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
@@ -433,7 +533,7 @@ export default function Home() {
                   </div>
                   <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
                     <div className="text-center">
-                      <span className="text-9xl">📱</span>
+                      <span className="text-9xl"></span>
                       <p className="text-gray-600 mt-4 font-bold">به زودی...</p>
                     </div>
                   </div>
@@ -496,7 +596,7 @@ export default function Home() {
                   {[
                     { icon: '💧', title: 'سرم‌های تخصصی تراست', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
                     { icon: '☀️', title: 'کرم ضد آفتاب Trust', desc: 'محافظت کامل با بافت سبک و فاقد چربی' },
-                    { icon: '🧴', title: 'شوینده‌های ملایم', desc: 'پاک‌کنندگی عمیق بدون ایجاد خشکی و حساسیت' },
+                    { icon: '', title: 'شوینده‌های ملایم', desc: 'پاک‌کنندگی عمیق بدون ایجاد خشکی و حساسیت' },
                     { icon: '🌸', title: 'عطر و بادی اسپلش', desc: 'رایحه‌های ماندگار و منحصر به فرد برای آقایان و بانوان' }
                   ].map((item, idx) => (
                     <div key={idx} className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center h-full flex flex-col justify-center items-center">
