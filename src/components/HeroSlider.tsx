@@ -15,7 +15,7 @@ const slides: Slide[] = [
     id: 1,
     title: 'تخفیف‌های ویژه فصلی',
     buttonText: 'مشاهده محصولات',
-    // ✅ لینک عکس آپلود شده در سوپابیس را اینجا بگذار:
+    https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slide1.jpg', 
   },
   {
