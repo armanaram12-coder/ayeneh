@@ -37,7 +37,6 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (productId === 0) return;
     
-    // ✅ خواندن از Supabase به جای JSON
     const fetchProduct = async () => {
       const { data, error } = await supabase
         .from('products')
@@ -46,8 +45,12 @@ export default function ProductDetailPage() {
         .single();
       
       if (data && !error) {
+        // ✅ دیباگ: در کنسول مرورگر (F12) دقیقاً می‌بینی سوپابیس چه چیزی فرستاده
+        console.log("✅ داده محصول از سوپابیس:", data);
+        console.log("🖼️ مقدار فیلد image:", data.image);
         setProduct(data);
       } else {
+        console.error("❌ خطا در دریافت محصول:", error);
         setProduct(null);
       }
       setLoading(false);
@@ -147,8 +150,17 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="relative">
                 <div className="aspect-square bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                  {/* ✅ اصلاح شده: بررسی trim و اضافه کردن onError برای دیباگ */}
+                  {product.image && product.image.trim() !== '' ? (
+                    <img 
+                      src={product.image.trim()} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error("❌ مرورگر نتوانست عکس را لود کند. لینک:", product.image);
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
                   ) : (
                     <span className="text-9xl">🧴</span>
                   )}
@@ -250,7 +262,7 @@ export default function ProductDetailPage() {
                     <p className="text-xs text-gray-600">ضمانت اصالت</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl mb-1"></div>
+                    <div className="text-2xl mb-1">💰</div>
                     <p className="text-xs text-gray-600">بهترین قیمت</p>
                   </div>
                 </div>
@@ -258,7 +270,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* محصولات مرتبط - از Supabase خوانده می‌شود */}
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">محصولات مرتبط</h2>
             <RelatedProducts currentProductId={productId} currentCategory={product.category} />
@@ -269,7 +280,6 @@ export default function ProductDetailPage() {
   );
 }
 
-// کامپوننت جداگانه برای محصولات مرتبط
 function RelatedProducts({ currentProductId, currentCategory }: { currentProductId: number; currentCategory?: string }) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
@@ -304,8 +314,8 @@ function RelatedProducts({ currentProductId, currentCategory }: { currentProduct
           className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
         >
           <div className="h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
-            {p.image ? (
-              <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+            {p.image && p.image.trim() !== '' ? (
+              <img src={p.image.trim()} alt={p.name} className="w-full h-full object-cover" />
             ) : (
               <span className="text-4xl">🧴</span>
             )}
