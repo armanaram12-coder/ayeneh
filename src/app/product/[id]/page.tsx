@@ -6,7 +6,6 @@ import Header from '@/components/Header';
 import { supabase } from '@/lib/supabase';
 import { addToCart } from '@/lib/cart';
 import { toggleFavorite, isFavorite } from '@/lib/favorites';
-import productsData from '@/data/products.json';
 
 interface Product {
   id: number;
@@ -23,32 +22,6 @@ interface Product {
   category?: string;
 }
 
-function getAllProducts(): Product[] {
-  const allProducts: Product[] = [];
-  const data = productsData as any;
-  
-  for (const category of data.categories || []) {
-    for (const subcategory of category.subcategories || []) {
-      for (const product of subcategory.products || []) {
-        allProducts.push({
-          id: product.id,
-          name: product.name,
-          price_toman: product.price_toman,
-          brand: product.brand,
-          gender: product.gender,
-          type: product.type,
-          volume_ml: product.volume_ml,
-          volume_gram: product.volume_gram,
-          stock: product.stock,
-          category: category.name,
-          description: product.description || `${product.name} از برند ${product.brand || 'تراست'} با کیفیت عالی و قیمت مناسب.`
-        });
-      }
-    }
-  }
-  return allProducts;
-}
-
 export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -57,27 +30,37 @@ export default function ProductDetailPage() {
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // تغییر نام متغیر state برای جلوگیری از تداخل با تابع isFavorite ایمپورت شده
   const [isFavoriteState, setIsFavoriteState] = useState(false);
-  
   const [userId, setUserId] = useState<string | null>(null);
   const [showToast, setShowToast] = useState('');
 
   useEffect(() => {
     if (productId === 0) return;
     
-    const allProducts = getAllProducts();
-    const found = allProducts.find(p => p.id === productId);
-    setProduct(found || null);
-    setLoading(false);
+    // ✅ خواندن از Supabase به جای JSON
+    const fetchProduct = async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', productId)
+        .single();
+      
+      if (data && !error) {
+        setProduct(data);
+      } else {
+        setProduct(null);
+      }
+      setLoading(false);
+    };
+
+    fetchProduct();
 
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setUserId(session.user.id);
         const fav = await isFavorite(session.user.id, productId);
-        setIsFavoriteState(fav); // استفاده از نام جدید
+        setIsFavoriteState(fav);
       }
     };
     checkUser();
@@ -112,7 +95,7 @@ export default function ProductDetailPage() {
     }
 
     const result = await toggleFavorite(session.user.id, product!.id);
-    setIsFavoriteState(result); // استفاده از نام جدید
+    setIsFavoriteState(result);
     setShowToast(result ? '❤️ به علاقه‌مندی‌ها اضافه شد' : '💔 از علاقه‌مندی‌ها حذف شد');
     setTimeout(() => setShowToast(''), 2000);
   };
@@ -239,7 +222,7 @@ export default function ProductDetailPage() {
 
                 <div className="mb-6">
                   <h3 className="font-bold text-gray-800 mb-2">توضیحات</h3>
-                  <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                  <p className="text-gray-600 leading-relaxed">{product.description || `${product.name} از برند ${product.brand || 'تراست'} با کیفیت عالی و قیمت مناسب.`}</p>
                 </div>
 
                 <div className="flex gap-3 mt-auto">
@@ -267,7 +250,7 @@ export default function ProductDetailPage() {
                     <p className="text-xs text-gray-600">ضمانت اصالت</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl mb-1">💰</div>
+                    <div className="text-2xl mb-1"></div>
                     <p className="text-xs text-gray-600">بهترین قیمت</p>
                   </div>
                 </div>
@@ -275,29 +258,62 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
+          {/* محصولات مرتبط - از Supabase خوانده می‌شود */}
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">محصولات مرتبط</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {getAllProducts()
-                .filter(p => p.category === product.category && p.id !== product.id)
-                .slice(0, 4)
-                .map(p => (
-                  <div 
-                    key={p.id} 
-                    onClick={() => router.push(`/product/${p.id}`)}
-                    className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
-                  >
-                    <div className="h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center">
-                      <span className="text-4xl">🧴</span>
-                    </div>
-                    <h3 className="font-semibold text-gray-800 text-sm mb-2 line-clamp-2">{p.name}</h3>
-                    <p className="text-[#7C3AED] font-bold">{formatPrice(p.price_toman)} تومان</p>
-                  </div>
-                ))}
-            </div>
+            <RelatedProducts currentProductId={productId} currentCategory={product.category} />
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+// کامپوننت جداگانه برای محصولات مرتبط
+function RelatedProducts({ currentProductId, currentCategory }: { currentProductId: number; currentCategory?: string }) {
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (!currentCategory) return;
+
+    const fetchRelated = async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category', currentCategory)
+        .neq('id', currentProductId)
+        .limit(4);
+      
+      if (data) {
+        setRelatedProducts(data);
+      }
+    };
+
+    fetchRelated();
+  }, [currentCategory, currentProductId]);
+
+  const formatPrice = (price: number) => price.toLocaleString('fa-IR');
+  const router = useRouter();
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {relatedProducts.map(p => (
+        <div 
+          key={p.id} 
+          onClick={() => router.push(`/product/${p.id}`)}
+          className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow cursor-pointer"
+        >
+          <div className="h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+            {p.image ? (
+              <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-4xl">🧴</span>
+            )}
+          </div>
+          <h3 className="font-semibold text-gray-800 text-sm mb-2 line-clamp-2">{p.name}</h3>
+          <p className="text-[#7C3AED] font-bold">{formatPrice(p.price_toman)} تومان</p>
+        </div>
+      ))}
+    </div>
   );
 }
