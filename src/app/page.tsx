@@ -30,7 +30,7 @@ const categoryIcons: Record<string, string> = {
   'عطر و خوشبوکننده': '🌸',
   'سرم تخصصی': '💧',
   'کرم تخصصی': '🧴',
-  'ضد آفتاب': '️',
+  'ضد آفتاب': '☀️',
   'شوینده و پاک کننده': '🧼',
   'دهان و دندان': '🦷',
   'آرایشی': '💄',
@@ -57,18 +57,24 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300 relative flex flex-col">
+    // ✅ اضافه کردن group برای فعال کردن افکت هاور روی عکس
+    <div className="bg-white rounded-xl shadow-md p-4 hover:shadow-lg transition-shadow duration-300 relative flex flex-col group">
       <button onClick={() => onToggleFavorite(product.id)} className="absolute top-2 right-2 z-10">
         <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       </button>
-      <Link href={`/product/${product.id}`}>
+      <Link href={`/product/${product.id}`} className="block">
         <div className="h-40 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden cursor-pointer">
           {product.image && product.image.trim() !== '' ? (
-            <img src={product.image.trim()} alt={`خرید ${product.name} برند ${product.brand || 'تراست'}`} className="w-full h-full object-cover" />
+            // ✅ تغییر به object-contain و اضافه کردن افکت بزرگنمایی (zoom) هنگام هاور
+            <img 
+              src={product.image.trim()} 
+              alt={`خرید ${product.name} برند ${product.brand || 'تراست'}`} 
+              className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-110" 
+            />
           ) : (
-            <span className="text-4xl">🧴</span>
+            <span className="text-4xl transition-transform duration-500 group-hover:scale-110">🧴</span>
           )}
         </div>
       </Link>
@@ -104,7 +110,6 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
-  // ✅ خواندن محصولات از Supabase
   useEffect(() => {
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
     if (hasSeen === 'true') setShowSplash(false);
@@ -224,7 +229,6 @@ export default function Home() {
           <HeroSlider />
           <FlashSale />
           
-          {/* ✅ آمار و ارقام */}
           <section className="py-12 bg-white">
             <div className="container mx-auto px-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -237,18 +241,17 @@ export default function Home() {
                   <div className="text-gray-600 text-sm md:text-base">محصول آرایشی بهداشتی</div>
                 </div>
                 <div>
-                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">+</div>
+                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">+۵</div>
                   <div className="text-gray-600 text-sm md:text-base">برند معتبر</div>
                 </div>
                 <div>
-                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">۴/۷</div>
+                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">۲۴/۷</div>
                   <div className="text-gray-600 text-sm md:text-base">مشاوره تخصصی</div>
                 </div>
               </div>
             </div>
           </section>
           
-          {/* ✅ محصول ویژه هفته */}
           <section className="py-16 bg-gradient-to-br from-yellow-50 to-orange-50">
             <div className="container mx-auto px-4">
               <div className="text-center mb-12">
@@ -258,9 +261,13 @@ export default function Home() {
               </div>
               <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
                 <div className="grid md:grid-cols-2 gap-8 p-8">
-                  <div className="h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center overflow-hidden">
+                  <div className="h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center overflow-hidden group">
                     {allProducts[41] && allProducts[41].image ? (
-                      <img src={allProducts[41].image} alt="محصول ویژه" className="w-full h-full object-cover" />
+                      <img 
+                        src={allProducts[41].image.trim()} 
+                        alt="محصول ویژه" 
+                        className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105" 
+                      />
                     ) : (
                       <span className="text-8xl">🧴</span>
                     )}
@@ -288,7 +295,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ دسته‌بندی محصولات */}
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات آرایشی و بهداشتی</h2>
@@ -306,7 +312,7 @@ export default function Home() {
                         ? 'shadow-2xl ring-4 ring-purple-300 ring-offset-2 animate-pulse' 
                         : 'shadow-md hover:shadow-lg'
                     }`}>
-                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || ''}</span>
+                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || '📦'}</span>
                     </div>
                     <span className={`text-xs md:text-sm font-medium text-center max-w-[100px] transition-all duration-300 ${
                       selectedCategory === cat ? 'text-[#7C3AED] font-bold' : 'text-gray-700'
@@ -387,7 +393,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بخش چرا آینه */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">چرا فروشگاه آینه بهترین مرجع خرید محصولات آرایشی بهداشتی و تراست است؟</h2>
@@ -409,7 +414,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ مجله آینه */}
           <section className="py-16 bg-gradient-to-br from-purple-50 to-pink-50">
             <div className="container mx-auto px-4">
               <div className="text-center mb-12">
@@ -419,7 +423,7 @@ export default function Home() {
               <div className="grid md:grid-cols-3 gap-8">
                 {[
                   { title: 'روتین پوستی مناسب برای پوست چرب', category: 'مراقبت پوست', date: '۲۵ مرداد ۱۴۰۵', image: '📝' },
-                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۰ مرداد ۱۴۰۵', image: '📖' },
+                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۲۰ مرداد ۱۴۰۵', image: '📖' },
                   { title: 'معرفی بهترین ضد آفتاب‌های تراست', category: 'محصولات', date: '۱۵ مرداد ۱۴۰۵', image: '☀️' }
                 ].map((article, idx) => (
                   <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
@@ -443,7 +447,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ برندهای همکار */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">برندهای معتبر همکار با فروشگاه آینه</h2>
@@ -458,7 +461,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ نظرات مشتریان */}
           <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white">
             <div className="container mx-auto px-4">
               <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">نظرات مشتریان فروشگاه آینه</h2>
@@ -488,7 +490,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ اپ آینه */}
           <section className="py-16 bg-gradient-to-br from-green-50 to-teal-50">
             <div className="container mx-auto px-4">
               <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -533,7 +534,7 @@ export default function Home() {
                   </div>
                   <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
                     <div className="text-center">
-                      <span className="text-9xl"></span>
+                      <span className="text-9xl">📱</span>
                       <p className="text-gray-600 mt-4 font-bold">به زودی...</p>
                     </div>
                   </div>
@@ -542,7 +543,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ خبرنامه */}
           <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
             <div className="container mx-auto px-4">
               <div className="max-w-3xl mx-auto text-center">
@@ -573,7 +573,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بخش Trust Section */}
           <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -596,7 +595,7 @@ export default function Home() {
                   {[
                     { icon: '💧', title: 'سرم‌های تخصصی تراست', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
                     { icon: '☀️', title: 'کرم ضد آفتاب Trust', desc: 'محافظت کامل با بافت سبک و فاقد چربی' },
-                    { icon: '', title: 'شوینده‌های ملایم', desc: 'پاک‌کنندگی عمیق بدون ایجاد خشکی و حساسیت' },
+                    { icon: '🧴', title: 'شوینده‌های ملایم', desc: 'پاک‌کنندگی عمیق بدون ایجاد خشکی و حساسیت' },
                     { icon: '🌸', title: 'عطر و بادی اسپلش', desc: 'رایحه‌های ماندگار و منحصر به فرد برای آقایان و بانوان' }
                   ].map((item, idx) => (
                     <div key={idx} className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center h-full flex flex-col justify-center items-center">
