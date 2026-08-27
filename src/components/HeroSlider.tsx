@@ -14,7 +14,7 @@ const slides: Slide[] = [
   {
     id: 1,
     buttonText: 'مشاهده محصولات',
-    buttonLink: '/?category=عطر%20و%20خوشبوکننده',
+    buttonLink: 'https://ayeneh.vercel.app/product/66',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp',
   },
   {
