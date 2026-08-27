@@ -21,7 +21,7 @@ const slides: Slide[] = [
   {
     id: 2,
     buttonText: 'خرید الآن',
-    buttonLink: '/?category=سرم%20تخصصی',
+    buttonLink: 'https://ayeneh.vercel.app/product/66',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider2.webp',
   },
   {
