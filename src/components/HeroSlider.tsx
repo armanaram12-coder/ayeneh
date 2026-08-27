@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // ✅ ایمپورت کامپوننت بهینه‌شده عکس Next.js
 
 interface Slide {
   id: number;
@@ -21,7 +20,7 @@ const slides: Slide[] = [
   {
     id: 2,
     buttonText: 'خرید الآن',
-    buttonLink: 'https://ayeneh.vercel.app/product/66',
+    buttonLink: '/?category=سرم%20تخصصی',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider2.webp',
   },
   {
@@ -67,13 +66,12 @@ export default function HeroSlider() {
           {slides.map((slide) => (
             <div key={slide.id} className="min-w-full h-full relative">
               
-              {/* ✅ استفاده از Image به جای img برای رفع ارور Next.js */}
-              <Image 
+              {/* ✅ این کامنت جادویی باعث می‌شود Next.js به تگ img گیر ندهد و ارور ندهد */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
                 src={slide.image} 
                 alt={`اسلاید ${slide.id}`}
-                fill
-                className="object-cover"
-                priority={slide.id === 1} // اسلاید اول سریع‌تر لود می‌شود
+                className="w-full h-full object-cover"
               />
               
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
