@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ ایمپورت کامپوننت بهینه‌شده عکس Next.js
 
 interface Slide {
   id: number;
@@ -14,25 +15,25 @@ const slides: Slide[] = [
   {
     id: 1,
     buttonText: 'مشاهده محصولات',
-    buttonLink: '/?category=عطر%20و%20خوشبوکننده', // لینک به دسته‌بندی عطر
+    buttonLink: '/?category=عطر%20و%20خوشبوکننده',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp',
   },
   {
     id: 2,
     buttonText: 'خرید الآن',
-    buttonLink: '/?category=سرم%20تخصصی', // لینک به دسته‌بندی سرم
+    buttonLink: '/?category=سرم%20تخصصی',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider2.webp',
   },
   {
     id: 3,
     buttonText: 'مطالعه بیشتر',
-    buttonLink: '/blog', // لینک به صفحه وبلاگ
+    buttonLink: '/blog',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider3.webp',
   },
   {
     id: 4,
     buttonText: 'مشاهده محصول',
-    buttonLink: '/product/72', // ✅ اصلاح شد: لینک داخلی باید داخل گیومه باشد
+    buttonLink: '/product/72',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider4.webp',
   },
 ];
@@ -65,10 +66,14 @@ export default function HeroSlider() {
         >
           {slides.map((slide) => (
             <div key={slide.id} className="min-w-full h-full relative">
-              <img 
+              
+              {/* ✅ استفاده از Image به جای img برای رفع ارور Next.js */}
+              <Image 
                 src={slide.image} 
                 alt={`اسلاید ${slide.id}`}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                priority={slide.id === 1} // اسلاید اول سریع‌تر لود می‌شود
               />
               
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
