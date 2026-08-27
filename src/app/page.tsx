@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -73,7 +74,7 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
               className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-110" 
             />
           ) : (
-            <span className="text-4xl transition-transform duration-500 group-hover:scale-110">🧴</span>
+            <span className="text-4xl transition-transform duration-500 group-hover:scale-110"></span>
           )}
         </div>
       </Link>
@@ -111,7 +112,6 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
-  // ✅ خواندن محصولات از Supabase
   useEffect(() => {
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
     if (hasSeen === 'true') setShowSplash(false);
@@ -140,17 +140,14 @@ export default function Home() {
     checkUser();
   }, []);
 
-  // ✅ بررسی URL برای فیلتر دسته‌بندی
   useEffect(() => {
     if (loading) return;
     
     const categoryFromUrl = searchParams.get('category');
     if (categoryFromUrl) {
-      // اگر دسته‌بندی در URL وجود داشت، آن را انتخاب کن
       setSelectedCategory(categoryFromUrl);
       setActiveTab('all');
       
-      // بعد از کمی تاخیر، به بخش محصولات اسکرول کن
       setTimeout(() => {
         const productsSection = document.getElementById('products-section');
         if (productsSection) {
@@ -301,7 +298,7 @@ export default function Home() {
                     <p className="text-gray-600 mb-4">این سرم تخصصی با فرمولاسیون پیشرفته، به جوانسازی، لیفتینگ و کاهش چروک‌های پوست شما کمک می‌کند. حاوی مواد مؤثره قوی برای نتایج قابل مشاهده.</p>
                     <div className="flex items-center gap-4 mb-6">
                       <span className="text-gray-400 line-through text-lg">۱,۸۴۹,۰۰۰ تومان</span>
-                      <span className="text-3xl font-bold text-[#7C3AED]">,۴۷۹,۰۰ تومان</span>
+                      <span className="text-3xl font-bold text-[#7C3AED]">۱,۴۷۹,۰۰ تومان</span>
                     </div>
                     <div className="flex gap-3">
                       <button className="flex-1 bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">
@@ -423,8 +420,8 @@ export default function Home() {
               <p className="text-gray-600 max-w-3xl mx-auto text-center mb-12">تفاوت ما در تعهد به اصالت کالا و ارائه مشاوره تخصصی رایگان برای تدوین روتین پوست و مو متناسب با نیاز شماست.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { icon: '️', title: 'ضمانت ۱۰۰٪ اصالت محصولات تراست', desc: 'تمامی کرم‌ها، سرم‌ها و لوازم آرایشی بهداشتی با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
-                  { icon: '👨‍⚕️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
+                  { icon: '🛡️', title: 'ضمانت ۱۰۰٪ اصالت محصولات تراست', desc: 'تمامی کرم‌ها، سرم‌ها و لوازم آرایشی بهداشتی با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
+                  { icon: '👨‍️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
                   { icon: '🚀', title: 'ارسال سریع و ایمن به سراسر ایران', desc: 'سفارشات لوازم آرایشی شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن ارسال می‌شود.' },
                   { icon: '💎', title: 'قیمت منصفانه و رقابتی', desc: 'حذف واسطه‌ها به ما این امکان را می‌دهد تا بهترین قیمت را برای محصولات اورجینال آرایشی ارائه دهیم.' }
                 ].map((item, index) => (
@@ -447,8 +444,8 @@ export default function Home() {
               <div className="grid md:grid-cols-3 gap-8">
                 {[
                   { title: 'روتین پوستی مناسب برای پوست چرب', category: 'مراقبت پوست', date: '۲۵ مرداد ۱۴۰۵', image: '📝' },
-                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۰ مرداد ۱۴۰۵', image: '📖' },
-                  { title: 'معرفی بهترین ضد آفتاب‌های تراست', category: 'محصولات', date: '۱۵ مرداد ۴۰۵', image: '️' }
+                  { title: 'تفاوت سرم و کرم در چیست؟', category: 'آموزشی', date: '۲۰ مرداد ۱۴۰۵', image: '📖' },
+                  { title: 'معرفی بهترین ضد آفتاب‌های تراست', category: 'محصولات', date: '۱۵ مرداد ۱۴۰۵', image: '☀️' }
                 ].map((article, idx) => (
                   <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                     <div className="h-48 bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
@@ -620,7 +617,7 @@ export default function Home() {
                     { icon: '💧', title: 'سرم‌های تخصصی تراست', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
                     { icon: '☀️', title: 'کرم ضد آفتاب Trust', desc: 'محافظت کامل با بافت سبک و فاقد چربی' },
                     { icon: '🧴', title: 'شوینده‌های ملایم', desc: 'پاک‌کنندگی عمیق بدون ایجاد خشکی و حساسیت' },
-                    { icon: '', title: 'عطر و بادی اسپلش', desc: 'رایحه‌های ماندگار و منحصر به فرد برای آقایان و بانوان' }
+                    { icon: '🌸', title: 'عطر و بادی اسپلش', desc: 'رایحه‌های ماندگار و منحصر به فرد برای آقایان و بانوان' }
                   ].map((item, idx) => (
                     <div key={idx} className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center h-full flex flex-col justify-center items-center">
                       <div className="text-3xl mb-3">{item.icon}</div>
