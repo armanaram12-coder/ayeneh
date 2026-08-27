@@ -521,7 +521,7 @@ export default function Home() {
               <div className="max-w-5xl mx-auto">
                 {/* ⚠️ نکته: اگر لینک عکس را در سوپابیس تغییر دادی، آدرس زیر را آپدیت کن */}
                 <img 
-                  src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/mobile-app-banner.webp" 
+                  src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/banners/mobile-app-banner.webp.png" 
                   alt="اپلیکیشن موبایل آینه - به زودی"
                   className="w-full h-auto rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
                 />
