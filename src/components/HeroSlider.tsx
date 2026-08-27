@@ -31,8 +31,8 @@ const slides: Slide[] = [
   },
   {
     id: 4,
-    buttonText: 'مشاهده کیت‌ها',
-    buttonLink: '/kits',
+    buttonText: 'مشاهده محصول',
+    buttonLink: https://ayeneh.vercel.app/product/72
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider4.webp',
   },
 ];
