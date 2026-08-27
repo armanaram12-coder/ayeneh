@@ -14,25 +14,25 @@ const slides: Slide[] = [
   {
     id: 1,
     buttonText: 'مشاهده محصولات',
-    buttonLink: '/products',
+    buttonLink: '/?category=عطر%20و%20خوشبوکننده', // لینک به دسته‌بندی عطر
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp',
   },
   {
     id: 2,
     buttonText: 'خرید الآن',
-    buttonLink: '/shop',
+    buttonLink: '/?category=سرم%20تخصصی', // لینک به دسته‌بندی سرم
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider2.webp',
   },
   {
     id: 3,
     buttonText: 'مطالعه بیشتر',
-    buttonLink: '/blog',
+    buttonLink: '/blog', // لینک به صفحه وبلاگ
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider3.webp',
   },
   {
     id: 4,
     buttonText: 'مشاهده محصول',
-    buttonLink: 'https://ayeneh.vercel.app/product/72'
+    buttonLink: '/product/72', // ✅ اصلاح شد: لینک داخلی باید داخل گیومه باشد
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider4.webp',
   },
 ];
@@ -58,7 +58,6 @@ export default function HeroSlider() {
 
   return (
     <section className="relative w-full overflow-hidden" dir="rtl">
-      {/* ✅ aspect-ratio دقیق برای عکس 1920×800 */}
       <div className="relative w-full" style={{ aspectRatio: '12/5' }}>
         <div 
           className="flex h-full transition-transform duration-500 ease-in-out"
@@ -66,14 +65,12 @@ export default function HeroSlider() {
         >
           {slides.map((slide) => (
             <div key={slide.id} className="min-w-full h-full relative">
-              {/* ✅ عکس کامل بدون برش و بدون overlay */}
               <img 
                 src={slide.image} 
                 alt={`اسلاید ${slide.id}`}
                 className="w-full h-full object-cover"
               />
               
-              {/* ✅ فقط دکمه در پایین اسلایدر */}
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
                 <Link href={slide.buttonLink}>
                   <button className="bg-white/90 backdrop-blur-sm text-[#7C3AED] hover:bg-[#E879F9] hover:text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
@@ -86,7 +83,6 @@ export default function HeroSlider() {
         </div>
       </div>
 
-      {/* دکمه‌های ناوبری چپ و راست */}
       <button
         onClick={goToPrevious}
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full z-20 transition-all duration-300 backdrop-blur-sm"
@@ -107,7 +103,6 @@ export default function HeroSlider() {
         </svg>
       </button>
 
-      {/* نقاط ناوبری */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
         {slides.map((_, index) => (
           <button
