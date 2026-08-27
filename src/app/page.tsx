@@ -1,8 +1,6 @@
 'use client';
-export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
@@ -34,7 +32,7 @@ const categoryIcons: Record<string, string> = {
   'کرم تخصصی': '🧴',
   'ضد آفتاب': '☀️',
   'شوینده و پاک کننده': '🧼',
-  'دهان و دندان': '',
+  'دهان و دندان': '🦷',
   'آرایشی': '💄',
   'شامپو تخصصی': '🧴',
   'ماسک تخصصی': '🎭',
@@ -74,7 +72,7 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
               className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-110" 
             />
           ) : (
-            <span className="text-4xl transition-transform duration-500 group-hover:scale-110"></span>
+            <span className="text-4xl transition-transform duration-500 group-hover:scale-110">🧴</span>
           )}
         </div>
       </Link>
@@ -99,8 +97,6 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
 }
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -140,10 +136,13 @@ export default function Home() {
     checkUser();
   }, []);
 
+  // ✅ راه‌حل قطعی: خواندن پارامتر از URL فقط در سمت کلاینت (بدون ارور بیلد)
   useEffect(() => {
-    if (loading) return;
+    if (loading || typeof window === 'undefined') return;
     
-    const categoryFromUrl = searchParams.get('category');
+    const params = new URLSearchParams(window.location.search);
+    const categoryFromUrl = params.get('category');
+    
     if (categoryFromUrl) {
       setSelectedCategory(categoryFromUrl);
       setActiveTab('all');
@@ -155,7 +154,7 @@ export default function Home() {
         }
       }, 300);
     }
-  }, [loading, searchParams]);
+  }, [loading]);
 
   const handleSplashFinish = () => { 
     if (typeof window !== 'undefined') sessionStorage.setItem('hasSeenSplash', 'true'); 
@@ -298,7 +297,7 @@ export default function Home() {
                     <p className="text-gray-600 mb-4">این سرم تخصصی با فرمولاسیون پیشرفته، به جوانسازی، لیفتینگ و کاهش چروک‌های پوست شما کمک می‌کند. حاوی مواد مؤثره قوی برای نتایج قابل مشاهده.</p>
                     <div className="flex items-center gap-4 mb-6">
                       <span className="text-gray-400 line-through text-lg">۱,۸۴۹,۰۰۰ تومان</span>
-                      <span className="text-3xl font-bold text-[#7C3AED]">۱,۴۷۹,۰۰ تومان</span>
+                      <span className="text-3xl font-bold text-[#7C3AED]">۱,۴۷۹,۰۰۰ تومان</span>
                     </div>
                     <div className="flex gap-3">
                       <button className="flex-1 bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">
@@ -421,7 +420,7 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   { icon: '🛡️', title: 'ضمانت ۱۰۰٪ اصالت محصولات تراست', desc: 'تمامی کرم‌ها، سرم‌ها و لوازم آرایشی بهداشتی با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
-                  { icon: '👨‍️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
+                  { icon: '👨‍⚕️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
                   { icon: '🚀', title: 'ارسال سریع و ایمن به سراسر ایران', desc: 'سفارشات لوازم آرایشی شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن ارسال می‌شود.' },
                   { icon: '💎', title: 'قیمت منصفانه و رقابتی', desc: 'حذف واسطه‌ها به ما این امکان را می‌دهد تا بهترین قیمت را برای محصولات اورجینال آرایشی ارائه دهیم.' }
                 ].map((item, index) => (
