@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import SplashScreen from '@/components/SplashScreen';
 import HeroSlider from '@/components/HeroSlider';
 import FlashSale from '@/components/FlashSale';
@@ -97,6 +98,8 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
 }
 
 export default function Home() {
+  const router = useRouter(); // ✅ اضافه شد
+  
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -136,7 +139,7 @@ export default function Home() {
     checkUser();
   }, []);
 
-  // ✅ راه‌حل قطعی: خواندن پارامتر از URL فقط در سمت کلاینت (بدون ارور بیلد)
+  // ✅ خواندن پارامتر از URL فقط در سمت کلاینت
   useEffect(() => {
     if (loading || typeof window === 'undefined') return;
     
@@ -209,11 +212,15 @@ export default function Home() {
     return true;
   });
 
+  // ✅ آپدیت شده: تغییر URL هنگام کلیک روی دسته‌بندی
   const handleCategoryClick = (cat: string) => { 
     if (selectedCategory === cat) {
       setSelectedCategory(null);
+      router.replace(window.location.pathname, { scroll: false });
     } else {
       setSelectedCategory(cat);
+      router.replace(`/?category=${encodeURIComponent(cat)}`, { scroll: false });
+      
       setTimeout(() => {
         const productsSection = document.getElementById('products-section');
         if (productsSection) {
@@ -362,7 +369,7 @@ export default function Home() {
               </div>
               {selectedCategory && (
                 <div className="text-center mt-4">
-                  <button onClick={() => { setSelectedCategory(null); setActiveTab('all'); }} className="text-[#7C3AED] hover:underline text-sm font-semibold">
+                  <button onClick={() => { setSelectedCategory(null); setActiveTab('all'); router.replace(window.location.pathname, { scroll: false }); }} className="text-[#7C3AED] hover:underline text-sm font-semibold">
                     نمایش همه دسته‌بندی‌های آرایشی بهداشتی ✕
                   </button>
                 </div>
@@ -376,17 +383,20 @@ export default function Home() {
                 {selectedCategory ? `محصولات دسته‌بندی: ${selectedCategory}` : 'جدیدترین محصولات تراست و برندهای معتبر'}
               </h2>
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
-                <button onClick={() => { setActiveTab('all'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
+                {/* ✅ آپدیت شده: پاک کردن URL هنگام کلیک روی "همه محصولات" */}
+                <button onClick={() => { setActiveTab('all'); setSelectedCategory(null); router.replace(window.location.pathname, { scroll: false }); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                   activeTab === 'all' && !selectedCategory 
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
                     : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                 }`}>همه محصولات</button>
-                <button onClick={() => { setActiveTab('new'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
+                
+                <button onClick={() => { setActiveTab('new'); setSelectedCategory(null); router.replace(window.location.pathname, { scroll: false }); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                   activeTab === 'new' && !selectedCategory 
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
                     : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                 }`}>جدیدترین‌ها</button>
-                <button onClick={() => { setActiveTab('bestseller'); setSelectedCategory(null); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
+                
+                <button onClick={() => { setActiveTab('bestseller'); setSelectedCategory(null); router.replace(window.location.pathname, { scroll: false }); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                   activeTab === 'bestseller' && !selectedCategory 
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
                     : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
