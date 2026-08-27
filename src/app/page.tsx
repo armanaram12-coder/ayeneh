@@ -519,59 +519,18 @@ export default function Home() {
               </div>
             </div>
           </section>
-
-          <section className="py-16 bg-gradient-to-br from-green-50 to-teal-50">
-            <div className="container mx-auto px-4">
-              <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
-                <div className="grid md:grid-cols-2 gap-8 p-8 md:p-12">
-                  <div className="flex flex-col justify-center">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">اپلیکیشن موبایل آینه</h2>
-                    <p className="text-gray-600 mb-6">همیشه و همه‌جا به جدیدترین محصولات آرایشی بهداشتی، تخفیف‌های ویژه و مشاوره تخصصی دسترسی داشته باشید.</p>
-                    <ul className="space-y-3 mb-8">
-                      <li className="flex items-center gap-3 text-gray-800 font-medium">
-                        <span className="text-green-500 text-lg">✓</span>
-                        <span>خرید سریع و آسان</span>
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-800 font-medium">
-                        <span className="text-green-500 text-lg">✓</span>
-                        <span>مشاوره هوشمند پوست و مو</span>
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-800 font-medium">
-                        <span className="text-green-500 text-lg">✓</span>
-                        <span>اطلاع از تخفیف‌های لحظه‌ای</span>
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-800 font-medium">
-                        <span className="text-green-500 text-lg">✓</span>
-                        <span>پیگیری سفارش به صورت آنلاین</span>
-                      </li>
-                    </ul>
-                    <div className="flex gap-4">
-                      <button className="bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity">
-                        <span className="text-2xl">🍎</span>
-                        <div className="text-right">
-                          <div className="text-xs">Download on the</div>
-                          <div className="font-bold">App Store</div>
-                        </div>
-                      </button>
-                      <button className="bg-black text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity">
-                        <span className="text-2xl">▶</span>
-                        <div className="text-right">
-                          <div className="text-xs">GET IT ON</div>
-                          <div className="font-bold">Google Play</div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
-                    <div className="text-center">
-                      <span className="text-9xl">📱</span>
-                      <p className="text-gray-600 mt-4 font-bold">به زودی...</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+{/* ✅ اپ آینه - بنر جدید */}
+<section className="py-8">
+  <div className="container mx-auto px-4">
+    <div className="max-w-6xl mx-auto">
+      <img 
+        src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/banners/mobile-app-banner.webp" 
+        alt="اپلیکیشن موبایل آینه - به زودی"
+        className="w-full h-auto rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+      />
+    </div>
+  </div>
+</section></section>
 
           <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
             <div className="container mx-auto px-4">
