@@ -1,38 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 interface Slide {
   id: number;
-  title: string;
   buttonText: string;
-  image?: string;
-  gradient?: string;
+  buttonLink: string;
+  image: string;
 }
 
 const slides: Slide[] = [
   {
     id: 1,
-    title: 'تخفیف‌های ویژه فصلی',
     buttonText: 'مشاهده محصولات',
+    buttonLink: '/products',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider1.webp',
   },
   {
     id: 2,
-    title: 'محصولات پرفروش هفته',
     buttonText: 'خرید الآن',
+    buttonLink: '/shop',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider2.webp',
   },
   {
     id: 3,
-    title: 'راهنمای انتخاب عطر',
     buttonText: 'مطالعه بیشتر',
+    buttonLink: '/blog',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider3.webp',
   },
   {
     id: 4,
-    title: 'روتین مراقبت پوست',
     buttonText: 'مشاهده کیت‌ها',
+    buttonLink: '/kits',
     image: 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/slider4.webp',
   },
 ];
@@ -57,42 +57,36 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden" dir="rtl">
-      <div className="relative w-full h-full">
+    <section className="relative w-full overflow-hidden" dir="rtl">
+      {/* ✅ aspect-ratio دقیق برای عکس 1920×800 */}
+      <div className="relative w-full" style={{ aspectRatio: '12/5' }}>
         <div 
           className="flex h-full transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(${currentSlide * 100}%)` }}
         >
           {slides.map((slide) => (
             <div key={slide.id} className="min-w-full h-full relative">
-              <div className="absolute inset-0">
-                {slide.image ? (
-                  <>
-                    <img 
-                      src={slide.image} 
-                      alt={slide.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/40" />
-                  </>
-                ) : (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
-                )}
-              </div>
+              {/* ✅ عکس کامل بدون برش و بدون overlay */}
+              <img 
+                src={slide.image} 
+                alt={`اسلاید ${slide.id}`}
+                className="w-full h-full object-cover"
+              />
               
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-lg">
-                  {slide.title}
-                </h1>
-                <button className="bg-white text-[#7C3AED] hover:bg-[#E879F9] hover:text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                  {slide.buttonText}
-                </button>
+              {/* ✅ فقط دکمه در پایین اسلایدر */}
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+                <Link href={slide.buttonLink}>
+                  <button className="bg-white/90 backdrop-blur-sm text-[#7C3AED] hover:bg-[#E879F9] hover:text-white px-8 py-3 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    {slide.buttonText}
+                  </button>
+                </Link>
               </div>
             </div>
           ))}
         </div>
       </div>
 
+      {/* دکمه‌های ناوبری چپ و راست */}
       <button
         onClick={goToPrevious}
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full z-20 transition-all duration-300 backdrop-blur-sm"
@@ -113,6 +107,7 @@ export default function HeroSlider() {
         </svg>
       </button>
 
+      {/* نقاط ناوبری */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-3 z-20">
         {slides.map((_, index) => (
           <button
