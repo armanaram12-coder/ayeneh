@@ -98,7 +98,7 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
 }
 
 export default function Home() {
-  const router = useRouter(); // ✅ اضافه شد
+  const router = useRouter();
   
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
@@ -139,7 +139,6 @@ export default function Home() {
     checkUser();
   }, []);
 
-  // ✅ خواندن پارامتر از URL فقط در سمت کلاینت
   useEffect(() => {
     if (loading || typeof window === 'undefined') return;
     
@@ -212,7 +211,6 @@ export default function Home() {
     return true;
   });
 
-  // ✅ آپدیت شده: تغییر URL هنگام کلیک روی دسته‌بندی
   const handleCategoryClick = (cat: string) => { 
     if (selectedCategory === cat) {
       setSelectedCategory(null);
@@ -383,19 +381,16 @@ export default function Home() {
                 {selectedCategory ? `محصولات دسته‌بندی: ${selectedCategory}` : 'جدیدترین محصولات تراست و برندهای معتبر'}
               </h2>
               <div className="flex justify-center gap-3 md:gap-4 mb-8 flex-wrap">
-                {/* ✅ آپدیت شده: پاک کردن URL هنگام کلیک روی "همه محصولات" */}
                 <button onClick={() => { setActiveTab('all'); setSelectedCategory(null); router.replace(window.location.pathname, { scroll: false }); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                   activeTab === 'all' && !selectedCategory 
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
                     : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                 }`}>همه محصولات</button>
-                
                 <button onClick={() => { setActiveTab('new'); setSelectedCategory(null); router.replace(window.location.pathname, { scroll: false }); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                   activeTab === 'new' && !selectedCategory 
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
                     : 'bg-white text-gray-600 hover:bg-purple-50 hover:text-[#7C3AED] border border-gray-200'
                 }`}>جدیدترین‌ها</button>
-                
                 <button onClick={() => { setActiveTab('bestseller'); setSelectedCategory(null); router.replace(window.location.pathname, { scroll: false }); }} className={`px-5 md:px-8 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
                   activeTab === 'bestseller' && !selectedCategory 
                     ? 'bg-gradient-to-r from-[#7C3AED] to-[#E879F9] text-white shadow-lg shadow-purple-300' 
@@ -519,18 +514,20 @@ export default function Home() {
               </div>
             </div>
           </section>
-{/* ✅ اپ آینه - بنر جدید */}
-<section className="py-8">
-  <div className="container mx-auto px-4">
-    <div className="max-w-6xl mx-auto">
-      <img 
-        src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/banners/mobile-app-banner.webp" 
-        alt="اپلیکیشن موبایل آینه - به زودی"
-        className="w-full h-auto rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
-      />
-    </div>
-  </div>
-</section></section>
+
+          {/* ✅ بنر اپلیکیشن موبایل آینه (جایگزین بخش قدیمی شد) */}
+          <section className="py-8 bg-gradient-to-br from-green-50 to-teal-50">
+            <div className="container mx-auto px-4">
+              <div className="max-w-5xl mx-auto">
+                {/* ⚠️ نکته: اگر لینک عکس را در سوپابیس تغییر دادی، آدرس زیر را آپدیت کن */}
+                <img 
+                  src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/sliders/mobile-app-banner.webp" 
+                  alt="اپلیکیشن موبایل آینه - به زودی"
+                  className="w-full h-auto rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
+                />
+              </div>
+            </div>
+          </section>
 
           <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
             <div className="container mx-auto px-4">
