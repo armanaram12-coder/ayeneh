@@ -130,23 +130,26 @@ export default function FlashSale() {
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xs md:max-w-sm px-2">
               <div className="bg-white rounded-xl shadow-2xl p-4 border-2 border-yellow-400">
                 
-                {/* تایمر */}
-                <div className="flex justify-center items-center gap-1 mb-3">
-                  <span className="text-gray-700 text-xs font-bold">پایان:</span>
-                  <div className="flex items-center">
-                    <div className="bg-red-500 rounded px-2 py-0.5 mr-1">
-                      <div className="text-white text-sm font-bold font-mono">{toPersianDigits(timeLeft.hours)}</div>
-                    </div>
-                    <span className="text-red-500 text-sm font-bold mx-0.5">:</span>
-                    <div className="bg-red-500 rounded px-2 py-0.5 mr-1">
-                      <div className="text-white text-sm font-bold font-mono">{toPersianDigits(timeLeft.minutes)}</div>
-                    </div>
-                    <span className="text-red-500 text-sm font-bold mx-0.5">:</span>
-                    <div className="bg-red-500 rounded px-2 py-0.5 mr-1">
-                      <div className="text-white text-sm font-bold font-mono">{toPersianDigits(timeLeft.seconds)}</div>
-                    </div>
-                  </div>
-                </div>
+               {/* تایمر */}
+<div className="flex justify-center items-center gap-1 mb-3">
+  <span className="text-gray-700 text-xs font-bold">پایان:</span>
+  <div className="flex items-center">
+    {/* ✅ ثانیه - سمت راست (اول) */}
+    <div className="bg-red-500 rounded px-2 py-0.5 mr-1">
+      <div className="text-white text-sm font-bold font-mono">{toPersianDigits(timeLeft.seconds)}</div>
+    </div>
+    <span className="text-red-500 text-sm font-bold mx-0.5">:</span>
+    {/* ✅ دقیقه - وسط */}
+    <div className="bg-red-500 rounded px-2 py-0.5 mr-1">
+      <div className="text-white text-sm font-bold font-mono">{toPersianDigits(timeLeft.minutes)}</div>
+    </div>
+    <span className="text-red-500 text-sm font-bold mx-0.5">:</span>
+    {/* ✅ ساعت - سمت چپ (آخر) */}
+    <div className="bg-red-500 rounded px-2 py-0.5 mr-1">
+      <div className="text-white text-sm font-bold font-mono">{toPersianDigits(timeLeft.hours)}</div>
+    </div>
+  </div>
+</div>
 
                 {/* عکس با بج تخفیف */}
                 <Link href={`/product/${product.id}`} className="block relative mb-3">
