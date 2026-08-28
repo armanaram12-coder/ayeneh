@@ -176,19 +176,22 @@ export default function FlashSale() {
                   </h3>
                 </Link>
 
-                {/* قیمت‌ها */}
-                <div className="text-center mb-3">
-                  {/* قیمت اصلی خط‌خورده */}
-                  <div className="text-gray-400 line-through text-xs mb-1">
-                    {formatPrice(originalPrice)} تومان
-                  </div>
-                  {/* قیمت با تخفیف */}
-                  <div className="flex items-center justify-center gap-1">
-                    <span className="text-2xl font-extrabold text-purple-600">{formatPrice(discountedPrice)}</span>
-                    <span className="text-gray-700 text-sm font-bold">تومان</span>
-                  </div>
-                </div>
-
+               {/* قیمت‌ها */}
+<div className="text-center mb-3">
+  {/* قیمت اصلی خط‌خورده - با خط قرمز دقیقاً وسط */}
+  <div className="mb-2">
+    <span className="relative inline-block text-gray-600 text-sm font-bold">
+      {formatPrice(originalPrice)} تومان
+      {/* خط قرمز ضخیم دقیقاً وسط متن */}
+      <span className="absolute left-0 right-0 top-1/2 h-[2px] bg-red-500 transform -translate-y-1/2"></span>
+    </span>
+  </div>
+  {/* قیمت با تخفیف */}
+  <div className="flex items-center justify-center gap-1">
+    <span className="text-2xl font-extrabold text-purple-600">{formatPrice(discountedPrice)}</span>
+    <span className="text-gray-700 text-sm font-bold">تومان</span>
+  </div>
+</div>
                 {/* دکمه خرید */}
                 <button 
                   onClick={handleAddToCart}
