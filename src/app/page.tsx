@@ -267,11 +267,10 @@ export default function Home() {
     );
   }
 
-  const weeklyProduct = allProducts[41]; // محصول شماره 42 (سرم جوانساز)
-  const weeklyOriginalPrice = 1849000;
-  const weeklyDiscountedPrice = 1479000;
-  const weeklySavedAmount = weeklyOriginalPrice - weeklyDiscountedPrice;
-
+  const weeklyProduct = allProducts.length > 41 ? allProducts[41] : null;
+const weeklyOriginalPrice = 1849000;
+const weeklyDiscountedPrice = 1479000;
+const weeklySavedAmount = weeklyOriginalPrice - weeklyDiscountedPrice;
   return (
     <>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
