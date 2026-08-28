@@ -27,12 +27,6 @@ interface Product {
   category?: string;
 }
 
-// ✅ تابع تبدیل اعداد به فارسی (برای تایمر)
-function toPersianDigits(num: number): string {
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  return num.toString().replace(/\d/g, (digit) => persianDigits[parseInt(digit)]);
-}
-
 const categoryIcons: Record<string, string> = {
   'عطر و خوشبوکننده': '🌸',
   'سرم تخصصی': '💧',
@@ -117,9 +111,6 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
 
-  // ✅ تایمر محصول ویژه هفته
-  const [timeLeftWeekly, setTimeLeftWeekly] = useState({ hours: 0, minutes: 0, seconds: 0 });
-
   useEffect(() => {
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
     if (hasSeen === 'true') setShowSplash(false);
@@ -146,28 +137,6 @@ export default function Home() {
       }
     };
     checkUser();
-  }, []);
-
-  // ✅ منطق تایمر (شمارش معکوس تا پایان روز)
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      
-      const diff = tomorrow.getTime() - now.getTime();
-      if (diff > 0) {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeftWeekly({ hours, minutes, seconds });
-      }
-    };
-
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -268,12 +237,6 @@ export default function Home() {
     );
   }
 
-  // ✅ دریافت ایمن محصول ویژه (اگر وجود نداشت، null برمی‌گرداند و سایت کرش نمی‌کند)
-  const weeklyProduct = allProducts.length > 41 ? allProducts[41] : null;
-  const weeklyOriginalPrice = 1849000;
-  const weeklyDiscountedPrice = 1479000;
-  const weeklySavedAmount = weeklyOriginalPrice - weeklyDiscountedPrice;
-
   return (
     <>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
@@ -311,162 +274,87 @@ export default function Home() {
               </div>
             </div>
           </section>
-          
-          {/* ✅ بخش محصول ویژه هفته - طراحی لوکس و ایمن */}
-          <section className="relative py-16 overflow-hidden" dir="rtl">
-            {/* پس‌زمینه گرادیان و اشکال نوری (بدون نیاز به عکس) */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-rose-50 to-purple-100" />
-            <div className="absolute top-10 right-10 w-72 h-72 bg-yellow-300/30 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-300/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-            
-            <div className="container mx-auto px-4 relative z-10">
-              {weeklyProduct ? (
-                <>
-                  {/* هدر بخش */}
-                  <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 mb-4">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-md animate-pulse" />
-                        <div className="relative bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-white px-8 py-2 rounded-full font-extrabold text-lg shadow-lg flex items-center gap-2">
-                          <span className="text-2xl">⭐</span>
-                          <span>محصول ویژه هفته</span>
-                          <span className="text-2xl">⭐</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 bg-clip-text text-transparent mb-3">
-                      {weeklyProduct.name}
-                    </h2>
-                    <p className="text-gray-600 text-lg">این هفته با <span className="text-red-500 font-bold">۲۰٪ تخفیف ویژه</span> 🎁</p>
-                  </div>
+          {/* ✅ بخش محصول ویژه هفته - طراحی لوکس */}
+<section className="relative py-16 overflow-hidden" dir="rtl">
+  {/* پس‌زمینه گرادیان */}
+  <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-rose-50 to-purple-100" />
+  <div className="absolute top-10 right-10 w-72 h-72 bg-yellow-300/30 rounded-full blur-3xl animate-pulse" />
+  <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-300/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+  
+  <div className="container mx-auto px-4 relative z-10">
+    {/* هدر */}
+    <div className="text-center mb-12">
+      <div className="inline-flex items-center gap-2 mb-4">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full blur-md animate-pulse" />
+          <div className="relative bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-white px-8 py-2 rounded-full font-extrabold text-lg shadow-lg flex items-center gap-2">
+            <span className="text-2xl">⭐</span>
+            <span>محصول ویژه هفته</span>
+            <span className="text-2xl">⭐</span>
+          </div>
+        </div>
+      </div>
+      
+      <h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 bg-clip-text text-transparent mb-3">
+        {allProducts[41]?.name || 'سرم جوانساز تراست'}
+      </h2>
+      <p className="text-gray-600 text-lg">این هفته با <span className="text-red-500 font-bold">۲۰٪ تخفیف ویژه</span> 🎁</p>
+    </div>
 
-                  {/* کارت محصول لوکس */}
-                  <div className="max-w-5xl mx-auto">
-                    <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/50">
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400" />
-                      
-                      <div className="grid md:grid-cols-2 gap-0">
-                        {/* بخش عکس */}
-                        <div className="relative bg-gradient-to-br from-purple-100 via-pink-50 to-amber-50 p-8 flex items-center justify-center min-h-[350px]">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-64 h-64 bg-gradient-to-br from-purple-300/40 to-pink-300/40 rounded-full blur-2xl" />
-                          </div>
-                          
-                          {/* بج ۲۰٪ تخفیف */}
-                          <div className="absolute top-6 right-6 z-20">
-                            <div className="relative">
-                              <div className="absolute inset-0 bg-red-500 rounded-full blur-md animate-pulse" />
-                              <div className="relative bg-gradient-to-br from-red-500 to-pink-600 text-white w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-xl">
-                                <div className="text-2xl font-extrabold leading-none">٪۲۰</div>
-                                <div className="text-xs mt-1">تخفیف</div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* عکس محصول */}
-                          {weeklyProduct.image && weeklyProduct.image.trim() !== '' ? (
-                            <img 
-                              src={weeklyProduct.image.trim()} 
-                              alt={weeklyProduct.name} 
-                              className="relative z-10 w-full h-full max-h-72 object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-700" 
-                            />
-                          ) : (
-                            <span className="relative z-10 text-8xl">🧴</span>
-                          )}
-                        </div>
-
-                        {/* بخش اطلاعات و تایمر */}
-                        <div className="p-8 md:p-10 flex flex-col justify-between">
-                          <div>
-                            {/* تگ‌ها */}
-                            <div className="flex items-center gap-2 mb-4 flex-wrap">
-                              {weeklyProduct.brand && (
-                                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">{weeklyProduct.brand}</span>
-                              )}
-                              {weeklyProduct.category && (
-                                <span className="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-bold">{weeklyProduct.category}</span>
-                              )}
-                            </div>
-                            
-                            {/* تایمر شیک و دقیق */}
-                            <div className="flex items-center gap-3 mb-6 bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
-                              <span className="text-gray-700 text-sm font-bold whitespace-nowrap">پایان تخفیف:</span>
-                              <div className="flex items-center gap-1.5 flex-1 justify-center">
-                                {/* ساعت */}
-                                <div className="bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-lg px-3 py-2 min-w-[55px] text-center shadow-lg">
-                                  <div className="text-xl font-bold font-mono">{toPersianDigits(timeLeftWeekly.hours)}</div>
-                                  <div className="text-[10px] opacity-80">ساعت</div>
-                                </div>
-                                <span className="text-purple-600 font-bold text-xl">:</span>
-                                {/* دقیقه */}
-                                <div className="bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-lg px-3 py-2 min-w-[55px] text-center shadow-lg">
-                                  <div className="text-xl font-bold font-mono">{toPersianDigits(timeLeftWeekly.minutes)}</div>
-                                  <div className="text-[10px] opacity-80">دقیقه</div>
-                                </div>
-                                <span className="text-purple-600 font-bold text-xl">:</span>
-                                {/* ثانیه */}
-                                <div className="bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-lg px-3 py-2 min-w-[55px] text-center shadow-lg">
-                                  <div className="text-xl font-bold font-mono">{toPersianDigits(timeLeftWeekly.seconds)}</div>
-                                  <div className="text-[10px] opacity-80">ثانیه</div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* توضیحات کوتاه */}
-                            <p className="text-gray-700 leading-relaxed mb-6 text-sm md:text-base">
-                              این محصول تخصصی با فرمولاسیون پیشرفته، بهترین انتخاب برای مراقبت از پوست شماست. حاوی مواد مؤثره قوی برای نتایج قابل مشاهده و ماندگار.
-                            </p>
-                          </div>
-
-                          {/* قیمت‌ها و دکمه‌ها */}
-                          <div>
-                            <div className="mb-6">
-                              <div className="mb-2">
-                                <span className="relative inline-block text-gray-500 text-base font-bold">
-                                  {weeklyOriginalPrice.toLocaleString('fa-IR')} تومان
-                                  <span className="absolute left-0 right-0 top-1/2 h-[2px] bg-red-500 transform -translate-y-1/2"></span>
-                                </span>
-                              </div>
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                  {weeklyDiscountedPrice.toLocaleString('fa-IR')}
-                                </span>
-                                <span className="text-gray-700 text-lg font-bold">تومان</span>
-                              </div>
-                              <div className="mt-2 inline-block bg-green-50 border border-green-200 px-3 py-1 rounded-lg">
-                                <span className="text-green-700 text-sm font-bold">{weeklySavedAmount.toLocaleString('fa-IR')} تومان سود شما</span>
-                              </div>
-                            </div>
-
-                            <div className="flex gap-3">
-                              <button 
-                                onClick={() => handleAddToCart(weeklyProduct)}
-                                className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white py-3.5 rounded-xl font-extrabold text-base hover:shadow-xl hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                              >
-                                <span>🛒</span>
-                                <span>افزودن به سبد خرید</span>
-                              </button>
-                              <Link href={`/product/${weeklyProduct.id}`} className="px-6 py-3.5 border-2 border-purple-600 text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-colors text-center flex items-center justify-center">
-                                جزئیات
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                // ✅ حالت ایمن: اگر محصولی وجود نداشت، این پیام نمایش داده می‌شود و سایت کرش نمی‌کند
-                <div className="text-center py-16 bg-white/50 rounded-3xl border border-dashed border-purple-300">
-                  <span className="text-6xl mb-4 block">🎁</span>
-                  <h3 className="text-2xl font-bold text-gray-700 mb-2">محصول ویژه هفته به زودی...</h3>
-                  <p className="text-gray-500">منتظر شگفت‌انگیزترین پیشنهاد ما باشید!</p>
-                </div>
-              )}
+    {/* کارت محصول */}
+    <div className="max-w-5xl mx-auto">
+      <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/50">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400" />
+        
+        <div className="grid md:grid-cols-2 gap-0">
+          {/* عکس */}
+          <div className="relative bg-gradient-to-br from-purple-100 via-pink-50 to-amber-50 p-8 flex items-center justify-center min-h-[350px]">
+            <div className="absolute top-6 right-6 z-20">
+              <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-xl">
+                <div className="text-2xl font-extrabold">٪۲۰</div>
+                <div className="text-xs">تخفیف</div>
+              </div>
             </div>
-          </section>
+            
+            {allProducts[41] && allProducts[41].image ? (
+              <img 
+                src={allProducts[41].image.trim()} 
+                alt="محصول ویژه" 
+                className="relative z-10 w-full h-full max-h-72 object-contain drop-shadow-2xl" 
+              />
+            ) : (
+              <span className="text-8xl"></span>
+            )}
+          </div>
+
+          {/* اطلاعات */}
+          <div className="p-8 md:p-10 flex flex-col justify-between">
+            <div>
+              <p className="text-gray-700 leading-relaxed mb-6 text-sm">
+                این سرم تخصصی با فرمولاسیون پیشرفته، به جوانسازی، لیفتینگ و کاهش چروک‌های پوست کمک می‌کند.
+              </p>
+            </div>
+
+            {/* قیمت و دکمه */}
+            <div>
+              <div className="mb-4">
+                <div className="text-gray-400 line-through text-base mb-2">۱,۸۴۹,۰۰۰ تومان</div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-extrabold text-purple-600">۱,۴۹,۰۰۰</span>
+                  <span className="text-gray-700 text-lg font-bold">تومان</span>
+                </div>
+              </div>
+
+              <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-extrabold hover:shadow-xl transition-all">
+                🛒 افزودن به سبد خرید
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> </section>
 
           <section className="py-8 overflow-hidden">
             <div className="container mx-auto px-4">
@@ -665,12 +553,13 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بنر اپلیکیشن موبایل آینه */}
+          {/* ✅ بنر اپلیکیشن موبایل آینه (جایگزین بخش قدیمی شد) */}
           <section className="py-8 bg-gradient-to-br from-green-50 to-teal-50">
             <div className="container mx-auto px-4">
               <div className="max-w-5xl mx-auto">
+                {/* ⚠️ نکته: اگر لینک عکس را در سوپابیس تغییر دادی، آدرس زیر را آپدیت کن */}
                 <img 
-                  src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/banners/mobile-app-banner.webp" 
+                  src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/banners/mobile-app-banner.webp.png" 
                   alt="اپلیکیشن موبایل آینه - به زودی"
                   className="w-full h-auto rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
                 />
@@ -751,3 +640,6 @@ export default function Home() {
     </>
   );
 }
+
+
+
