@@ -4,11 +4,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+// ✅ اصلاح حیاتی: params یک Promise است و باید await شود
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
   const { data: article } = await supabase
     .from('articles')
     .select('title, summary')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single();
 
   if (!article) return { title: 'مقاله یافت نشد' };
@@ -19,16 +22,21 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  // ✅ اصلاح حیاتی: استخراج slug از Promise
+  const { slug } = await params;
+
   const { data: article, error } = await supabase
     .from('articles')
     .select('*')
-    .eq('slug', params.slug)
-    .eq('is_active', true)
+    .eq('slug', slug)
+    // نکته: اگر هنوز مشکل داشت، خط بعدی را موقتاً کامنت کن تا مطمئن شویم مشکل از is_active نیست
+    .eq('is_active', true) 
     .single();
 
   if (error || !article) {
-    console.error('Error:', error);
+    console.error('Error fetching article:', error);
+    console.log('Searched for slug:', slug); // این را در کنسول سرور می‌بینی تا مطمئن شوی slug درست می‌آید
     notFound();
   }
 
