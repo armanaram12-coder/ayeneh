@@ -88,7 +88,7 @@ export default function FlashSale() {
     setTimeout(() => setShowToast(false), 2000);
   };
 
-  const discountPercent = 20; // ✅ تا ۲۰٪ تخفیف (هماهنگ با بنر)
+  const discountPercent = 20;
   
   if (loading) {
     return (
@@ -103,11 +103,10 @@ export default function FlashSale() {
   if (!product) return null;
 
   const originalPrice = product.price_toman;
-  const discountedPrice = Math.floor(originalPrice * 0.8); // ✅ ۲۰٪ تخفیف
+  const discountedPrice = Math.floor(originalPrice * 0.8);
   const savedAmount = originalPrice - discountedPrice;
 
-  // ✅ لینک بنر شما
-  const bannerUrl = 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/PishnahadVizheh/ChatGPT%20Image%20Aug%2028,%202026,%2001_47_51%20AM.png';
+  const bannerUrl = 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/PishnahadVizheh/flash-sale-banner.png';
 
   return (
     <>
@@ -117,87 +116,89 @@ export default function FlashSale() {
         </div>
       )}
       
-      {/* ✅ بخش پیشنهاد شگفت‌انگیز با بنر ثابت */}
-      <section className="relative w-full overflow-hidden" dir="rtl">
-        
-        {/* ✅ بنر به عنوان پس‌زمینه کامل */}
-        <div className="relative w-full" style={{ aspectRatio: '12/5' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={bannerUrl} 
-            alt="پیشنهاد شگفت‌انگیز"
-            className="w-full h-full object-cover"
-          />
-          
-          {/* ✅ کارت محصول در وسط بنر (جایی که خالی است) */}
-          <div className="absolute inset-0 flex items-center justify-center px-4">
-            <div className="w-full max-w-md lg:max-w-lg">
-              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-6 md:p-8 border-2 border-yellow-400/50">
-                
-                {/* تایمر بالای کارت */}
-                <div className="flex justify-center items-center gap-2 mb-4">
-                  <span className="text-gray-700 text-sm font-medium">پایان تخفیف:</span>
-                  <div className="flex items-center gap-1">
-                    <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg px-2 py-1 min-w-[45px]">
-                      <div className="text-white text-lg font-bold font-mono text-center">{toPersianDigits(timeLeft.hours)}</div>
-                    </div>
-                    <span className="text-purple-600 text-lg font-bold">:</span>
-                    <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg px-2 py-1 min-w-[45px]">
-                      <div className="text-white text-lg font-bold font-mono text-center">{toPersianDigits(timeLeft.minutes)}</div>
-                    </div>
-                    <span className="text-purple-600 text-lg font-bold">:</span>
-                    <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg px-2 py-1 min-w-[45px]">
-                      <div className="text-white text-lg font-bold font-mono text-center">{toPersianDigits(timeLeft.seconds)}</div>
+      {/* ✅ بخش پیشنهاد شگفت‌انگیز - بنر کامل بدون برش */}
+      <section className="relative w-full py-8 md:py-12" dir="rtl">
+        <div className="container mx-auto px-4">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+            
+            {/* ✅ بنر کامل با object-contain (بدون برش) */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={bannerUrl} 
+              alt="پیشنهاد شگفت‌انگیز آینه"
+              className="w-full h-auto object-contain"
+            />
+            
+            {/* ✅ کارت محصول در وسط بنر */}
+            <div className="absolute inset-0 flex items-center justify-center px-4">
+              <div className="w-full max-w-xs md:max-w-sm lg:max-w-md">
+                <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-4 md:p-6 border-2 border-yellow-400/50">
+                  
+                  {/* تایمر */}
+                  <div className="flex justify-center items-center gap-2 mb-3">
+                    <span className="text-gray-700 text-xs font-medium">پایان:</span>
+                    <div className="flex items-center gap-1">
+                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-md px-2 py-1 min-w-[40px]">
+                        <div className="text-white text-base font-bold font-mono text-center">{toPersianDigits(timeLeft.hours)}</div>
+                      </div>
+                      <span className="text-purple-600 text-base font-bold">:</span>
+                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-md px-2 py-1 min-w-[40px]">
+                        <div className="text-white text-base font-bold font-mono text-center">{toPersianDigits(timeLeft.minutes)}</div>
+                      </div>
+                      <span className="text-purple-600 text-base font-bold">:</span>
+                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-md px-2 py-1 min-w-[40px]">
+                        <div className="text-white text-base font-bold font-mono text-center">{toPersianDigits(timeLeft.seconds)}</div>
+                      </div>
                     </div>
                   </div>
+
+                  {/* عکس محصول */}
+                  <Link href={`/product/${product.id}`} className="block mb-3">
+                    <div className="aspect-square bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl flex items-center justify-center overflow-hidden relative group">
+                      {product.image && product.image.trim() !== '' ? (
+                        <img 
+                          src={product.image.trim()} 
+                          alt={product.name}
+                          className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <span className="text-5xl transition-transform duration-500 group-hover:scale-110"></span>
+                      )}
+                    </div>
+                  </Link>
+
+                  {/* نام محصول */}
+                  <Link href={`/product/${product.id}`}>
+                    <h3 className="text-gray-800 font-bold text-sm md:text-base mb-2 text-center line-clamp-2 hover:text-purple-600 transition-colors">
+                      {product.name}
+                    </h3>
+                  </Link>
+
+                  {/* قیمت‌ها */}
+                  <div className="text-center mb-3">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <span className="text-gray-400 line-through text-xs">{formatPrice(originalPrice)}</span>
+                      <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">
+                        تا ٪{toPersianDigits(discountPercent)} تخفیف
+                      </span>
+                    </div>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-2xl font-bold text-purple-600">{formatPrice(discountedPrice)}</span>
+                      <span className="text-gray-600 text-xs">تومان</span>
+                    </div>
+                    <div className="text-green-600 text-xs mt-1 font-medium">
+                      {formatPrice(savedAmount)} تومان سود شما
+                    </div>
+                  </div>
+
+                  {/* دکمه خرید */}
+                  <button 
+                    onClick={handleAddToCart}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2.5 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
+                  >
+                     افزودن به سبد خرید
+                  </button>
                 </div>
-
-                {/* عکس محصول */}
-                <Link href={`/product/${product.id}`} className="block mb-4">
-                  <div className="aspect-square bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl flex items-center justify-center overflow-hidden relative group">
-                    {product.image && product.image.trim() !== '' ? (
-                      <img 
-                        src={product.image.trim()} 
-                        alt={product.name}
-                        className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110"
-                      />
-                    ) : (
-                      <span className="text-7xl transition-transform duration-500 group-hover:scale-110">🧴</span>
-                    )}
-                  </div>
-                </Link>
-
-                {/* نام محصول */}
-                <Link href={`/product/${product.id}`}>
-                  <h3 className="text-gray-800 font-bold text-lg mb-3 text-center line-clamp-2 hover:text-purple-600 transition-colors">
-                    {product.name}
-                  </h3>
-                </Link>
-
-                {/* قیمت‌ها */}
-                <div className="text-center mb-4">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-gray-400 line-through text-sm">{formatPrice(originalPrice)}</span>
-                    <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">
-                      تا ٪{toPersianDigits(discountPercent)} تخفیف
-                    </span>
-                  </div>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-3xl font-bold text-purple-600">{formatPrice(discountedPrice)}</span>
-                    <span className="text-gray-600 text-sm">تومان</span>
-                  </div>
-                  <div className="text-green-600 text-xs mt-1 font-medium">
-                    {formatPrice(savedAmount)} تومان سود شما
-                  </div>
-                </div>
-
-                {/* دکمه خرید */}
-                <button 
-                  onClick={handleAddToCart}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-xl font-bold text-base hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
-                >
-                   افزودن به سبد خرید
-                </button>
               </div>
             </div>
           </div>
