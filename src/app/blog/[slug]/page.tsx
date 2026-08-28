@@ -47,43 +47,34 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <Header />
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50" dir="rtl">
         
-        {/* Hero Section - اصلاح شده */}
+        {/* Hero Section */}
         <div className="relative h-[50vh] md:h-[60vh] overflow-visible">
-          {/* تصویر */}
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${article.image_url || categoryImage})` }}
           />
-          
-          {/* گرادیان تیره‌تر برای خوانایی متن */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-black/50" />
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/70 to-pink-900/70 mix-blend-multiply" />
           
-          {/* ذرات نورانی */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-20 right-20 w-32 h-32 bg-purple-400/30 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-32 left-32 w-40 h-40 bg-pink-400/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
 
-          {/* محتوا - با padding بالا برای جلوگیری از برش */}
           <div className="relative z-10 flex flex-col items-center justify-end pb-12 px-4 h-full pt-20">
             <div className="container max-w-5xl mx-auto text-center">
-              
-              {/* بج دسته‌بندی - با margin بالا */}
               <div className={`inline-flex items-center gap-2 bg-gradient-to-r ${categoryColor} text-white px-6 py-2 rounded-full text-sm font-bold shadow-2xl mb-4`}>
                 <span className="text-xl">✨</span>
                 <span>{article.category}</span>
               </div>
               
-              {/* عنوان - سایز نصف شده */}
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight drop-shadow-2xl">
                 {article.title}
               </h1>
               
-              {/* اطلاعات مقاله */}
               <div className="flex flex-wrap items-center justify-center gap-4 text-white text-sm md:text-base">
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                  <span>📅</span>
+                  <span></span>
                   <span>{new Date(article.created_at).toLocaleDateString('fa-IR')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
@@ -102,7 +93,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         {/* محتوای اصلی مقاله */}
         <article className="container mx-auto px-4 py-12 max-w-4xl">
           
-          {/* کارت محتوای شیشه‌ای */}
           <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 md:p-12 border border-white/50">
             
             {/* مقدمه */}
@@ -111,35 +101,40 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <div className={`w-12 h-12 bg-gradient-to-br ${categoryColor} rounded-xl flex items-center justify-center text-white text-2xl shadow-lg`}>
                   ✨
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">نکات کلیدی این مقاله</h2>
+                <h2 className="text-xl font-bold text-gray-900">نکات کلیدی این مقاله</h2>
               </div>
-              <p className="text-base text-gray-700 leading-relaxed text-justify">
+              <p className="text-base text-gray-800 leading-relaxed text-justify font-medium">
                 {article.summary}
               </p>
             </div>
 
-            {/* محتوای اصلی - متن تیره */}
-            <div 
-              className="prose prose-lg max-w-none
-                prose-headings:text-gray-800 prose-headings:font-bold
-                prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8 prose-h2:border-b prose-h2:border-purple-200 prose-h2:pb-2
-                prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6 prose-h3:text-purple-700
-                prose-p:text-gray-700 prose-p:leading-loose prose-p:mb-4 prose-p:text-justify
-                prose-strong:text-purple-700 prose-strong:font-bold
-                prose-ul:list-disc prose-ol:list-decimal
-                prose-li:text-gray-700 prose-li:mb-2 prose-li:mr-6
-                prose-a:text-purple-600 hover:prose-a:underline"
-              dangerouslySetInnerHTML={{ __html: article.content }} 
-            />
+            {/* محتوای اصلی - رنگ متن تیره و واضح */}
+            <div className="space-y-6">
+              {article.content.split(/<h[23]>|<\/h[23]>|<p>|<\/p>|<ul>|<\/ul>|<ol>|<\/ol>|<li>|<\/li>/).map((section, idx) => {
+                const trimmed = section.trim();
+                if (!trimmed) return null;
+                
+                if (trimmed.startsWith('<h2>')) {
+                  return <h2 key={idx} className="text-2xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b-2 border-purple-200">{trimmed.replace(/<\/?h2>/g, '')}</h2>;
+                }
+                if (trimmed.startsWith('<h3>')) {
+                  return <h3 key={idx} className="text-xl font-bold text-purple-700 mt-6 mb-3">{trimmed.replace(/<\/?h3>/g, '')}</h3>;
+                }
+                if (trimmed.startsWith('<p>')) {
+                  return <p key={idx} className="text-gray-800 leading-loose text-justify text-base">{trimmed.replace(/<\/?p>/g, '')}</p>;
+                }
+                return null;
+              })}
+            </div>
 
             {/* باکس نکات مهم */}
             <div className="mt-10 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
               <div className="flex items-start gap-3">
                 <div className="text-3xl">💎</div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">نکته طلایی</h3>
-                  <p className="text-gray-700 leading-relaxed text-sm">
-                    برای دریافت بهترین نتیجه، حتماً از محصولات اصل تراست استفاده کنید. <strong>فروشگاه آینه</strong> به عنوان نماینده رسمی، اصالت تمام محصولات را تضمین می‌کند.
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">نکته طلایی</h3>
+                  <p className="text-gray-800 leading-relaxed text-sm font-medium">
+                    برای دریافت بهترین نتیجه، حتماً از محصولات اصل تراست استفاده کنید. <strong className="text-purple-700">فروشگاه آینه</strong> به عنوان نماینده رسمی، اصالت تمام محصولات را تضمین می‌کند.
                   </p>
                 </div>
               </div>
