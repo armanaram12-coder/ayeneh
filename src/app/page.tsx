@@ -8,6 +8,7 @@ import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
 import FloatingContact from '@/components/FloatingContact';
 import AIConsultant from '@/components/AIConsultant';
+import MagazineSection from '@/components/MagazineSection'; // ✅ کامپوننت مجله اضافه شد
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import { toggleFavorite, getFavorites } from '@/lib/favorites';
@@ -110,7 +111,6 @@ export default function Home() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
-  const [articles, setArticles] = useState<any[]>([]); // ✅ اضافه شده برای مجله آینه
 
   useEffect(() => {
     const hasSeen = typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') : null;
@@ -138,17 +138,6 @@ export default function Home() {
       }
     };
     checkUser();
-
-    // ✅ دریافت ۳ مقاله آخر برای نمایش در صفحه اصلی
-    const fetchArticles = async () => {
-      const { data } = await supabase
-        .from('articles')
-        .select('title, slug, summary, category, image_url, created_at')
-        .order('created_at', { ascending: false })
-        .limit(3);
-      if (data) setArticles(data);
-    };
-    fetchArticles();
   }, []);
 
   useEffect(() => {
@@ -289,13 +278,11 @@ export default function Home() {
           
           {/* ✅ بخش محصول ویژه هفته - طراحی لوکس و ایمن */}
           <section className="relative py-16 overflow-hidden" dir="rtl">
-            {/* پس‌زمینه گرادیان و افکت‌های نوری */}
             <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-rose-50 to-purple-100" />
             <div className="absolute top-10 right-10 w-72 h-72 bg-yellow-300/30 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-10 left-10 w-72 h-72 bg-purple-300/30 rounded-full blur-3xl animate-pulse" />
             
             <div className="container mx-auto px-4 relative z-10">
-              {/* هدر بخش */}
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-2 mb-4">
                   <div className="relative">
@@ -313,15 +300,12 @@ export default function Home() {
                 <p className="text-gray-600 text-lg">این هفته با <span className="text-red-500 font-bold">۲۰٪ تخفیف ویژه</span> 🎁</p>
               </div>
 
-              {/* کارت محصول شیشه‌ای و لوکس */}
               <div className="max-w-5xl mx-auto">
                 <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/50">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400" />
                   
                   <div className="grid md:grid-cols-2 gap-0">
-                    {/* بخش عکس */}
                     <div className="relative bg-gradient-to-br from-purple-100 via-pink-50 to-amber-50 p-8 flex items-center justify-center min-h-[350px]">
-                      {/* بج ۲۰٪ تخفیف */}
                       <div className="absolute top-6 right-6 z-20">
                         <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-xl">
                           <div className="text-2xl font-extrabold leading-none">٪۲۰</div>
@@ -329,7 +313,6 @@ export default function Home() {
                         </div>
                       </div>
                       
-                      {/* عکس محصول (کاملاً ایمن با ?.) */}
                       {allProducts[41]?.image && allProducts[41].image.trim() !== '' ? (
                         <img 
                           src={allProducts[41].image.trim()} 
@@ -341,7 +324,6 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* بخش اطلاعات و قیمت */}
                     <div className="p-8 md:p-10 flex flex-col justify-between">
                       <div>
                         <p className="text-gray-700 leading-relaxed mb-6 text-sm md:text-base">
@@ -349,24 +331,20 @@ export default function Home() {
                         </p>
                       </div>
 
-                      {/* قیمت‌ها و دکمه‌ها */}
                       <div>
                         <div className="mb-6">
-                          {/* قیمت اصلی با خط قرمز واضح */}
                           <div className="mb-2">
                             <span className="relative inline-block text-gray-400 text-base font-bold">
                               ۱,۸۴۹,۰۰۰ تومان
                               <span className="absolute left-0 right-0 top-1/2 h-[2px] bg-red-500 transform -translate-y-1/2"></span>
                             </span>
                           </div>
-                          {/* قیمت با تخفیف */}
                           <div className="flex items-baseline gap-2">
                             <span className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                               ۱,۴۷۹,۰۰۰
                             </span>
                             <span className="text-gray-700 text-lg font-bold">تومان</span>
                           </div>
-                          {/* مبلغ سود */}
                           <div className="mt-2 inline-block bg-green-50 border border-green-200 px-3 py-1 rounded-lg">
                             <span className="text-green-700 text-sm font-bold">۳۷۰,۰۰۰ تومان سود شما</span>
                           </div>
@@ -510,70 +488,8 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ مجله آینه - نسخه داینامیک از سوپابیس */}
-          <section className="py-16 bg-gradient-to-br from-purple-50 to-pink-50">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-12">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">مجله آینه - راهنمای تخصصی مراقبت از پوست و مو</h2>
-                <p className="text-gray-600">جدیدترین مقالات آموزشی، معرفی محصولات تراست و نکات زیبایی</p>
-              </div>
-              
-              <div className="grid md:grid-cols-3 gap-8">
-                {articles.length === 0 ? (
-                  // حالت لودینگ (Skeleton)
-                  [1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-lg h-80 animate-pulse border border-purple-100">
-                      <div className="h-48 bg-gray-200" />
-                      <div className="p-6 space-y-3">
-                        <div className="h-4 bg-gray-200 rounded w-1/3" />
-                        <div className="h-6 bg-gray-200 rounded w-full" />
-                        <div className="h-4 bg-gray-200 rounded w-full" />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  articles.map((article) => (
-                    <Link 
-                      key={article.slug} 
-                      href={`/blog/${article.slug}`}
-                      className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-purple-100"
-                    >
-                      <div className="h-48 overflow-hidden relative">
-                        <span className="absolute top-3 right-3 z-10 bg-purple-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-md">
-                          {article.category}
-                        </span>
-                        <img 
-                          src={article.image_url || 'https://via.placeholder.com/500x300?text=Magazine'} 
-                          alt={article.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                      </div>
-                      <div className="p-6">
-                        <h3 className="font-bold text-gray-900 text-lg mb-3 line-clamp-2 group-hover:text-[#7C3AED] transition-colors">
-                          {article.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 mb-4 line-clamp-3 leading-relaxed">
-                          {article.summary}
-                        </p>
-                        <div className="flex items-center text-[#7C3AED] font-bold text-sm group-hover:gap-2 transition-all">
-                          <span>ادامه مطلب</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                          </svg>
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
-              
-              <div className="text-center mt-10">
-                <Link href="/blog" className="inline-block bg-white border-2 border-[#7C3AED] text-[#7C3AED] px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-sm hover:shadow-md">
-                  مشاهده همه مقالات مجله آینه ←
-                </Link>
-              </div>
-            </div>
-          </section>
+          {/* ✅ کامپوننت مجله آینه (جایگزین کد طولانی قبلی شد) */}
+          <MagazineSection />
 
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
@@ -618,7 +534,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ بنر اپلیکیشن موبایل آینه */}
           <section className="py-8 bg-gradient-to-br from-green-50 to-teal-50">
             <div className="container mx-auto px-4">
               <div className="max-w-5xl mx-auto">
