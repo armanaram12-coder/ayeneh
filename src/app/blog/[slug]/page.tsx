@@ -74,7 +74,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               
               <div className="flex flex-wrap items-center justify-center gap-4 text-white text-sm md:text-base">
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                  <span></span>
+                  <span>📅</span>
                   <span>{new Date(article.created_at).toLocaleDateString('fa-IR')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
@@ -108,24 +108,63 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </p>
             </div>
 
-            {/* محتوای اصلی - رنگ متن تیره و واضح */}
-            <div className="space-y-6">
-              {article.content.split(/<h[23]>|<\/h[23]>|<p>|<\/p>|<ul>|<\/ul>|<ol>|<\/ol>|<li>|<\/li>/).map((section, idx) => {
-                const trimmed = section.trim();
-                if (!trimmed) return null;
-                
-                if (trimmed.startsWith('<h2>')) {
-                  return <h2 key={idx} className="text-2xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b-2 border-purple-200">{trimmed.replace(/<\/?h2>/g, '')}</h2>;
-                }
-                if (trimmed.startsWith('<h3>')) {
-                  return <h3 key={idx} className="text-xl font-bold text-purple-700 mt-6 mb-3">{trimmed.replace(/<\/?h3>/g, '')}</h3>;
-                }
-                if (trimmed.startsWith('<p>')) {
-                  return <p key={idx} className="text-gray-800 leading-loose text-justify text-base">{trimmed.replace(/<\/?p>/g, '')}</p>;
-                }
-                return null;
-              })}
-            </div>
+            {/* محتوای اصلی با استایل‌های سفارشی */}
+            <div 
+              className="article-body"
+              dangerouslySetInnerHTML={{ __html: article.content }} 
+            />
+
+            {/* استایل‌های CSS برای محتوای مقاله */}
+            <style>{`
+              .article-body h2 { 
+                color: #1f2937; 
+                font-size: 1.5rem; 
+                font-weight: bold; 
+                margin-top: 2rem; 
+                margin-bottom: 1rem; 
+                border-bottom: 2px solid #e9d5ff; 
+                padding-bottom: 0.5rem; 
+              }
+              .article-body h3 { 
+                color: #7e22ce; 
+                font-size: 1.25rem; 
+                font-weight: bold; 
+                margin-top: 1.5rem; 
+                margin-bottom: 0.75rem; 
+              }
+              .article-body h4 { 
+                color: #1f2937; 
+                font-size: 1.125rem; 
+                font-weight: bold; 
+                margin-top: 1rem; 
+                margin-bottom: 0.5rem; 
+              }
+              .article-body p { 
+                color: #1f2937; 
+                line-height: 1.875rem; 
+                margin-bottom: 1rem; 
+                text-align: justify; 
+                font-size: 1rem; 
+              }
+              .article-body strong { 
+                color: #7e22ce; 
+                font-weight: bold; 
+              }
+              .article-body ul, .article-body ol { 
+                color: #1f2937; 
+                margin-right: 1.5rem; 
+                margin-bottom: 1rem; 
+              }
+              .article-body li { 
+                color: #1f2937; 
+                margin-bottom: 0.5rem; 
+                line-height: 1.75rem; 
+              }
+              .article-body a { 
+                color: #7e22ce; 
+                text-decoration: underline; 
+              }
+            `}</style>
 
             {/* باکس نکات مهم */}
             <div className="mt-10 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
@@ -158,7 +197,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 bg-white text-purple-700 px-8 py-4 rounded-2xl font-black text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-2xl"
               >
-                <span className="text-2xl">💬</span>
+                <span className="text-2xl"></span>
                 <span>دریافت مشاوره رایگان در واتس‌اپ</span>
               </a>
             </div>
