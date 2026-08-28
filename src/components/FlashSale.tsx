@@ -88,7 +88,7 @@ export default function FlashSale() {
     setTimeout(() => setShowToast(false), 2000);
   };
 
-  const discountPercent = 20;
+  const discountPercent = 10; // ✅ ۱۰٪ تخفیف
   
   if (loading) {
     return (
@@ -103,7 +103,7 @@ export default function FlashSale() {
   if (!product) return null;
 
   const originalPrice = product.price_toman;
-  const discountedPrice = Math.floor(originalPrice * 0.8);
+  const discountedPrice = Math.floor(originalPrice * 0.9); // ✅ ۱۰٪ تخفیف
   const savedAmount = originalPrice - discountedPrice;
 
   const bannerUrl = 'https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/PishnahadVizheh/flash-sale-banner.png';
@@ -116,12 +116,12 @@ export default function FlashSale() {
         </div>
       )}
       
-      {/* ✅ بخش پیشنهاد شگفت‌انگیز - بنر کامل بدون برش */}
+      {/* ✅ بخش پیشنهاد شگفت‌انگیز - طراحی جدید */}
       <section className="relative w-full py-8 md:py-12" dir="rtl">
         <div className="container mx-auto px-4">
           <div className="relative rounded-3xl overflow-hidden shadow-2xl">
             
-            {/* ✅ بنر کامل با object-contain (بدون برش) */}
+            {/* بنر کامل */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={bannerUrl} 
@@ -129,37 +129,46 @@ export default function FlashSale() {
               className="w-full h-auto object-contain"
             />
             
-            {/* ✅ کارت محصول در وسط بنر */}
+            {/* کارت محصول در وسط بنر */}
             <div className="absolute inset-0 flex items-center justify-center px-4">
               <div className="w-full max-w-xs md:max-w-sm lg:max-w-md">
                 <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl p-4 md:p-6 border-2 border-yellow-400/50">
                   
                   {/* تایمر */}
-                  <div className="flex justify-center items-center gap-2 mb-3">
-                    <span className="text-gray-700 text-xs font-medium">پایان:</span>
+                  <div className="flex justify-center items-center gap-2 mb-4">
+                    <span className="text-gray-700 text-sm font-bold">پایان تخفیف:</span>
                     <div className="flex items-center gap-1">
-                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-md px-2 py-1 min-w-[40px]">
-                        <div className="text-white text-base font-bold font-mono text-center">{toPersianDigits(timeLeft.hours)}</div>
+                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg px-3 py-1.5 min-w-[50px] shadow-lg">
+                        <div className="text-white text-xl font-bold font-mono text-center">{toPersianDigits(timeLeft.hours)}</div>
                       </div>
-                      <span className="text-purple-600 text-base font-bold">:</span>
-                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-md px-2 py-1 min-w-[40px]">
-                        <div className="text-white text-base font-bold font-mono text-center">{toPersianDigits(timeLeft.minutes)}</div>
+                      <span className="text-purple-600 text-xl font-bold">:</span>
+                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg px-3 py-1.5 min-w-[50px] shadow-lg">
+                        <div className="text-white text-xl font-bold font-mono text-center">{toPersianDigits(timeLeft.minutes)}</div>
                       </div>
-                      <span className="text-purple-600 text-base font-bold">:</span>
-                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-md px-2 py-1 min-w-[40px]">
-                        <div className="text-white text-base font-bold font-mono text-center">{toPersianDigits(timeLeft.seconds)}</div>
+                      <span className="text-purple-600 text-xl font-bold">:</span>
+                      <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg px-3 py-1.5 min-w-[50px] shadow-lg">
+                        <div className="text-white text-xl font-bold font-mono text-center">{toPersianDigits(timeLeft.seconds)}</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* عکس محصول */}
-                  <Link href={`/product/${product.id}`} className="block mb-3">
+                  {/* عکس محصول با بج تخفیف - پایین‌تر */}
+                  <Link href={`/product/${product.id}`} className="block mb-4 relative">
                     <div className="aspect-square bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl flex items-center justify-center overflow-hidden relative group">
+                      {/* ✅ بج تخفیف در گوشه بالا */}
+                      <div className="absolute top-2 right-2 z-20">
+                        <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-red-500/50">
+                          <div className="text-lg font-bold">٪{toPersianDigits(discountPercent)}</div>
+                          <div className="text-[10px] leading-tight">تخفیف</div>
+                        </div>
+                      </div>
+                      
+                      {/* عکس محصول - با padding پایین برای نمایش کامل */}
                       {product.image && product.image.trim() !== '' ? (
                         <img 
                           src={product.image.trim()} 
                           alt={product.name}
-                          className="w-full h-full object-contain p-3 transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-contain p-6 pb-2 transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
                         <span className="text-5xl transition-transform duration-500 group-hover:scale-110"></span>
@@ -167,34 +176,39 @@ export default function FlashSale() {
                     </div>
                   </Link>
 
-                  {/* نام محصول */}
+                  {/* نام محصول - بزرگتر و بولد */}
                   <Link href={`/product/${product.id}`}>
-                    <h3 className="text-gray-800 font-bold text-sm md:text-base mb-2 text-center line-clamp-2 hover:text-purple-600 transition-colors">
+                    <h3 className="text-gray-800 font-extrabold text-base md:text-lg mb-3 text-center leading-relaxed hover:text-purple-600 transition-colors">
                       {product.name}
                     </h3>
                   </Link>
 
-                  {/* قیمت‌ها */}
-                  <div className="text-center mb-3">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <span className="text-gray-400 line-through text-xs">{formatPrice(originalPrice)}</span>
-                      <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">
-                        تا ٪{toPersianDigits(discountPercent)} تخفیف
+                  {/* قیمت‌ها - خیلی بزرگتر و بولد */}
+                  <div className="text-center mb-4">
+                    {/* قیمت اصلی خط‌خورده */}
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <span className="text-gray-400 line-through text-base font-bold">{formatPrice(originalPrice)}</span>
+                      <span className="text-gray-400 text-base">تومان</span>
+                    </div>
+                    
+                    {/* قیمت با تخفیف - خیلی بزرگ */}
+                    <div className="flex items-baseline justify-center gap-2 mb-2">
+                      <span className="text-4xl md:text-5xl font-extrabold text-purple-600">{formatPrice(discountedPrice)}</span>
+                      <span className="text-gray-700 text-lg font-bold">تومان</span>
+                    </div>
+                    
+                    {/* مبلغ سود */}
+                    <div className="bg-green-50 inline-block px-4 py-1.5 rounded-lg mt-2">
+                      <span className="text-green-700 text-sm font-bold">
+                        {formatPrice(savedAmount)} تومان سود شما
                       </span>
-                    </div>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-2xl font-bold text-purple-600">{formatPrice(discountedPrice)}</span>
-                      <span className="text-gray-600 text-xs">تومان</span>
-                    </div>
-                    <div className="text-green-600 text-xs mt-1 font-medium">
-                      {formatPrice(savedAmount)} تومان سود شما
                     </div>
                   </div>
 
-                  {/* دکمه خرید */}
+                  {/* دکمه خرید - بزرگ و بولد */}
                   <button 
                     onClick={handleAddToCart}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2.5 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3.5 rounded-xl font-extrabold text-lg hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 active:scale-95"
                   >
                      افزودن به سبد خرید
                   </button>
