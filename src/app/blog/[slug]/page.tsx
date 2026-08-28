@@ -4,7 +4,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 
-// ✅ تولید متادیتای داینامیک برای سئو (عنوان و توضیحات اختصاصی هر مقاله)
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { data: article } = await supabase
     .from('articles')
@@ -21,13 +20,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function ArticlePage({ params }: { params: { slug: string } }) {
-  const { data: article } = await supabase
+  const { data: article, error } = await supabase
     .from('articles')
     .select('*')
     .eq('slug', params.slug)
+    .eq('is_active', true)
     .single();
 
-  if (!article) {
+  if (error || !article) {
+    console.error('Error:', error);
     notFound();
   }
 
@@ -35,7 +36,6 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     <>
       <Header />
       <main className="min-h-screen bg-white" dir="rtl">
-        {/* Breadcrumbs (مسیر راهنما برای سئو) */}
         <div className="bg-purple-50 border-b border-purple-100">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex text-sm text-gray-600">
@@ -49,7 +49,6 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         </div>
 
         <article className="container mx-auto px-4 py-12 max-w-4xl">
-          {/* هدر مقاله */}
           <header className="mb-8 text-center">
             <span className="inline-block bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-bold mb-4">
               {article.category}
@@ -63,22 +62,21 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             </div>
           </header>
 
-          {/* تصویر شاخص */}
-          <div className="rounded-2xl overflow-hidden shadow-xl mb-10">
-            <img 
-              src={article.image_url || 'https://via.placeholder.com/800x400?text=Article+Image'} 
-              alt={article.title}
-              className="w-full h-auto object-cover"
-            />
-          </div>
+          {article.image_url && (
+            <div className="rounded-2xl overflow-hidden shadow-xl mb-10">
+              <img 
+                src={article.image_url} 
+                alt={article.title}
+                className="w-full h-auto object-cover"
+              />
+            </div>
+          )}
 
-          {/* محتوای مقاله */}
           <div 
             className="prose prose-lg prose-purple max-w-none text-gray-700 leading-8 text-justify"
             dangerouslySetInnerHTML={{ __html: article.content }} 
           />
 
-          {/* باکس دعوت به اقدام (CTA) در انتهای مقاله */}
           <div className="mt-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center text-white shadow-xl">
             <h3 className="text-2xl font-bold mb-3">نیاز به مشاوره تخصصی دارید؟</h3>
             <p className="mb-6 opacity-90">تیم متخصص آینه آماده است تا بهترین روتین پوستی را متناسب با نیاز شما پیشنهاد دهد.</p>
@@ -93,7 +91,6 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           </div>
         </article>
       </main>
-      {/* ✅ فوتر در پایین تمام صفحات مقاله برای سئو و لینک‌سازی داخلی */}
       <Footer />
     </>
   );
