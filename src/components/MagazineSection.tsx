@@ -38,8 +38,8 @@ export default function MagazineSection() {
           {/* حالت لودینگ */}
           <div className="grid md:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-lg h-80 animate-pulse border border-purple-100">
-                <div className="h-48 bg-gray-200" />
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-lg animate-pulse border border-purple-100">
+                <div className="aspect-[3/4] bg-gray-200" />
                 <div className="p-6 space-y-3">
                   <div className="h-4 bg-gray-200 rounded w-1/3" />
                   <div className="h-6 bg-gray-200 rounded w-full" />
@@ -74,7 +74,7 @@ export default function MagazineSection() {
                   href={`/blog/${article.slug}`}
                   className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-purple-100"
                 >
-                  <div className="h-48 overflow-hidden relative">
+                  <div className="aspect-[3/4] overflow-hidden relative">
                     <span className="absolute top-3 right-3 z-10 bg-purple-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-md">
                       {article.category}
                     </span>
