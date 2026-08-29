@@ -39,7 +39,8 @@ export default async function BlogPage() {
                   href={`/blog/${article.slug}`}
                   className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-purple-100"
                 >
-                  <div className="h-48 overflow-hidden relative bg-gray-100">
+                  {/* تغییر: aspect-[3/4] به جای h-48 */}
+                  <div className="aspect-[3/4] overflow-hidden relative bg-gray-100">
                     <span className="absolute top-3 right-3 z-10 bg-purple-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-md">
                       {article.category}
                     </span>
