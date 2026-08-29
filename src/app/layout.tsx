@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fa" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <ScrollToTop /> {/* ✅ اینجا اضافه شد تا در تمام صفحات کار کند */}
+        <ScrollToTop /> {/* ✅ اینجا اضافه شد. تا در تمام صفحات کار کند */}
         <JsonLd />
         <AuthProvider>{children}</AuthProvider>
         <Footer />
