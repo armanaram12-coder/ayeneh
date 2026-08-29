@@ -8,7 +8,7 @@ import FlashSale from '@/components/FlashSale';
 import Header from '@/components/Header';
 import FloatingContact from '@/components/FloatingContact';
 import AIConsultant from '@/components/AIConsultant';
-import MagazineSection from '@/components/MagazineSection'; // ✅ کامپوننت مجله اضافه شد
+import MagazineSection from '@/components/MagazineSection';
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import { toggleFavorite, getFavorites } from '@/lib/favorites';
@@ -100,6 +100,11 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
 
 export default function Home() {
   const router = useRouter();
+  
+  // ✅ اصلاح مشکل اسکرول: بازگشت به بالای صفحه هنگام لود شدن
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'bestseller'>('bestseller');
@@ -488,7 +493,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* ✅ کامپوننت مجله آینه (جایگزین کد طولانی قبلی شد) */}
+          {/* ✅ کامپوننت مجله آینه */}
           <MagazineSection />
 
           <section className="py-16 bg-white">
