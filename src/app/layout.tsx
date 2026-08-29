@@ -4,14 +4,13 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
+import ScrollToTop from "@/components/ScrollToTop"; // ✅ اضافه شد
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  // ✅ تیتر بهینه‌شده با کلمات کلیدی اصلی در ابتدا
   title: "فروشگاه آینه | نمایندگی رسمی محصولات تراست (Trust) و لوازم آرایشی بهداشتی",
-  // ✅ توضیحات متا (Description) غنی از کلمات کلیدی برای جذب کلیک در گوگل
   description: "خرید آنلاین اصل‌ترین محصولات آرایشی و بهداشتی، سرم، کرم، ضد آفتاب و شوینده برند تراست (Trust). دریافت مشاوره تخصصی رایگان برای روتین پوست و مو با مدیریت آرمان آرام در فروشگاه اینترنتی آینه.",
   keywords: [
     "تراست", "Trust", "محصولات تراست", "فروشگاه آینه", "آینه", "Ayeneh",
@@ -36,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fa" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <ScrollToTop /> {/* ✅ اینجا اضافه شد تا در تمام صفحات کار کند */}
         <JsonLd />
         <AuthProvider>{children}</AuthProvider>
         <Footer />
