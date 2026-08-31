@@ -7,8 +7,17 @@ export default function ScrollToTop() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // با هر بار تغییر مسیر (حتی دکمه برگشت مرورگر)، صفحه به بالا می‌رود
-    window.scrollTo(0, 0);
+    // ۱. غیرفعال کردن حافظه اسکرول خودکار مرورگر (مهم‌ترین خط)
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    
+    // ۲. اسکرول اجباری به بالا
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'auto' // از auto استفاده کن تا بدون انیمیشن و آنی به بالا برود
+    });
   }, [pathname]);
 
   return null;
