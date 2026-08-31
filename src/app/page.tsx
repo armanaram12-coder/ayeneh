@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import FloatingContact from '@/components/FloatingContact';
 import AIConsultant from '@/components/AIConsultant';
 import MagazineSection from '@/components/MagazineSection';
+import CategoriesSection from '@/components/CategoriesSection'; // ✅ اضافه شد
 import { supabase } from '@/lib/supabase';
 import { addToCart, getCartCount } from '@/lib/cart';
 import { toggleFavorite, getFavorites } from '@/lib/favorites';
@@ -27,21 +28,6 @@ interface Product {
   image?: string;
   category?: string;
 }
-
-const categoryIcons: Record<string, string> = {
-  'عطر و خوشبوکننده': '🌸',
-  'سرم تخصصی': '💧',
-  'کرم تخصصی': '🧴',
-  'ضد آفتاب': '☀️',
-  'شوینده و پاک کننده': '🧼',
-  'دهان و دندان': '🦷',
-  'آرایشی': '💄',
-  'شامپو تخصصی': '🧴',
-  'ماسک تخصصی': '🎭',
-  'کیت تخصصی': '🧰',
-  'روغن و لوسیون': '🧴'
-};
-const categories = Object.keys(categoryIcons);
 
 function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: { 
   product: Product; 
@@ -74,7 +60,7 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
               className="w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-110" 
             />
           ) : (
-            <span className="text-4xl transition-transform duration-500 group-hover:scale-110">🧴</span>
+            <span className="text-4xl transition-transform duration-500 group-hover:scale-110"></span>
           )}
         </div>
       </Link>
@@ -101,7 +87,6 @@ function ProductCard({ product, onAddToCart, isFavorite, onToggleFavorite }: {
 export default function Home() {
   const router = useRouter();
   
-  // ✅ اصلاح مشکل اسکرول: بازگشت به بالای صفحه هنگام لود شدن
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -217,24 +202,6 @@ export default function Home() {
     return true;
   });
 
-  const handleCategoryClick = (cat: string) => { 
-    if (selectedCategory === cat) {
-      setSelectedCategory(null);
-      router.replace(window.location.pathname, { scroll: false });
-    } else {
-      setSelectedCategory(cat);
-      router.replace(`/?category=${encodeURIComponent(cat)}`, { scroll: false });
-      
-      setTimeout(() => {
-        const productsSection = document.getElementById('products-section');
-        if (productsSection) {
-          productsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    }
-    setActiveTab('all'); 
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-purple-100">
@@ -346,7 +313,7 @@ export default function Home() {
                           </div>
                           <div className="flex items-baseline gap-2">
                             <span className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                              ۱,۴۷۹,۰۰۰
+                              ۱,۴۷۹,۰۰
                             </span>
                             <span className="text-gray-700 text-lg font-bold">تومان</span>
                           </div>
@@ -372,62 +339,14 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="py-8 overflow-hidden">
-            <div className="container mx-auto px-4">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center">دسته‌بندی محصولات آرایشی و بهداشتی</h2>
-              <div className="flex flex-wrap justify-center gap-6 md:gap-8 mb-6">
-                {categories.slice(0, 6).map((cat) => (
-                  <button 
-                    key={cat} 
-                    onClick={() => handleCategoryClick(cat)} 
-                    className={`flex flex-col items-center gap-2 transition-all duration-300 ${
-                      selectedCategory === cat ? 'scale-110' : 'hover:scale-105'
-                    }`}
-                  >
-                    <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg transition-all duration-300 ${
-                      selectedCategory === cat 
-                        ? 'shadow-2xl ring-4 ring-purple-300 ring-offset-2 animate-pulse' 
-                        : 'shadow-md hover:shadow-lg'
-                    }`}>
-                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || ''}</span>
-                    </div>
-                    <span className={`text-xs md:text-sm font-medium text-center max-w-[100px] transition-all duration-300 ${
-                      selectedCategory === cat ? 'text-[#7C3AED] font-bold' : 'text-gray-700'
-                    }`}>{cat}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-wrap justify-center gap-6 md:gap-8">
-                {categories.slice(6, 11).map((cat) => (
-                  <button 
-                    key={cat} 
-                    onClick={() => handleCategoryClick(cat)} 
-                    className={`flex flex-col items-center gap-2 transition-all duration-300 ${
-                      selectedCategory === cat ? 'scale-110' : 'hover:scale-105'
-                    }`}
-                  >
-                    <div className={`w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#E879F9] flex items-center justify-center text-white font-bold text-lg transition-all duration-300 ${
-                      selectedCategory === cat 
-                        ? 'shadow-2xl ring-4 ring-purple-300 ring-offset-2 animate-pulse' 
-                        : 'shadow-md hover:shadow-lg'
-                    }`}>
-                      <span className="text-2xl md:text-3xl">{categoryIcons[cat] || '📦'}</span>
-                    </div>
-                    <span className={`text-xs md:text-sm font-medium text-center max-w-[100px] transition-all duration-300 ${
-                      selectedCategory === cat ? 'text-[#7C3AED] font-bold' : 'text-gray-700'
-                    }`}>{cat}</span>
-                  </button>
-                ))}
-              </div>
-              {selectedCategory && (
-                <div className="text-center mt-4">
-                  <button onClick={() => { setSelectedCategory(null); setActiveTab('all'); router.replace(window.location.pathname, { scroll: false }); }} className="text-[#7C3AED] hover:underline text-sm font-semibold">
-                    نمایش همه دسته‌بندی‌های آرایشی بهداشتی ✕
-                  </button>
-                </div>
-              )}
-            </div>
-          </section>
+          {/* ✅ کامپوننت دسته‌بندی‌ها - جدا شده */}
+          <CategoriesSection 
+            selectedCategory={selectedCategory}
+            onCategorySelect={(cat) => {
+              setSelectedCategory(cat);
+              setActiveTab('all');
+            }}
+          />
 
           <section id="products-section" className="py-8">
             <div className="container mx-auto px-4">
@@ -479,8 +398,8 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   { icon: '🛡️', title: 'ضمانت ۱۰۰٪ اصالت محصولات تراست', desc: 'تمامی کرم‌ها، سرم‌ها و لوازم آرایشی بهداشتی با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
-                  { icon: '👨‍⚕️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
-                  { icon: '🚀', title: 'ارسال سریع و ایمن به سراسر ایران', desc: 'سفارشات لوازم آرایشی شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن ارسال می‌شود.' },
+                  { icon: '👨‍️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
+                  { icon: '', title: 'ارسال سریع و ایمن به سراسر ایران', desc: 'سفارشات لوازم آرایشی شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن ارسال می‌شود.' },
                   { icon: '💎', title: 'قیمت منصفانه و رقابتی', desc: 'حذف واسطه‌ها به ما این امکان را می‌دهد تا بهترین قیمت را برای محصولات اورجینال آرایشی ارائه دهیم.' }
                 ].map((item, index) => (
                   <div key={index} className="bg-purple-50/50 rounded-2xl p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-purple-100">
@@ -601,10 +520,10 @@ export default function Home() {
                 </div>
                 <div className="lg:w-1/2 grid grid-cols-2 gap-4">
                   {[
-                    { icon: '💧', title: 'سرم‌های تخصصی تراست', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
+                    { icon: '', title: 'سرم‌های تخصصی تراست', desc: 'آبرسانی عمیق و جوانسازی با تکنولوژی روز' },
                     { icon: '☀️', title: 'کرم ضد آفتاب Trust', desc: 'محافظت کامل با بافت سبک و فاقد چربی' },
                     { icon: '🧴', title: 'شوینده‌های ملایم', desc: 'پاک‌کنندگی عمیق بدون ایجاد خشکی و حساسیت' },
-                    { icon: '🌸', title: 'عطر و بادی اسپلش', desc: 'رایحه‌های ماندگار و منحصر به فرد برای آقایان و بانوان' }
+                    { icon: '', title: 'عطر و بادی اسپلش', desc: 'رایحه‌های ماندگار و منحصر به فرد برای آقایان و بانوان' }
                   ].map((item, idx) => (
                     <div key={idx} className="bg-white/10 backdrop-blur-sm p-6 rounded-2xl border border-white/20 text-center h-full flex flex-col justify-center items-center">
                       <div className="text-3xl mb-3">{item.icon}</div>
