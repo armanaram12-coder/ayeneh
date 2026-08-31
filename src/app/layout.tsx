@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
-import ScrollToTop from "@/components/ScrollToTop"; // ✅ اضافه شد
+import ScrollToTop from "@/components/ScrollToTop"; // ✅ ایمپورت صحیح از پوشه کامپوننت‌ها
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fa" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <ScrollToTop /> {/* ✅ اینجا اضافه شد. تا در تمام صفحات کار کند */}
+        <ScrollToTop /> {/* ✅ کامپوننت اسکرول به بالا */}
         <JsonLd />
         <AuthProvider>{children}</AuthProvider>
         <Footer />
