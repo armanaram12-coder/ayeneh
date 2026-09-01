@@ -241,7 +241,7 @@ export default function Home() {
                   <div className="text-gray-600 text-sm md:text-base">برند معتبر</div>
                 </div>
                 <div>
-                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">۲۴/۷</div>
+                  <div className="text-4xl md:text-5xl font-bold text-[#7C3AED] mb-2">۲۴/</div>
                   <div className="text-gray-600 text-sm md:text-base">مشاوره تخصصی</div>
                 </div>
               </div>
@@ -269,7 +269,7 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 bg-clip-text text-transparent mb-3">
                   {allProducts[41]?.name || 'سرم جوانساز، لیفت و ضدچروک تراست اسمارت'}
                 </h2>
-                <p className="text-gray-600 text-lg">این هفته با <span className="text-red-500 font-bold">۲۰٪ تخفیف ویژه</span> 🎁</p>
+                <p className="text-gray-600 text-lg">این هفته با <span className="text-red-500 font-bold">۲٪ تخفیف ویژه</span> 🎁</p>
               </div>
 
               <div className="max-w-5xl mx-auto">
@@ -318,13 +318,13 @@ export default function Home() {
                             <span className="text-gray-700 text-lg font-bold">تومان</span>
                           </div>
                           <div className="mt-2 inline-block bg-green-50 border border-green-200 px-3 py-1 rounded-lg">
-                            <span className="text-green-700 text-sm font-bold">۳۷۰,۰۰۰ تومان سود شما</span>
+                            <span className="text-green-700 text-sm font-bold">۳۷۰,۰۰ تومان سود شما</span>
                           </div>
                         </div>
 
                         <div className="flex gap-3">
                           <button className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white py-3.5 rounded-xl font-extrabold text-base hover:shadow-xl hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
-                            <span>🛒</span>
+                            <span></span>
                             <span>افزودن به سبد خرید</span>
                           </button>
                           <Link href={`/product/${allProducts[41]?.id || 42}`} className="px-6 py-3.5 border-2 border-purple-600 text-purple-600 rounded-xl font-bold hover:bg-purple-50 transition-colors text-center flex items-center justify-center">
@@ -391,14 +391,15 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ✅ تغییر نام فروشگاه به چهره آپ */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">چرا فروشگاه آینه بهترین مرجع خرید محصولات آرایشی بهداشتی و تراست است؟</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">چرا فروشگاه چهره آپ بهترین مرجع خرید محصولات آرایشی بهداشتی و تراست است؟</h2>
               <p className="text-gray-600 max-w-3xl mx-auto text-center mb-12">تفاوت ما در تعهد به اصالت کالا و ارائه مشاوره تخصصی رایگان برای تدوین روتین پوست و مو متناسب با نیاز شماست.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   { icon: '🛡️', title: 'ضمانت ۱۰۰٪ اصالت محصولات تراست', desc: 'تمامی کرم‌ها، سرم‌ها و لوازم آرایشی بهداشتی با ضمانت‌نامه معتبر و کد اصالت عرضه می‌شوند.' },
-                  { icon: '👨‍️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
+                  { icon: '👨️', title: 'مشاوره رایگان روتین پوست و مو', desc: 'تیم ما (با مدیریت آرمان آرام) قبل از خرید، بهترین ترکیب محصولات Trust را متناسب با نوع پوست شما پیشنهاد می‌دهد.' },
                   { icon: '', title: 'ارسال سریع و ایمن به سراسر ایران', desc: 'سفارشات لوازم آرایشی شما در بسته‌بندی مقاوم و در کوتاه‌ترین زمان ممکن ارسال می‌شود.' },
                   { icon: '💎', title: 'قیمت منصفانه و رقابتی', desc: 'حذف واسطه‌ها به ما این امکان را می‌دهد تا بهترین قیمت را برای محصولات اورجینال آرایشی ارائه دهیم.' }
                 ].map((item, index) => (
@@ -415,9 +416,10 @@ export default function Home() {
           {/* ✅ کامپوننت مجله آینه */}
           <MagazineSection />
 
+          {/* ✅ تغییر نام فروشگاه به چهره آپ */}
           <section className="py-16 bg-white">
             <div className="container mx-auto px-4">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">برندهای معتبر همکار با فروشگاه آینه</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">برندهای معتبر همکار با فروشگاه چهره آپ</h2>
               <p className="text-gray-600 text-center mb-12">ما فقط با برندهای معتبر و دارای مجوز همکاری می‌کنیم</p>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
                 {['Trust', 'Serje', 'LifeGuard', 'Aura', 'Smart', 'Professional'].map((brand, idx) => (
@@ -429,13 +431,14 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ✅ تغییر نام فروشگاه به چهره آپ */}
           <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white">
             <div className="container mx-auto px-4">
-              <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">نظرات مشتریان فروشگاه آینه</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">نظرات مشتریان فروشگاه چهره آپ</h2>
               <p className="text-purple-200 text-center mb-12">مشتریان ما بهترین گواه کیفیت محصولات و خدمات ما هستند</p>
               <div className="grid md:grid-cols-3 gap-8">
                 {[
-                  { name: 'سارا م.', text: 'محصولات تراست واقعاً عالی هستند. مشاوره رایگان آینه هم خیلی کمکم کرد تا روتین مناسب پوستم رو پیدا کنم.', rating: 5 },
+                  { name: 'سارا م.', text: 'محصولات تراست واقعاً عالی هستند. مشاوره رایگان چهره آپ هم خیلی کمکم کرد تا روتین مناسب پوستم رو پیدا کنم.', rating: 5 },
                   { name: 'محمد ر.', text: 'سرعت ارسال عالی بود و محصولات کاملاً اصل بودند. حتماً دوباره خرید می‌کنم.', rating: 5 },
                   { name: 'نیلوفر ک.', text: 'بهترین فروشگاه برای خرید لوازم آرایشی بهداشتی. قیمت‌ها منصفانه و کیفیت عالی.', rating: 5 }
                 ].map((review, idx) => (
@@ -461,19 +464,21 @@ export default function Home() {
           <section className="py-8 bg-gradient-to-br from-green-50 to-teal-50">
             <div className="container mx-auto px-4">
               <div className="max-w-5xl mx-auto">
+                {/* ✅ تغییر نام اپلیکیشن به چهره آپ */}
                 <img 
                   src="https://uvwydvasorygloptlrhm.supabase.co/storage/v1/object/public/banners/mobile-app-banner.webp" 
-                  alt="اپلیکیشن موبایل آینه - به زودی"
+                  alt="اپلیکیشن موبایل چهره آپ - به زودی"
                   className="w-full h-auto rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
                 />
               </div>
             </div>
           </section>
 
+          {/* ✅ تغییر نام خبرنامه به چهره آپ */}
           <section className="py-16 bg-gradient-to-r from-purple-600 to-pink-500 text-white">
             <div className="container mx-auto px-4">
               <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-2xl md:text-3xl font-bold mb-4">عضویت در خبرنامه آینه</h2>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">عضویت در خبرنامه چهره آپ</h2>
                 <p className="text-purple-100 mb-8">از جدیدترین محصولات تراست، تخفیف‌های ویژه و مقالات آموزشی باخبر شوید</p>
                 <form onSubmit={handleNewsletterSubmit} className="flex flex-col md:flex-row gap-4 max-w-xl mx-auto">
                   <div className="flex-1 relative">
@@ -500,6 +505,7 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ✅ تغییر نام فروشگاه به چهره آپ */}
           <section className="py-16 bg-gradient-to-br from-purple-900 to-indigo-900 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
@@ -509,7 +515,7 @@ export default function Home() {
                   <span className="inline-block bg-purple-700/50 text-purple-200 px-4 py-1 rounded-full text-sm font-semibold mb-4 border border-purple-500/30">نمایندگی رسمی فروش برند Trust</span>
                   <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">راز درخشش پوست شما، در روتین مراقبتی تخصصی تراست است</h2>
                   <p className="text-gray-300 leading-relaxed mb-6 text-justify">
-                    محصولات آرایشی و بهداشتی تراست (Trust) با فرمولاسیون پیشرفته، نیازهای مختلف پوستی از جمله آبرسانی، ضدچروک، روشن‌کنندگی و محافظت در برابر آفتاب را پوشش می‌دهند. ما در فروشگاه اینترنتی آینه، نه تنها فروشنده، بلکه مشاور شما برای انتخاب صحیح سرم، کرم و شوینده تراست هستیم تا بیشترین بازدهی را برای روتین پوست و موی خود تجربه کنید.
+                    محصولات آرایشی و بهداشتی تراست (Trust) با فرمولاسیون پیشرفته، نیازهای مختلف پوستی از جمله آبرسانی، ضدچروک، روشن‌کنندگی و محافظت در برابر آفتاب را پوشش می‌دهند. ما در فروشگاه اینترنتی چهره آپ، نه تنها فروشنده، بلکه مشاور شما برای انتخاب صحیح سرم، کرم و شوینده تراست هستیم تا بیشترین بازدهی را برای روتین پوست و موی خود تجربه کنید.
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <a href="#products-section" className="bg-white text-purple-900 px-8 py-3 rounded-xl font-bold hover:bg-purple-50 transition-colors shadow-lg">مشاهده و خرید محصولات تراست</a>
