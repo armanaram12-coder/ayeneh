@@ -30,7 +30,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const { data: article } = await supabase.from('articles').select('title, summary').eq('slug', slug).single();
   if (!article) return { title: 'مقاله یافت نشد' };
-  return { title: `${article.title} | مجله آینه`, description: article.summary };
+  // ✅ تغییر نام در متادیتا
+  return { title: `${article.title} | مجله چهره آپ`, description: article.summary };
 }
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -74,16 +75,17 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               
               <div className="flex flex-wrap items-center justify-center gap-4 text-white text-sm md:text-base">
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                  <span>📅</span>
+                  <span></span>
                   <span>{new Date(article.created_at).toLocaleDateString('fa-IR')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                  <span>⏱️</span>
+                  <span>️</span>
                   <span>۵ دقیقه مطالعه</span>
                 </div>
                 <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                  <span>🏪</span>
-                  <span>فروشگاه آینه</span>
+                  <span></span>
+                  {/* ✅ تغییر نام فروشگاه در اطلاعات مقاله */}
+                  <span>فروشگاه چهره آپ</span>
                 </div>
               </div>
             </div>
@@ -173,7 +175,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">نکته طلایی</h3>
                   <p className="text-gray-800 leading-relaxed text-sm font-medium">
-                    برای دریافت بهترین نتیجه، حتماً از محصولات اصل تراست استفاده کنید. <strong className="text-purple-700">فروشگاه آینه</strong> به عنوان نماینده رسمی، اصالت تمام محصولات را تضمین می‌کند.
+                    برای دریافت بهترین نتیجه، حتماً از محصولات اصل تراست استفاده کنید. <strong className="text-purple-700">فروشگاه چهره آپ</strong> به عنوان نماینده رسمی، اصالت تمام محصولات را تضمین می‌کند.
                   </p>
                 </div>
               </div>
@@ -189,7 +191,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               <div className="text-6xl mb-4">💬</div>
               <h3 className="text-2xl md:text-4xl font-black mb-4">نیاز به مشاوره تخصصی دارید؟</h3>
               <p className="text-base md:text-lg mb-8 opacity-95 max-w-2xl mx-auto leading-relaxed">
-                تیم متخصص آینه آماده است تا بهترین روتین پوستی و موی شما را طراحی کند
+                {/* ✅ تغییر نام تیم مشاوره */}
+                تیم متخصص چهره آپ آماده است تا بهترین روتین پوستی و موی شما را طراحی کند
               </p>
               <a 
                 href="https://wa.me/989352225693" 
@@ -210,7 +213,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               className="inline-flex items-center gap-3 bg-white text-purple-700 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-purple-50 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
             >
               <span className="text-2xl">←</span>
-              <span>بازگشت به مجله آینه</span>
+              {/* ✅ تغییر نام مجله در دکمه بازگشت */}
+              <span>بازگشت به مجله چهره آپ</span>
             </Link>
           </div>
         </article>
