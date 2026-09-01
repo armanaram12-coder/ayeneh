@@ -139,8 +139,9 @@ export default function Header() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
+              {/* ✅ سایز لوگو بزرگتر شد (h-16) و متن Alt تغییر کرد */}
               <Link href="/" className="flex items-center">
-                <img src="/logo.png" alt="فروشگاه آینه" className="h-12 md:h-14 w-auto object-contain" />
+                <img src="/logo.png" alt="لوگو فروشگاه چهره آپ | ChehrehUp" className="h-16 md:h-18 w-auto object-contain" />
               </Link>
             </div>
 
@@ -167,7 +168,6 @@ export default function Header() {
                       className="flex items-center gap-4 p-3 hover:bg-purple-50 transition-colors border-b border-purple-50 last:border-b-0"
                       onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }}
                     >
-                      {/* ✅ نمایش عکس در جستجو با object-contain */}
                       <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden p-1">
                         {product.image && product.image.trim() !== '' ? (
                           <img 
