@@ -4,8 +4,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 export const metadata = {
-  title: 'مجله تخصصی آینه | مقالات آموزشی مراقبت از پوست و مو',
-  description: 'جدیدترین مقالات آموزشی، معرفی محصولات تراست و نکات تخصصی مراقبت از پوست و مو در فروشگاه اینترنتی آینه.',
+  title: 'مجله تخصصی چهره آپ | مقالات آموزشی مراقبت از پوست و مو',
+  description: 'جدیدترین مقالات آموزشی، معرفی محصولات تراست و نکات تخصصی مراقبت از پوست و مو در فروشگاه اینترنتی چهره آپ.',
 };
 
 export default async function BlogPage() {
@@ -25,7 +25,8 @@ export default async function BlogPage() {
       <main className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
         <div className="container mx-auto px-4 py-16">
           <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">مجله تخصصی آینه</h1>
+            {/* ✅ تغییر عنوان صفحه */}
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">مجله تخصصی چهره آپ</h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
               دانش زیبایی خود را با مطالعه مقالات تخصصی ما افزایش دهید و بهترین روتین مراقبتی را برای خود بسازید.
             </p>
@@ -39,8 +40,7 @@ export default async function BlogPage() {
                   href={`/blog/${article.slug}`}
                   className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-purple-100"
                 >
-                  {/* تغییر: aspect-[3/4] به جای h-48 */}
-                  <div className="aspect-[3/4] overflow-hidden relative bg-gray-100">
+                  <div className="h-48 overflow-hidden relative bg-gray-100">
                     <span className="absolute top-3 right-3 z-10 bg-purple-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-md">
                       {article.category}
                     </span>
@@ -52,7 +52,7 @@ export default async function BlogPage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <span className="text-6xl">📝</span>
+                        <span className="text-6xl"></span>
                       </div>
                     )}
                   </div>
